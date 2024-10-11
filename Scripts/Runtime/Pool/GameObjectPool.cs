@@ -168,9 +168,9 @@ namespace Framework
         /// 创建实例
         /// </summary>
         /// <returns></returns>
-        protected virtual GameObject CreateInstance(GameObject value)
+        protected virtual GameObject CreateInstance(GameObject template)
         {
-            if (value == null)
+            if (template == null)
             {
                 Debug.LogError("[GameObjectPool]：要实例化的目标模板是空对象");
                 return null;
@@ -179,7 +179,7 @@ namespace Framework
             //GameObject resault = CreateInstanceEvent?.Invoke();
             //if(!resault) resault = GameObject.Instantiate(value);
             //return resault;
-            return GameObject.Instantiate(value);
+            return GameObject.Instantiate(template);
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace Framework
             }
             else
             {
-                tPool = GetNewPoolQueue();
+                tPool = CreatePool();
                 pool[target] = tPool;
             }
             if (!obj) obj = CreateInstance(target);
@@ -280,6 +280,36 @@ namespace Framework
 
             InitializeObject(obj);
 
+            return obj;
+        }
+
+        /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
+        public virtual GameObject Get(Vector3 position, Quaternion rotation)
+        {
+            var obj = Get();
+            obj.transform.SetPositionAndRotation(position, rotation);
+            return obj;
+        }
+        /// <summary>从对象池获取</summary>
+        public virtual GameObject Get(GameObject template, Vector3 position, Quaternion rotation)
+        {
+            var obj = Get(template);
+            obj.transform.SetPositionAndRotation(position, rotation);
+            return obj;
+        }
+
+        /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
+        public virtual GameObject Get(Transform parent)
+        {
+            var obj = Get();
+            obj.transform.SetParent(parent);
+            return obj;
+        }
+        /// <summary>从对象池获取</summary>
+        public virtual GameObject Get(GameObject template, Transform parent)
+        {
+            var obj = Get(template);
+            obj.transform.SetParent(parent);
             return obj;
         }
 
@@ -297,7 +327,7 @@ namespace Framework
 
             if (!has)
             {
-                tPool = GetNewPoolQueue();
+                tPool = CreatePool();
                 _pool[target] = tPool;
             }
 
@@ -375,7 +405,7 @@ namespace Framework
             _pool.Clear();
         }
 
-        protected static Queue<GameObject> GetNewPoolQueue()
+        protected static Queue<GameObject> CreatePool()
         {
             return new Queue<GameObject>(1);
         }

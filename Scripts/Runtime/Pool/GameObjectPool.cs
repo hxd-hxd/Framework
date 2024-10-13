@@ -83,7 +83,9 @@ namespace Framework
                         _GOManager = new GameObject("<GameObjectPool>");
                         _GOManager.SetActive(false);
                         _GOManager.transform.SetParent(_monitor.transform);
-                        GameObject.DontDestroyOnLoad(_GOManager);
+
+                        if (_GOManager.transform.root == _GOManager.transform)
+                            GameObject.DontDestroyOnLoad(_GOManager);
                     }
                 }
                 catch (Exception)

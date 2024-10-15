@@ -16,7 +16,8 @@ namespace Framework
     /// </summary>
     public class ResourcesManager
     {
-        static Dictionary<string, Object> m_Resources = new Dictionary<string, Object>();
+        static IResourcesHandler _handler;
+        static Dictionary<string, Object> _resources = new Dictionary<string, Object>();
 
         /// <summary>
         /// 获取资源
@@ -32,10 +33,10 @@ namespace Framework
 
             Object obj = null;
             T newObj = null;
-            if (!m_Resources.TryGetValue(path, out obj))
+            if (!_resources.TryGetValue(path, out obj))
             {
                 obj = Resources.Load<T>(path);
-                m_Resources.Add(path, obj);
+                _resources.Add(path, obj);
             }
             if (obj != null) newObj = (T)obj;
 
@@ -51,10 +52,10 @@ namespace Framework
             Object obj = null;
             Object newObj = null;
 
-            if (!m_Resources.TryGetValue(path, out obj))
+            if (!_resources.TryGetValue(path, out obj))
             {
                 obj = Resources.Load(path);
-                m_Resources.Add(path, obj);
+                _resources.Add(path, obj);
             }
 
             //if (obj) newObj = Object.Instantiate(obj);

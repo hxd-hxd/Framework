@@ -200,7 +200,7 @@ namespace Framework
             {
                 if (tPool.Count > 0)
                 {
-                    int index = 0;
+                    int index = -1;
                     for (var i = 0; i < tPool.Count; i++)
                     {
                         if ((tPool[i] as Array).Length == length)
@@ -209,7 +209,9 @@ namespace Framework
                             break;
                         }
                     }
-                    obj = Fetch(tPool, index);
+
+                    if (index > -1)
+                        obj = Fetch(tPool, index);
                 }
             }
             else

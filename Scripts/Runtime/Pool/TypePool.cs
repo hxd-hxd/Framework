@@ -191,6 +191,9 @@ namespace Framework
         /// <summary>获取 <see cref="Array"/></summary>
         public Array GetArray(Type elementType, int length)
         {
+            if (elementType == null) throw new ArgumentNullException("元素类型为空");
+            if (length < 0) throw new IndexOutOfRangeException("索引小于 0");
+
             object obj = null;
 
             Type target = elementType.MakeArrayType();
@@ -228,6 +231,709 @@ namespace Framework
             return obj as Array;
         }
 
+        #region 填入元素的数组
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1)
+        {
+            var r = GetArray<T>(1);
+            int i = -1;
+            r[++i] = e1;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2)
+        {
+            var r = GetArray<T>(2);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3)
+        {
+            var r = GetArray<T>(3);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4)
+        {
+            var r = GetArray<T>(4);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5)
+        {
+            var r = GetArray<T>(5);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6)
+        {
+            var r = GetArray<T>(6);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7)
+        {
+            var r = GetArray<T>(7);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8)
+        {
+            var r = GetArray<T>(8);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9)
+        {
+            var r = GetArray<T>(9);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10)
+        {
+            var r = GetArray<T>(10);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11)
+        {
+            var r = GetArray<T>(11);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12)
+        {
+            var r = GetArray<T>(12);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13)
+        {
+            var r = GetArray<T>(13);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14)
+        {
+            var r = GetArray<T>(14);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15)
+        {
+            var r = GetArray<T>(15);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15, T e16)
+        {
+            var r = GetArray<T>(16);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            r[++i] = e16;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15, T e16, T e17)
+        {
+            var r = GetArray<T>(17);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            r[++i] = e16;
+            r[++i] = e17;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15, T e16, T e17, T e18)
+        {
+            var r = GetArray<T>(18);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            r[++i] = e16;
+            r[++i] = e17;
+            r[++i] = e18;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15, T e16, T e17, T e18, T e19)
+        {
+            var r = GetArray<T>(19);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            r[++i] = e16;
+            r[++i] = e17;
+            r[++i] = e18;
+            r[++i] = e19;
+            return r;
+        }
+        /// <summary>获取 <typeparamref name="T"/>[]，并填入指定元素</summary>
+        public T[] GetArrayE<T>(T e1, T e2, T e3, T e4, T e5, T e6, T e7, T e8, T e9, T e10, T e11, T e12, T e13, T e14, T e15, T e16, T e17, T e18, T e19, T e20)
+        {
+            var r = GetArray<T>(20);
+            int i = -1;
+            r[++i] = e1;
+            r[++i] = e2;
+            r[++i] = e3;
+            r[++i] = e4;
+            r[++i] = e5;
+            r[++i] = e6;
+            r[++i] = e7;
+            r[++i] = e8;
+            r[++i] = e9;
+            r[++i] = e10;
+            r[++i] = e11;
+            r[++i] = e12;
+            r[++i] = e13;
+            r[++i] = e14;
+            r[++i] = e15;
+            r[++i] = e16;
+            r[++i] = e17;
+            r[++i] = e18;
+            r[++i] = e19;
+            r[++i] = e20;
+            return r;
+        }
+
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1)
+        {
+            var r = GetArray(elementType, 1);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2)
+        {
+            var r = GetArray(elementType, 2);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3)
+        {
+            var r = GetArray(elementType, 3);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4)
+        {
+            var r = GetArray(elementType, 4);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5)
+        {
+            var r = GetArray(elementType, 5);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6)
+        {
+            var r = GetArray(elementType, 6);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7)
+        {
+            var r = GetArray(elementType, 7);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8)
+        {
+            var r = GetArray(elementType, 8);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9)
+        {
+            var r = GetArray(elementType, 9);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10)
+        {
+            var r = GetArray(elementType, 10);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11)
+        {
+            var r = GetArray(elementType, 11);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12)
+        {
+            var r = GetArray(elementType, 12);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13)
+        {
+            var r = GetArray(elementType, 13);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14)
+        {
+            var r = GetArray(elementType, 14);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15)
+        {
+            var r = GetArray(elementType, 15);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15, object e16)
+        {
+            var r = GetArray(elementType, 16);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            r.SetValue(e16, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15, object e16, object e17)
+        {
+            var r = GetArray(elementType, 17);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            r.SetValue(e16, ++i);
+            r.SetValue(e17, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15, object e16, object e17, object e18)
+        {
+            var r = GetArray(elementType, 18);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            r.SetValue(e16, ++i);
+            r.SetValue(e17, ++i);
+            r.SetValue(e18, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15, object e16, object e17, object e18, object e19)
+        {
+            var r = GetArray(elementType, 19);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            r.SetValue(e16, ++i);
+            r.SetValue(e17, ++i);
+            r.SetValue(e18, ++i);
+            r.SetValue(e19, ++i);
+            return r;
+        }
+        /// <summary>获取 <see cref="Array"/>，并填入指定元素</summary>
+        public Array GetArrayE(Type elementType, object e1, object e2, object e3, object e4, object e5, object e6, object e7, object e8, object e9, object e10, object e11, object e12, object e13, object e14, object e15, object e16, object e17, object e18, object e19, object e20)
+        {
+            var r = GetArray(elementType, 20);
+            int i = -1;
+            r.SetValue(e1, ++i);
+            r.SetValue(e2, ++i);
+            r.SetValue(e3, ++i);
+            r.SetValue(e4, ++i);
+            r.SetValue(e5, ++i);
+            r.SetValue(e6, ++i);
+            r.SetValue(e7, ++i);
+            r.SetValue(e8, ++i);
+            r.SetValue(e9, ++i);
+            r.SetValue(e10, ++i);
+            r.SetValue(e11, ++i);
+            r.SetValue(e12, ++i);
+            r.SetValue(e13, ++i);
+            r.SetValue(e14, ++i);
+            r.SetValue(e15, ++i);
+            r.SetValue(e16, ++i);
+            r.SetValue(e17, ++i);
+            r.SetValue(e18, ++i);
+            r.SetValue(e19, ++i);
+            r.SetValue(e20, ++i);
+            return r;
+        }
+        #endregion
 
         /// <summary>返回对象池</summary>
         public virtual void Return<T>(T obj) where T : class
@@ -288,14 +994,6 @@ namespace Framework
             if (v == null) return;
             v.Clear();
             Return<Dictionary<TKey, TValue>>(v);
-        }
-        /// <summary>返回对象池</summary>
-        /// <remarks>会清空</remarks>
-        public void Return(StringBuilder v)
-        {
-            if (v == null) return;
-            v.Clear();
-            Return<StringBuilder>(v);
         }
         /// <summary>返回对象池</summary>
         /// <remarks>会将元素置为默认值</remarks>
@@ -381,6 +1079,14 @@ namespace Framework
             if (v == null) return;
             v.Clear();
             Return<LinkedList<T>>(v);
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(StringBuilder v)
+        {
+            if (v == null) return;
+            v.Clear();
+            Return<StringBuilder>(v);
         }
 
         /// <summary>返回对象池</summary>

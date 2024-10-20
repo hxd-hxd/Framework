@@ -12,17 +12,15 @@ namespace Framework.Extend
 {
     public static class ColorExtend
     {
-        public static Color ToHtmlStringRGB(this Color color)
+        public static string ToHtmlStringRGB(this Color color)
         {
-            ColorUtility.ToHtmlStringRGB(color);
-            return color;
+            return ColorUtility.ToHtmlStringRGB(color);
         }
-        public static Color ToHtmlStringRGBA(this Color color)
+        public static string ToHtmlStringRGBA(this Color color)
         {
-            ColorUtility.ToHtmlStringRGBA(color);
-            return color;
+            return ColorUtility.ToHtmlStringRGBA(color);
         }
-        public static Color ParseHtmlString(this Color self, string color)
+        public static Color ParseHtmlString(this ref Color self, string color)
         {
             ColorUtility.TryParseHtmlString(color, out self); 
             return self;

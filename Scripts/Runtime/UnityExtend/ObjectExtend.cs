@@ -10,9 +10,9 @@ using UnityEngine;
 
 using Object = UnityEngine.Object;
 
-namespace Framework
+namespace Framework.Extend
 {
-    public static class ObjectExtendUtility
+    public static class ObjectExtend
     {
         /// <summary>
         /// 返回自身的克隆对象

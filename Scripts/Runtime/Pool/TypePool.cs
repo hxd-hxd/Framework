@@ -78,7 +78,7 @@ namespace Framework
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
         /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
         /// </summary>
-        public virtual T Get<T>(object[] ctorArgs = null)
+        public virtual T Get<T>(params object[] ctorArgs)
         {
             var target = typeof(T);
             T obj = (T)Get(target, ctorArgs);
@@ -88,7 +88,7 @@ namespace Framework
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
         /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
         /// </summary>
-        public virtual object Get(Type type, object[] ctorArgs = null)
+        public virtual object Get(Type type, params object[] ctorArgs)
         {
             object obj = null;
 

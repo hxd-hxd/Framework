@@ -70,8 +70,7 @@ namespace Framework
                     }
                     catch (Exception e)
                     {
-                        Log.Error("事件穿透引发的异常");
-                        Log.Error(e);
+                        Log.Error($"事件穿透引发的异常。{e}");
                         //throw;
                     }
                     break;

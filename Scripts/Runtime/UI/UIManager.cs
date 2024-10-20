@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Framework
 {
@@ -49,7 +50,8 @@ namespace Framework
         /// <returns></returns>
         public static bool Register<T>(T ui) where T : class, IUI
         {
-            if (ui == null)
+            Object uui = ui as Object;
+            if (ui == null || uui == null)
             {
                 Debug.LogError("不能注册空 ui");
                 return false;
@@ -80,7 +82,8 @@ namespace Framework
         /// <returns></returns>
         public static bool Unregister<T>(T ui) where T : class, IUI
         {
-            if (ui == null)
+            Object uui = ui as Object;
+            if (ui == null || uui == null)
             {
                 Debug.LogError($"不能注销空 ui 实例 \"{typeof(T)}\"");
                 return false;
@@ -133,7 +136,7 @@ namespace Framework
                     }
                     else
                     {
-                        Debug.LogWarning($"要获取的 ui \"{type.Name}\" 为空，可能已经被销毁");
+                        Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
                     }
                 }
                 else
@@ -143,12 +146,12 @@ namespace Framework
                 }
                 else
                 {
-                    Debug.LogWarning($"要获取的 ui \"{type.Name}\" 为空，可能已经被销毁");
+                    Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
                 }
             }
             else
             {
-                Debug.LogWarning($"要获取的 ui \"{type.Name}\" 不存在，可能未注册到管理器");
+                Debug.LogWarning($"要获取的 ui \"{type}\" 不存在，可能未注册到管理器");
             }
             return ui;
         }

@@ -5,17 +5,16 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// 线程过渡组件
+/// 线程过渡
 /// <para>ps：用于解决在 unity 中，其他线程无法调用主线程的问题</para>
 /// </summary>
-public class ThreadTransitionComponent : MonoBehaviour
+public class ThreadTransition : MonoBehaviour
 {
     //是否已经初始化
     static bool isInitialized;
+    private static ThreadTransition _ins;
 
-    private static ThreadTransitionComponent _ins;
-
-    public static ThreadTransitionComponent Instance
+    public static ThreadTransition Instance
     {
         get
         {
@@ -33,7 +32,7 @@ public class ThreadTransitionComponent : MonoBehaviour
                 return;
 
             isInitialized = true;
-            _ins = new GameObject("[Thread Transition]").AddComponent<ThreadTransitionComponent>();
+            _ins = new GameObject("[Thread Transition]").AddComponent<ThreadTransition>();
 
             DontDestroyOnLoad(_ins.gameObject);
         }
@@ -45,30 +44,17 @@ public class ThreadTransitionComponent : MonoBehaviour
         isInitialized = true;
     }
 
-    //单个执行单元（无延迟）
-    struct NoDelayedQueueItem
-    {
-        public Action<object> action;
-        public object param;
-    }
-
+    List<Action> listAction = new List<Action>();
+    //全部执行列表（有延迟）
+    List<DelayedQueueItem> listDelayedActions = new List<DelayedQueueItem>();
     //全部执行列表（无延迟）
     List<NoDelayedQueueItem> listNoDelayActions = new List<NoDelayedQueueItem>();
 
-
-    //单个执行单元（有延迟）
-    struct DelayedQueueItem
-    {
-        public Action<object> action;
-        public object param;
-        public float time;
-    }
-
-    //全部执行列表（有延迟）
-    List<DelayedQueueItem> listDelayedActions = new List<DelayedQueueItem>();
-
-    List<Action> listAction = new List<Action>();
-
+    List<Action> currentActions = new List<Action>();
+    //当前执行的有延时函数链
+    List<DelayedQueueItem> currentDelayed = new List<DelayedQueueItem>();
+    //当前执行的无延时函数链
+    List<NoDelayedQueueItem> currentNoDelayed = new List<NoDelayedQueueItem>();
 
     /// <summary>
     /// 加入到主线程执行队列（无延迟）
@@ -80,9 +66,11 @@ public class ThreadTransitionComponent : MonoBehaviour
         {
             if (!Instance)
             {
-                Debug.Log("<color=red>Error：线程过渡组件 未初始化</color>");
+                Debug.LogError("线程过渡组件 未初始化");
                 return;
             }
+
+            if (!Instance.gameObject.activeInHierarchy || !Instance.isActiveAndEnabled) return;
         }
 
         lock (Instance.listAction)
@@ -91,31 +79,24 @@ public class ThreadTransitionComponent : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 加入到主线程执行队列（无延迟）
-    /// </summary>
-    /// <param name="taction"></param>
-    /// <param name="param"></param>
+    /// <summary>加入到主线程执行队列（无延迟）</summary>
     public static void QueueOnMainThread(Action<object> taction, object param)
     {
         QueueOnMainThread(taction, param, 0f);
     }
 
-    /// <summary>
-    /// 加入到主线程执行队列（有延迟）
-    /// </summary>
-    /// <param name="action"></param>
-    /// <param name="param"></param>
-    /// <param name="time"></param>
+    /// <summary>加入到主线程执行队列（有延迟）</summary>
     public static void QueueOnMainThread(Action<object> action, object param, float time)
     {
         lock (Instance)
         {
             if (!Instance)
             {
-                Debug.LogWarning("<color=red>Error：线程过渡组件 未初始化</color>");
+                Debug.LogError("线程过渡组件 未初始化");
                 return;
             }
+
+            if (!Instance.gameObject.activeInHierarchy || !Instance.isActiveAndEnabled) return;
         }
 
         if (time != 0)
@@ -123,7 +104,7 @@ public class ThreadTransitionComponent : MonoBehaviour
             lock (Instance.listDelayedActions)
             {
                 Instance.listDelayedActions.Add(new DelayedQueueItem
-                    { time = Time.time + time, action = action, param = param });
+                { time = Time.time + time, action = action, param = param });
             }
         }
         else
@@ -135,30 +116,20 @@ public class ThreadTransitionComponent : MonoBehaviour
         }
     }
 
-
-    //当前执行的无延时函数链
-    List<Action> actions = new List<Action>();
-
-    //当前执行的无延时函数链
-    List<NoDelayedQueueItem> currentActions = new List<NoDelayedQueueItem>();
-
-    //当前执行的有延时函数链
-    List<DelayedQueueItem> currentDelayed = new List<DelayedQueueItem>();
-
     void Update()
     {
         if (listAction.Count > 0)
         {
             lock (listAction)
             {
-                actions.Clear();
-                actions.AddRange(listAction);
+                currentActions.Clear();
+                currentActions.AddRange(listAction);
                 listAction.Clear();
             }
 
-            for (int i = 0; i < actions.Count; i++)
+            for (int i = 0; i < currentActions.Count; i++)
             {
-                actions[i]?.Invoke();
+                currentActions[i]?.Invoke();
             }
         }
 
@@ -166,14 +137,14 @@ public class ThreadTransitionComponent : MonoBehaviour
         {
             lock (listNoDelayActions)
             {
-                currentActions.Clear();
-                currentActions.AddRange(listNoDelayActions);
+                currentNoDelayed.Clear();
+                currentNoDelayed.AddRange(listNoDelayActions);
                 listNoDelayActions.Clear();
             }
 
-            for (int i = 0; i < currentActions.Count; i++)
+            for (int i = 0; i < currentNoDelayed.Count; i++)
             {
-                currentActions[i].action(currentActions[i].param);
+                currentNoDelayed[i].action(currentNoDelayed[i].param);
             }
         }
 
@@ -196,11 +167,19 @@ public class ThreadTransitionComponent : MonoBehaviour
         }
     }
 
-    //void OnDisable()
-    //{
-    //    if (_ins == this)
-    //    {
-    //        _ins = null;
-    //    }
-    //}
+    //单个执行单元（无延迟）
+    struct NoDelayedQueueItem
+    {
+        public Action<object> action;
+        public object param;
+    }
+
+    //单个执行单元（有延迟）
+    struct DelayedQueueItem
+    {
+        public Action<object> action;
+        public object param;
+        public float time;
+    }
+
 }

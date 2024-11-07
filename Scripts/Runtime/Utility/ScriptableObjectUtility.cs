@@ -22,17 +22,23 @@ namespace Framework
     {
 
 #if UNITY_EDITOR
+        /// <summary>创建指定的 <see cref="ScriptableObject"/> 资产</summary>
         public static T Create<T>(bool select = true) where T : ScriptableObject
         {
             return Create<T>("Assets", select);
         }
+        /// <summary>创建指定的 <see cref="ScriptableObject"/> 资产</summary>
         public static T Create<T>(string path, bool select = true) where T : ScriptableObject
         {
             return Create<T>(path, typeof(T).Name, select);
         }
-        /// <summary>
-        /// 创建指定的 <see cref="ScriptableObject"/> 资源
-        /// </summary>
+        /// <summary>创建指定的 <see cref="ScriptableObject"/> 资产</summary>
+        public static T Create<T>(T so, string _path, bool select = true) where T : ScriptableObject
+        {
+            Create(so, _path, typeof(T).Name, select);
+            return so;
+        }
+        /// <summary>创建指定的 <see cref="ScriptableObject"/> 资产</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="_path"></param>
         /// <param name="name"></param>
@@ -40,7 +46,18 @@ namespace Framework
         public static T Create<T>(string _path, string name, bool select = true) where T : ScriptableObject
         {
             T so = ScriptableObject.CreateInstance<T>();
-
+            Create(so, _path, name, select);
+            return so;
+        }
+        /// <summary>
+        /// 创建指定的 <see cref="ScriptableObject"/> 资产
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="_path"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static T Create<T>(T so, string _path, string name, bool select = true) where T : ScriptableObject
+        {
             string path = _path;
 
             if (File.Exists(path) && !Directory.Exists(path))
@@ -62,7 +79,7 @@ namespace Framework
                 }
             AssetDatabase.CreateAsset(so, assetPath);
 
-            if(select) 
+            if (select)
                 Selection.activeObject = so;
 
             AssetDatabase.Refresh();

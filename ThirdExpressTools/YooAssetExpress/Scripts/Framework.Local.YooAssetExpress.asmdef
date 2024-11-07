@@ -1,0 +1,19 @@
+{
+    "name": "Framework.Local.YooAssetExpress",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e34a5702dd353724aa315fb8011f08c3",
+        "GUID:40b920247735fe44c88e1b23dff8cd6a",
+        "GUID:0dc2171ec43c18749864bd4f201a01ab",
+        "GUID:5cf10eb1c5acd1440ba8519ef5553216"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

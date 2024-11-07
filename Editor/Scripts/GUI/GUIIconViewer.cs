@@ -30,7 +30,7 @@ namespace Framework.Editor
 	    /*
 	    * 这里的菜单路径自行修改
 	    */
-	    [MenuItem("Tools/Framework/Window/Unity 内置图标查看器")]
+	    [MenuItem("Framework/Window/Unity 内置图标查看器")]
 	    static void Open()
 	    {
 	        GUIIconViewer my = GetWindow<GUIIconViewer>("Unity 内置图标");

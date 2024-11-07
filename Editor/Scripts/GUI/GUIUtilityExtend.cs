@@ -44,8 +44,12 @@ namespace Framework.Editor
             public static GUIContent TextScript => GetIcon("d_TextScriptImporter Icon");
             public static GUIContent CSScript => GetIcon("d_cs Script Icon");
 
+            /// <summary>程序集动态库</summary>
+            public static GUIContent Assembly => GetIcon("d_Assembly Icon");
             /// <summary>程序集定义资产</summary>
             public static GUIContent AssemblyDefinitionAsset => GetIcon("d_AssemblyDefinitionAsset Icon");
+            /// <summary>程序集定义引用资产</summary>
+            public static GUIContent AssemblyDefinitionReferenceAsset => GetIcon("d_AssemblyDefinitionReferenceAsset Icon");
 
             public static GUIContent GetIcon(string name)
             {

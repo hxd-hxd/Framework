@@ -35,15 +35,19 @@ namespace Framework.Editor
         public static void ExportToCurrentDir()
         {
             var obj = Selection.activeObject;
-            var f = AssetDatabase.GetAssetPath(obj);
-            string outPath = $"{Path.GetDirectoryName(f)}/{Path.GetFileNameWithoutExtension(Path.GetFileName(f))}{Export_Expanded_Name}";
-            AssetDatabase.ExportPackage(f, outPath, ExportPackageOptions.Recurse);
 
-            AssetDatabase.Refresh();
+            if (obj)
+            {
+                var f = AssetDatabase.GetAssetPath(obj);
+                string outPath = $"{Path.GetDirectoryName(f)}/{Path.GetFileNameWithoutExtension(Path.GetFileName(f))}{Export_Expanded_Name}";
+                AssetDatabase.ExportPackage(f, outPath, ExportPackageOptions.Recurse);
 
-            var uPack = AssetDatabase.LoadAssetAtPath<Object>(outPath);
-            Selection.activeObject = uPack;
-            AssetDatabase.Refresh();
+                AssetDatabase.Refresh();
+
+                var uPack = AssetDatabase.LoadAssetAtPath<Object>(outPath);
+                Selection.activeObject = uPack;
+                AssetDatabase.Refresh();
+            }
         }
     }
 }

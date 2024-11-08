@@ -321,8 +321,8 @@ namespace Framework.HybridCLRExpress
         // 显示树状结构分支
         public void BranchTree(FlatFoldoutBranch branchRoot, int level = 0)
         {
-            string[] dllPlatformDirs = Directory.GetDirectories(branchRoot.path);// 获取所有子目录
-            List<string> dllPlatformFilesUsable = AssembliesUtility.GetDllFiles(branchRoot.path);// 获取过滤后的 dll 文件
+            var dllPlatformDirs = Directory.GetDirectories(branchRoot.path);// 获取所有子目录
+            var dllPlatformFilesUsable = AssembliesUtility.GetDllFiles(branchRoot.path);// 获取过滤后的 dll 文件
 
             EditorGUILayout.BeginVertical();
 
@@ -346,7 +346,7 @@ namespace Framework.HybridCLRExpress
 
                 // 筛分
                 // 检查是否包含热更新文件，以判断是否显示为空文件夹
-                if (!showAllDll)
+                if (!showAllDll && buildTarget.ToString() != branchRoot.name)
                 {
                     foreach (var dllFile in dllPlatformFilesUsable)
                     {

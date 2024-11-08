@@ -1,2 +1,2 @@
 
-对 TextMeshPro 资源热更插件的扩展。
+对 TextMeshPro 插件的扩展。

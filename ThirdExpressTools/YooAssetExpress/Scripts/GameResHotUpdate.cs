@@ -87,7 +87,7 @@ namespace Framework.YooAssetExpress
         [Header("资源系统模式")]
         public EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
-        [Header("需要热更新的 dll 文件，例如\r\n“Assembly-CSharp.dll.bytes”填\r\n“Assembly-CSharp.dll”或者\r\n“Assets/HotUpdateAssemblies/Use/Assembly-CSharp.dll.bytes”")]
+        [Header("需要热更新的 dll 文件，例如要热更新\r\n“Assembly-CSharp.dll.bytes”填\r\n“Assembly-CSharp.dll”或者\r\n“Assets/HotUpdateAssemblies/Use/Assembly-CSharp.dll.bytes”")]
         public List<string> hotUpdateDlls = new List<string>() { "Game.HotUpdate.dll" };
 
         //[Header("最大尝试下载次数")]

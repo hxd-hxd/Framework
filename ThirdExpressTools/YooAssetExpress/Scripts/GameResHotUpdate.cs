@@ -58,12 +58,6 @@ namespace Framework.YooAssetExpress
 
     public class GameResHotUpdate : MonoBehaviour
     {
-        // 字节单位
-        protected const float KB = 1024f;
-        protected const float MB = 1048576f;
-        protected const float GB = 1073741824f;
-        protected const float TB = 1099511627776f;
-
         [Header("资源下载服务器地址")]
         [TextArea]
         //string hostServerIP = "http://10.0.2.2"; //安卓模拟器地址
@@ -88,7 +82,7 @@ namespace Framework.YooAssetExpress
         public EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
         [Header("需要动态加载的热更新 dll 文件，例如要加载\r\n“Assembly-CSharp.dll.bytes”填\r\n“Assembly-CSharp.dll”或者\r\n“Assets/HotUpdateAssemblies/Use/Assembly-CSharp.dll.bytes”")]
-        public List<string> hotUpdateDlls = new List<string>() { "Game.HotUpdate.dll" };
+        public List<string> loadHotUpdateDlls = new List<string>() { "Game.HotUpdate.dll" };
 
         //[Header("最大尝试下载次数")]
         //[SerializeField] protected int maxTryDownloadNum = 3;
@@ -111,8 +105,6 @@ namespace Framework.YooAssetExpress
 
         protected virtual void Awake()
         {
-            ResourcesManager.SetHandler<YooAssetResourcesHandler>();
-
             // 注册监听事件
             _eventGroup.AddListener<UserEventDefine.UserTryInitialize>(OnHandleEventMessage);
             _eventGroup.AddListener<UserEventDefine.UserBeginDownloadWebFiles>(OnHandleEventMessage);
@@ -120,14 +112,15 @@ namespace Framework.YooAssetExpress
             _eventGroup.AddListener<UserEventDefine.UserTryUpdatePatchManifest>(OnHandleEventMessage);
             _eventGroup.AddListener<UserEventDefine.UserTryDownloadWebFiles>(OnHandleEventMessage);
 
-        }
-
-        protected virtual void Start()
-        {
+            ResourcesManager.SetHandler<YooAssetResourcesHandler>();
             ResourcesManager.Initialize();
             //YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(30);
 
+        }
+
+        protected virtual void Start()
+        {
             if (autoStartHotUpdate)
                 StartHotUpdate();
         }
@@ -181,6 +174,7 @@ namespace Framework.YooAssetExpress
         /// </summary>
         public virtual void StartHotUpdate()
         {
+            StopAllCoroutines();
             StartCoroutine(InitPackage());
         }
 
@@ -191,7 +185,7 @@ namespace Framework.YooAssetExpress
 
             EPlayMode _playMode = PlayMode;
 
-            Debug.Log("------------------------------------创建默认的资源包------------------------------------");
+            Debug.Log("------------------------------------初始化资源包------------------------------------");
 
             // 创建默认的资源包
             var package = YooAssets.TryGetPackage(packageName);
@@ -455,12 +449,15 @@ namespace Framework.YooAssetExpress
         /// </summary>
         private void LoadDllFunc()
         {
+            if (!isLoadDll) return;
+            isLoadDll = false;
+
             //LoadDllFunc("Assembly-CSharp.dll.bytes");
             //LoadDllFunc("Assets/HotUpdateAssemblies/Use/Assembly-CSharp.dll.bytes");
 
-            for (int i = 0; i < hotUpdateDlls.Count; i++)
+            for (int i = 0; i < loadHotUpdateDlls.Count; i++)
             {
-                string dllName = hotUpdateDlls[i];
+                string dllName = loadHotUpdateDlls[i];
                 LoadDllFunc(dllName);
             }
         }
@@ -469,9 +466,6 @@ namespace Framework.YooAssetExpress
         /// </summary>
         private void LoadDllFunc(string dllLocation)
         {
-            if (!islog) return;
-            islog = false;
-
             Log.Yellow($"开始加载 dll 程序集；{dllLocation}");
 
             var aoh = YooAssets.LoadAssetSync<TextAsset>(dllLocation);
@@ -500,17 +494,8 @@ namespace Framework.YooAssetExpress
                 Log.Error($"不存在程序集 ---》{dllLocation}《---");
             }
         }
-        bool islog = true;
+        bool isLoadDll = true;
 
-
-        // 转换成 MB 显示值
-        public string ToMB(long value)
-        {
-            float size = (float)(value / MB);
-            size = Mathf.Clamp(size, 0.1f, float.MaxValue);
-            string totalSize = size.ToString("f1");
-            return totalSize;
-        }
 
         /// <summary>
         /// 获取资源服务器地址

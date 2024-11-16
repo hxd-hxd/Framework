@@ -33,6 +33,8 @@ namespace Framework.Editor
                 string outPath = $"{Path.GetDirectoryName(f)}/{Path.GetFileNameWithoutExtension(Path.GetFileName(f))}{Export_Expanded_Name}";
 
                 //AssetDatabase.ExportPackage(f, outPath, ExportPackageOptions.Recurse);
+
+                if(File.Exists(outPath)) File.Delete(outPath);
                 ZipFile.CreateFromDirectory(f, outPath);
 
                 AssetDatabase.Refresh();

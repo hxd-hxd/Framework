@@ -118,12 +118,6 @@ namespace Framework.LogSystem
             LogInfo.logMessageReceived -= OnHandleLog;
         }
 
-        public override void Init()
-        {
-            base.Init();
-
-        }
-
         // 接收处理日志
         //private void OnHandleLog(string condition, string stackTrace, LogType type)
         public void OnHandleLog(LogInfo info)

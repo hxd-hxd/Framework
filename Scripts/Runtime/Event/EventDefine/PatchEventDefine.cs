@@ -53,9 +53,13 @@ namespace Framework.Event
         /// </summary>
         public class DownloadProgressUpdate : IEventMessage
         {
+            /// <summary>总下载数</summary>
             public int TotalDownloadCount;
+            /// <summary>当前下载数</summary>
             public int CurrentDownloadCount;
+            /// <summary>总下载字节大小</summary>
             public long TotalDownloadSizeBytes;
+            /// <summary>当前下载字节大小</summary>
             public long CurrentDownloadSizeBytes;
 
             public static void SendEventMessage(int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)

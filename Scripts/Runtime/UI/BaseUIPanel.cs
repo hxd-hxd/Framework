@@ -12,13 +12,10 @@ using UnityEngine.Events;
 namespace Framework
 {
     /// <summary>
-    /// UI 界面基类
+    /// UGUI 界面基类
     /// </summary>
     public abstract class BaseUIPanel : BaseUI
     {
-        [Tooltip("是否初始化")]
-        [SerializeField] protected bool _isInit;
-
         [Tooltip("所属画布")]
         [SerializeField] protected Canvas _canvas;
 
@@ -39,20 +36,6 @@ namespace Framework
         public Action OnDisableEvent;
         public Action OnDestroyEvent;
 
-        /// <summary>
-        /// 是否初始化
-        /// </summary>
-        public bool isInit
-        {
-            get
-            {
-                return _isInit;
-            }
-            protected set
-            {
-                _isInit= value;
-            }
-        }
         /// <summary>
         /// 是否被占用
         /// <para>ps：如果界面标识被占用，就无法通过 <see cref="UIPanelManager.GetPanel"/> 获取到，直到占用方取消占用</para>
@@ -168,20 +151,6 @@ namespace Framework
         {
             OnDisableEvent?.Invoke();
 
-        }
-
-        /// <summary>
-        /// 初始化界面
-        /// </summary>
-        ///// <returns>成功初始化返回 true，已经初始化或初始化失败返回 false</returns>
-        public override void Init()
-        {
-            if (isInit)
-            {
-                return;
-            }
-            
-            isInit = true;
         }
 
         ///// <summary>

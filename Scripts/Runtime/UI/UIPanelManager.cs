@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 namespace Framework
 {
     /// <summary>
-    /// UI 界面管理器，用于管理派生自 <see cref="BaseUIPanel"/> 的界面
+    /// UGUI 界面管理器，用于管理派生自 <see cref="BaseUIPanel"/> 的界面
     /// </summary>
     public static class UIPanelManager
     {

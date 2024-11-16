@@ -63,7 +63,6 @@ namespace Framework
         }
         protected void _Enable(bool isEnable)
         {
-
             if (gameObject.activeSelf == isEnable) return;
 
             gameObject.SetActive(isEnable);

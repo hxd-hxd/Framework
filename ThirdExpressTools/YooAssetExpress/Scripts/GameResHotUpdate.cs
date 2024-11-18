@@ -428,18 +428,10 @@ namespace Framework.YooAssetExpress
             //LoadDLL.LoadMetadataForAOTAssemblies();
             // 加载程序集
 #if !UNITY_EDITOR
-                        LoadDllFunc();
-#endif
-
-            //// 跳转场景
-            //Debug.Log("开始加载场景 ---》Login《--- ");
-            //var sceneOperation = YooAssets.LoadSceneAsync("Login");
-            //sceneOperation.Completed += (_) =>
-            //{
-            //    Debug.Log($"加载场景 ---》{sceneOperation.SceneObject.name}《--- 成功");
-            //};
-
+            StartCoroutine(LoadDllFuncCoroutine(PatchEventDefine.UpdateDone.SendEventMessage));
+#else
             PatchEventDefine.UpdateDone.SendEventMessage();
+#endif
         }
 
         #endregion
@@ -447,9 +439,9 @@ namespace Framework.YooAssetExpress
         /// <summary>
         ///  加载 dll 程序集
         /// </summary>
-        private void LoadDllFunc()
+        private IEnumerator LoadDllFuncCoroutine(Action loadedAction)
         {
-            if (!isLoadDll) return;
+            if (!isLoadDll) yield break;
             isLoadDll = false;
 
             //LoadDllFunc("Assembly-CSharp.dll.bytes");
@@ -458,17 +450,22 @@ namespace Framework.YooAssetExpress
             for (int i = 0; i < loadHotUpdateDlls.Count; i++)
             {
                 string dllName = loadHotUpdateDlls[i];
-                LoadDllFunc(dllName);
+                yield return LoadDllFuncCoroutine(dllName);
             }
+
+            loadedAction?.Invoke();
         }
         /// <summary>
         ///  加载 dll 程序集
         /// </summary>
-        private void LoadDllFunc(string dllLocation)
+        private IEnumerator LoadDllFuncCoroutine(string dllLocation)
         {
             Log.Yellow($"开始加载 dll 程序集；{dllLocation}");
 
-            var aoh = YooAssets.LoadAssetSync<TextAsset>(dllLocation);
+            //var aoh = YooAssets.LoadAssetSync<TextAsset>(dllLocation);// WebGL 不支持同步加载
+            var aoh = YooAssets.LoadAssetAsync<TextAsset>(dllLocation);
+            //aoh.WaitForAsyncComplete();
+            yield return aoh;
 
             Debug.Log($"处理器：{aoh}");
             var assetInfo = aoh.GetAssetInfo();

@@ -76,8 +76,7 @@ namespace Framework
         /// <returns></returns>
         public static bool Register<T>(T ui) where T : class, IUI
         {
-            Object uui = ui as Object;
-            if (ui == null || uui == null)
+            if (ObjectUtility.IsNull(ui))
             {
                 Debug.LogError("不能注册空 ui");
                 return false;
@@ -182,12 +181,12 @@ namespace Framework
                 }
                 else
                 {
-                    Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
+                    //Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
                 }
             }
             else
             {
-                Debug.LogWarning($"要获取的 ui \"{type}\" 不存在，可能未注册到管理器");
+                //Debug.LogWarning($"要获取的 ui \"{type}\" 不存在，可能未注册到管理器");
             }
             return ui;
         }
@@ -233,7 +232,12 @@ namespace Framework
 #endif
                 if (ui != null)
                 {
+                    Debug.Log($"要获取的 ui \"{type}\" 为空，找到已创建的实例并注册");
                     Register(ui);
+                }
+                else
+                {
+                    Debug.LogWarning($"要获取的 ui \"{type}\" 为空，并且没有找到任何已创建的实例");
                 }
             }
             return ui;

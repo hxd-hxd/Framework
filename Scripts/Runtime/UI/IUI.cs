@@ -24,7 +24,10 @@ namespace Framework
         /// </summary>
         bool isEnable { get; set; }
 
-
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        void Init();
         /// <summary>
         /// 启用
         /// </summary>

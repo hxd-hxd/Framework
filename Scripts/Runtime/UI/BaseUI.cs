@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Framework
 {
     /// <summary>
-    /// ui 基类
+    /// UGUI 基类
     /// </summary>
     public abstract partial class BaseUI : MonoBehaviour, IUI
     {

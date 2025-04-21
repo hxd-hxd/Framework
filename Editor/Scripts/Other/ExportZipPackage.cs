@@ -34,8 +34,13 @@ namespace Framework.Editor
 
                 //AssetDatabase.ExportPackage(f, outPath, ExportPackageOptions.Recurse);
 
-                if(File.Exists(outPath)) File.Delete(outPath);
+#if UNITY_2021_1_OR_NEWER
+                if (File.Exists(outPath)) File.Delete(outPath);
                 ZipFile.CreateFromDirectory(f, outPath);
+#else
+                Debug.LogError("只在 Unity2021 以上的版本才支持导出 Zip 包");
+                //ZipArchive
+#endif
 
                 AssetDatabase.Refresh();
 

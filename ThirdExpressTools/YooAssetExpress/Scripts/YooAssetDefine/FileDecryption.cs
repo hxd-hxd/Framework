@@ -12,26 +12,36 @@ namespace Framework.YooAssetExpress
     /// </summary>
     public class FileStreamDecryption : IDecryptionServices
     {
-        /// <summary>
-        /// 同步方式获取解密的资源包对象
-        /// 注意：加载流对象在资源包对象释放的时候会自动释放
-        /// </summary>
-        AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+        ///// <summary>
+        ///// 同步方式获取解密的资源包对象
+        ///// 注意：加载流对象在资源包对象释放的时候会自动释放
+        ///// </summary>
+        //AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+        //{
+        //    BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        //    managedStream = bundleStream;
+        //    return AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+        //}
+
+        ///// <summary>
+        ///// 异步方式获取解密的资源包对象
+        ///// 注意：加载流对象在资源包对象释放的时候会自动释放
+        ///// </summary>
+        //AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+        //{
+        //    BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        //    managedStream = bundleStream;
+        //    return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+        //}
+
+        DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
         {
-            BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            managedStream = bundleStream;
-            return AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// 异步方式获取解密的资源包对象
-        /// 注意：加载流对象在资源包对象释放的时候会自动释放
-        /// </summary>
-        AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+        DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
         {
-            BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            managedStream = bundleStream;
-            return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -61,24 +71,34 @@ namespace Framework.YooAssetExpress
     /// </summary>
     public class FileOffsetDecryption : IDecryptionServices
     {
-        /// <summary>
-        /// 同步方式获取解密的资源包对象
-        /// 注意：加载流对象在资源包对象释放的时候会自动释放
-        /// </summary>
-        AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+        ///// <summary>
+        ///// 同步方式获取解密的资源包对象
+        ///// 注意：加载流对象在资源包对象释放的时候会自动释放
+        ///// </summary>
+        //AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+        //{
+        //    managedStream = null;
+        //    return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+        //}
+
+        ///// <summary>
+        ///// 异步方式获取解密的资源包对象
+        ///// 注意：加载流对象在资源包对象释放的时候会自动释放
+        ///// </summary>
+        //AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+        //{
+        //    managedStream = null;
+        //    return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+        //}
+
+        DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
         {
-            managedStream = null;
-            return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// 异步方式获取解密的资源包对象
-        /// 注意：加载流对象在资源包对象释放的时候会自动释放
-        /// </summary>
-        AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+        DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
         {
-            managedStream = null;
-            return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+            throw new NotImplementedException();
         }
 
         /// <summary>

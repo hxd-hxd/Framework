@@ -89,7 +89,7 @@ namespace Framework.YooAssetExpress
         //[Header("已尝试下载次数")]
         //[SerializeField] protected int tryDownloadNum = 0;
 
-        protected EDefaultBuildPipeline buildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
+        //protected EDefaultBuildPipeline buildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
 
         /// <summary>
         /// 资源包的版本信息
@@ -202,9 +202,15 @@ namespace Framework.YooAssetExpress
                 // 编辑器下的模拟模式
                 case EPlayMode.EditorSimulateMode:
                     {
-                        var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, packageName);
+                        //var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, packageName);
+                        //var createParameters = new EditorSimulateModeParameters();
+                        //createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+                        //initializationOperation = package.InitializeAsync(createParameters);
+
+                        var buildResult = EditorSimulateModeHelper.SimulateBuild(packageName);
+                        var packageRoot = buildResult.PackageRootDirectory;
                         var createParameters = new EditorSimulateModeParameters();
-                        createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+                        createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
                         initializationOperation = package.InitializeAsync(createParameters);
                     }
                     break;
@@ -233,9 +239,23 @@ namespace Framework.YooAssetExpress
                 // WebGL运行模式
                 case EPlayMode.WebPlayMode:
                     {
+                        //var createParameters = new WebPlayModeParameters();
+                        //createParameters.WebFileSystemParameters = FileSystemParameters.CreateDefaultWebFileSystemParameters();
+                        //initializationOperation = package.InitializeAsync(createParameters);
+
+#if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
                         var createParameters = new WebPlayModeParameters();
-                        createParameters.WebFileSystemParameters = FileSystemParameters.CreateDefaultWebFileSystemParameters();
+			            string defaultHostServer = GetHostServerURL();
+                        string fallbackHostServer = GetHostServerURL();
+                        string packageRoot = $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE"; //注意：如果有子目录，请修改此处！
+                        IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                        createParameters.WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(packageRoot, remoteServices);
                         initializationOperation = package.InitializeAsync(createParameters);
+#else
+                        var createParameters = new WebPlayModeParameters();
+                        createParameters.WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+                        initializationOperation = package.InitializeAsync(createParameters);
+#endif
                     }
                     break;
                 default:
@@ -361,7 +381,8 @@ namespace Framework.YooAssetExpress
             //};
 
             // 下载失败
-            Downloader.OnDownloadErrorCallback = (fileName, error) =>
+            //Downloader.OnDownloadErrorCallback = (fileName, error) =>
+            Downloader.DownloadErrorCallback = (data) =>
             {
                 //Log.Error($"下载文件失败： {fileName}\r\n{error}");
 
@@ -373,15 +394,15 @@ namespace Framework.YooAssetExpress
 
                 //Debug.Log("------------------------------------尝试再次下载网络文件！------------------------------------");
                 //StartCoroutine(CreateDownloader());
-                PatchEventDefine.WebFileDownloadFailed.SendEventMessage(fileName, error);
+                PatchEventDefine.WebFileDownloadFailed.SendEventMessage(data.FileName, data.ErrorInfo);
             };
 
             // 下载进度
-            //Downloader.OnDownloadProgressCallback = (int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes) =>
-            //{
-            //    Debug.Log($"下载进度：{currentDownloadCount / totalDownloadCount * 100}%  下载大小：{ToMB(currentDownloadBytes)}MB / {ToMB(totalDownloadBytes)}MB");
-            //};
-            Downloader.OnDownloadProgressCallback = PatchEventDefine.DownloadProgressUpdate.SendEventMessage;
+            //Downloader.OnDownloadProgressCallback = PatchEventDefine.DownloadProgressUpdate.SendEventMessage;
+            Downloader.DownloadUpdateCallback += (data) =>
+            {
+                PatchEventDefine.DownloadProgressUpdate.SendEventMessage(data.TotalDownloadCount, data.CurrentDownloadCount, data.TotalDownloadBytes, data.CurrentDownloadBytes);
+            };
 
             Downloader.BeginDownload();
             yield return Downloader;
@@ -410,7 +431,8 @@ namespace Framework.YooAssetExpress
             Debug.Log("清理未使用的缓存文件");
 
             var package = YooAssets.GetPackage(packageName);
-            var operation = package.ClearUnusedBundleFilesAsync();
+            //var operation = package.ClearUnusedBundleFilesAsync();
+            var operation = package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
             operation.Completed += Operation_Completed;
         }
 

@@ -30,7 +30,7 @@ namespace Framework
 
         public static LogMode mode = LogMode.NoIncur;
 
-        public static void Debuger(object msg)
+        public static void Info(object msg)
         {
             Debug.Log(msg);
         }
@@ -45,7 +45,7 @@ namespace Framework
         }
 
 
-        public static void Debuger(object msg, string color)
+        public static void Info(object msg, string color)
         {
             Debug.Log($"<color={color}>{msg}</color>");
         }
@@ -61,15 +61,15 @@ namespace Framework
 
         public static void Green(object msg)
         {
-            Debuger(msg, "green");
+            Info(msg, "green");
         }
         public static void Yellow(object msg)
         {
-            Debuger(msg, "yellow");
+            Info(msg, "yellow");
         }
         public static void Red(object msg)
         {
-            Debuger(msg, "red");
+            Info(msg, "red");
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace Framework
             switch (_mode)
             {
                 case LogMode.Normal:
-                    Debuger(msg, "#32FF00");
+                    Info(msg, "#32FF00");
                     break;
                 case LogMode.NoIncur:
-                    Debuger($"Striking：\t{msg}", "#32FF00");
+                    Info($"Striking：\t{msg}", "#32FF00");
                     break;
                 default:
                     break;
@@ -121,7 +121,7 @@ namespace Framework
                     break;
                 case LogMode.NoIncur:
                     //Debuger($"Warning：\r\n\t{msg}", "yellow");
-                    Debuger($"Warning：\t{msg}", "#FDB30B");
+                    Info($"Warning：\t{msg}", "#FDB30B");
                     break;
                 default:
                     break;

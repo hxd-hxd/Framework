@@ -12,129 +12,126 @@ namespace Framework.Event
     /// <summary>
     /// 事件组
     /// </summary>
-    public class EventGroup
+    public partial class EventGroup
     {
-        static Dictionary<string, LinkedList<Delegate>> _entrepot = new Dictionary<string, LinkedList<Delegate>>(20);
+        Dictionary<object, LinkedList<Delegate>> _entrepot = new Dictionary<object, LinkedList<Delegate>>(20);
 
-        /// <summary>添加侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void AddListener<T>(Action listener)
+
+        #region 添加侦听
+        /// <summary>添加侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void AddListener<TID>(Action listener)
         {
-            AddListener<T>(listener);
+            var id = typeof(TID);
+            AddListener(id, listener as Delegate);
         }
-        /// <summary>添加侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void AddListener(Type tId, Action listener)
+        /// <summary>添加侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void AddListener<TID>(Action<TID> listener)
         {
-            var id = tId.GetHashCode().ToString();
-            AddListener(id, listener);
+            var id = typeof(TID);
+            AddListener(id, listener as Delegate);
         }
-        /// <summary>添加侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void AddListener<T>(Action<T> listener)
+        /// <summary>添加侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void AddListener<TID, T>(Action<T> listener)
         {
-            var id = typeof(T).GetHashCode().ToString();
-            AddListener(id, listener);
-        }
-        /// <summary>添加侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void AddListener<T>(Type tId, Action<T> listener)
-        {
-            var id = tId.GetHashCode().ToString();
-            AddListener(id, listener);
-        }
-        /// <summary>添加侦听</summary>
-        public void AddListener(string id, Action listener)
-        {
+            var id = typeof(TID);
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1>(string id, Action<T1> listener)
+        public void AddListener<TID>(TID id, Action listener)
         {
             AddListener(id, listener as Delegate);
         }
 
         #region 添加侦听，多参数
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2>(string id, Action<T1, T2> listener)
+        public void AddListener<TID, T1>(TID id, Action<T1> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3>(string id, Action<T1, T2, T3> listener)
+        public void AddListener<TID, T1, T2>(TID id, Action<T1, T2> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4>(string id,
+        public void AddListener<TID, T1, T2, T3>(TID id, Action<T1, T2, T3> listener)
+        {
+            AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听</summary>
+        public void AddListener<TID, T1, T2, T3, T4>(TID id,
             Action<T1, T2, T3, T4> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5>(TID id,
             Action<T1, T2, T3, T4, T5> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6>(TID id,
             Action<T1, T2, T3, T4, T5, T6> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> listener)
         {
             AddListener(id, listener as Delegate);
         }
         /// <summary>添加侦听</summary>
-        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string id,
+        public void AddListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> listener)
         {
             AddListener(id, listener as Delegate);
@@ -143,139 +140,124 @@ namespace Framework.Event
         #endregion
 
         /// <summary>添加侦听</summary>
-        public void AddListener(string id, Delegate listener)
+        public void AddListener<TID>(TID id, Delegate listener)
         {
             if (listener == null) return;
 
-            if (!_entrepot.ContainsKey(id))
+            if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
                 _entrepot[id] = new LinkedList<Delegate>();
             if (!_entrepot[id].Contains(listener))
                 _entrepot[id].AddLast(listener);
 
-            EventCenter.AddListener(id, listener);
+            EventCenter<TID>.AddListener(id, listener);
         }
+        #endregion
 
 
-        /// <summary>移除侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void RemoveListener<T>(Action listener)
+        #region 移除侦听
+        /// <summary>移除侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void RemoveListener<TID>(Action listener)
         {
-            var id = typeof(T).GetHashCode().ToString();
-            RemoveListener(id, listener);
+            var id = typeof(TID);
+            RemoveListener(id, listener as Delegate);
         }
-        /// <summary>移除侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void RemoveListener<T>(Type tId, Action listener)
+        /// <summary>移除侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void RemoveListener<TID, T>(Action<T> listener)
         {
-            var id = tId.GetHashCode().ToString();
-            RemoveListener(id, listener);
-        }
-        /// <summary>移除侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void RemoveListener<T>(Action<T> listener)
-        {
-            var id = typeof(T).GetHashCode().ToString();
-            RemoveListener(id, listener);
-        }
-        /// <summary>移除侦听，以 <see cref="Type.GetHashCode"/> 为 id</summary>
-        public void RemoveListener<T>(Type tId, Action<T> listener)
-        {
-            var id = tId.GetHashCode().ToString();
-            RemoveListener(id, listener);
-        }
-        /// <summary>移除侦听</summary>
-        public void RemoveListener(string id, Action listener)
-        {
+            var id = typeof(TID);
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1>(string id, Action<T1> listener)
+        public void RemoveListener<TID>(TID id, Action listener)
         {
             RemoveListener(id, listener as Delegate);
         }
 
         #region 移除侦听，多参数
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2>(string id, Action<T1, T2> listener)
+        public void RemoveListener<TID, T1, T2>(TID id, Action<T1, T2> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3>(string id, Action<T1, T2, T3> listener)
+        public void RemoveListener<TID, T1, T2, T3>(TID id, Action<T1, T2, T3> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4>(TID id,
             Action<T1, T2, T3, T4> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5>(TID id,
             Action<T1, T2, T3, T4, T5> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6>(TID id,
             Action<T1, T2, T3, T4, T5, T6> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
         /// <summary>移除侦听</summary>
-        public void RemoveListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string id,
+        public void RemoveListener<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> listener)
         {
             RemoveListener(id, listener as Delegate);
@@ -284,29 +266,32 @@ namespace Framework.Event
         #endregion
 
         /// <summary>移除侦听</summary>
-        public void RemoveListener(string id, Delegate listener)
+        public void RemoveListener<TID>(TID id, Delegate listener)
         {
             if (listener == null) return;
 
             if (_entrepot.ContainsKey(id))
-                //if (_entrepot[id].Contains(listener))
                 _entrepot[id].Remove(listener);
 
-            EventCenter.RemoveListener(id, listener);
-        }
+            EventCenter<TID>.RemoveListener(id, listener);
+        } 
+        #endregion
 
         /// <summary>清除所有监听</summary>
-        public void Clear()
+        public void Clear<TID>()
         {
             foreach (var msgs in _entrepot)
             {
-                foreach (var msg in msgs.Value)
+                if (msgs.Key is TID tid)
                 {
-                    EventCenter.RemoveListener(msgs.Key, msg);
+                    foreach (var msg in msgs.Value)
+                    {
+                        EventCenter<TID>.RemoveListener(tid, msg);
+                    }
+                    msgs.Value.Clear();
                 }
-                msgs.Value.Clear();
             }
-            _entrepot.Clear();
+            //_entrepot.Clear();
         }
     }
 }

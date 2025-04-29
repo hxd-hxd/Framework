@@ -12,7 +12,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UserTryInitialize();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -24,7 +24,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UserBeginDownloadWebFiles();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -36,7 +36,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UserTryUpdatePackageVersion();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -48,7 +48,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UserTryUpdatePatchManifest();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UserTryDownloadWebFiles();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
     }

@@ -175,7 +175,7 @@ namespace Framework
                 //{
                 //    ui = (T)bui;
                 //}
-                if (!ObjectUtility.IsNull(ui))
+                if (!ObjectUtility.IsNull(bui))
                 {
                     ui = (T)bui;
                 }

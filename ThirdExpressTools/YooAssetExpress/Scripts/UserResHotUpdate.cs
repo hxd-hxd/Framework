@@ -34,7 +34,7 @@ namespace Framework
 
         void OnDestroy()
         {
-            _eventGroup.Clear();
+            _eventGroup.Clear<Type>();
         }
 
         /// <summary>

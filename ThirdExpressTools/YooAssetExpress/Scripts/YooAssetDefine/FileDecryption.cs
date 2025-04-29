@@ -34,14 +34,32 @@ namespace Framework.YooAssetExpress
         //    return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
         //}
 
+        /// <summary>
+        /// 同步方式获取解密的资源包对象
+        /// 注意：加载流对象在资源包对象释放的时候会自动释放
+        /// </summary>
         DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
         {
-            throw new NotImplementedException();
+            var r = new DecryptResult();
+
+            BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            r.ManagedStream = bundleStream;
+            r.Result = AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+            return r;
         }
 
+        /// <summary>
+        /// 异步方式获取解密的资源包对象
+        /// 注意：加载流对象在资源包对象释放的时候会自动释放
+        /// </summary>
         DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
         {
-            throw new NotImplementedException();
+            var r = new DecryptResult();
+
+            BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            r.ManagedStream = bundleStream;
+            r.CreateRequest = AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+            return r;
         }
 
         /// <summary>
@@ -91,14 +109,26 @@ namespace Framework.YooAssetExpress
         //    return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
         //}
 
+        /// <summary>
+        /// 同步方式获取解密的资源包对象
+        /// 注意：加载流对象在资源包对象释放的时候会自动释放
+        /// </summary>
         DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
         {
-            throw new NotImplementedException();
+            var r = new DecryptResult();
+            r.Result = AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+            return r;
         }
 
+        /// <summary>
+        /// 异步方式获取解密的资源包对象
+        /// 注意：加载流对象在资源包对象释放的时候会自动释放
+        /// </summary>
         DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
         {
-            throw new NotImplementedException();
+            var r = new DecryptResult();
+            r.CreateRequest = AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+            return r;
         }
 
         /// <summary>

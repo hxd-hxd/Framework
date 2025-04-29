@@ -12,7 +12,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new InitializeFailed();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -27,7 +27,7 @@ namespace Framework.Event
             {
                 var msg = new PatchStatesChange();
                 msg.Tips = tips;
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -44,7 +44,7 @@ namespace Framework.Event
                 var msg = new FoundUpdateFiles();
                 msg.TotalCount = totalCount;
                 msg.TotalSizeBytes = totalSizeBytes;
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -69,7 +69,7 @@ namespace Framework.Event
                 msg.CurrentDownloadCount = currentDownloadCount;
                 msg.TotalDownloadSizeBytes = totalDownloadSizeBytes;
                 msg.CurrentDownloadSizeBytes = currentDownloadSizeBytes;
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -81,7 +81,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new PackageVersionUpdateFailed();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -93,7 +93,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new PatchManifestUpdateFailed();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -110,7 +110,7 @@ namespace Framework.Event
                 var msg = new WebFileDownloadFailed();
                 msg.FileName = fileName;
                 msg.Error = error;
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
 
@@ -122,7 +122,7 @@ namespace Framework.Event
             public static void SendEventMessage()
             {
                 var msg = new UpdateDone();
-                EventCenter.Send(msg);
+                EventCenter.SendType(msg);
             }
         }
     }

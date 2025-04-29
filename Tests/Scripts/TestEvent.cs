@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Framework.Event;
 using UnityEngine;
-using UnityEngine.UI;
-using static Framework.Test.TestEvent;
 
 namespace Framework.Test
 {
@@ -53,25 +51,25 @@ namespace Framework.Test
 
             // 以下两种写法选其一
             //EventCenter.AddListener("ValueType", (Action<ValueType>)HandleEvent);
-            EventCenter.AddListener<ValueType>("ValueType", HandleEvent);
+            EventCenter.AddListener<IEventMessage>("ValueType", HandleEvent);
 
             EventCenter.AddListener<ValueType, ValueType>("ValueType2", HandleEvent);
             EventCenter.AddListener<object, object>("object2", HandleEvent);
-            EventCenter.AddListener<string, string>("string2", HandleEvent);
+            EventCenter.AddListener("string2", HandleEvent);
 
             EventCenter.AddListener<Msg1, Msg2>("Msg1_Msg2", HandleEvent);
-            EventCenter.AddListener<Msg1, Msg2>("Msg1_Msg2", HandleMsg1_2);
+            EventCenter.AddListener<string, Msg1, Msg2>("Msg1_Msg2", HandleMsg1_2);
 
             EventCenter.AddListener<Msg2, Msg1>("Msg2_Msg1", HandleEvent);
-            EventCenter.AddListener<Msg2, Msg1>("Msg2_Msg1", HandleMsg2_1);
+            EventCenter.AddListener<string, Msg2, Msg1>("Msg2_Msg1", HandleMsg2_1);
 
-            EventCenter.AddListener<Msg1, Msg2, string>("Msg1_Msg2_Msg3", HandleEvent);
+            EventCenter.AddListener<string, Msg1, Msg2, string>("Msg1_Msg2_Msg3", HandleEvent);
 
 
             Debug.Log("------------------------- 发送消息 -------------------------");
             EventCenter.Send<MsgNot>();
-            EventCenter.Send(new Msg1());
-            EventCenter.Send(new Msg2());
+            EventCenter.SendType(new Msg1());
+            EventCenter.SendType(new Msg2());
             EventCenter.Send("Msg1_Msg2", new Msg1(), new Msg2());
             EventCenter.Send("Msg2_Msg1", new Msg2(), new Msg1());
 
@@ -100,8 +98,8 @@ namespace Framework.Test
             EventCenter.RemoveListener<Msg2>(HandleMsg2);
 
             Debug.Log("------------------------- 发送消息 -------------------------");
-            EventCenter.Send(new Msg1());
-            EventCenter.Send(new Msg2());
+            EventCenter.SendType(new Msg1());
+            EventCenter.SendType(new Msg2());
             EventCenter.Send("Msg1_Msg2", new Msg1(), new Msg2());
             EventCenter.Send("Msg2_Msg1", new Msg2(), new Msg1());
 
@@ -145,8 +143,8 @@ namespace Framework.Test
         {
             Debug.Log("------------------------- 事件组的消息 -------------------------");
             _eventGroup.AddListener("eg", HandleEG);
-            _eventGroup.AddListener<Msg1>("eg_1", HandleEG_1);
-            _eventGroup.AddListener<string>("eg_2", HandleEG_2);
+            _eventGroup.AddListener<string, Msg1>("eg_1", HandleEG_1);
+            _eventGroup.AddListener<string, string>("eg_2", HandleEG_2);
 
             Debug.Log("------------------------- 发送消息 -------------------------");
             EventCenter.Send("eg");
@@ -154,7 +152,7 @@ namespace Framework.Test
             EventCenter.Send("eg_2", "事件组消息");
 
             Debug.Log("------------------------- 移除侦听 -------------------------");
-            _eventGroup.Clear();
+            _eventGroup.Clear<string>();
 
             Debug.Log("------------------------- 发送消息 -------------------------");
             EventCenter.Send("eg");
@@ -261,6 +259,200 @@ namespace Framework.Test
         public void Send()
         {
 
+        }
+
+        class TestEventString
+        {
+            public TestEventString()
+            {
+                // 错误用法，不能使用系统类型作为事件 id
+                EventCenter.AddListener<string>(Event);
+
+                // 可以推断出
+                EventCenter.AddListener("0", Event);
+
+                // 有参数则无法推断出泛型类型，只能自己指定泛型参数
+                EventCenter.AddListener("1", (Action<int>)Event1);
+                EventCenter.AddListener<string, int>("1", Event1);
+
+                EventCenter.AddListener("2", (Action<int, string>)Event2);
+                EventCenter.AddListener<string, int, string>("2", Event2);
+
+                EventCenter.Send("0");
+                EventCenter.Send("1", 6);
+            }
+
+            void Event()
+            {
+
+            }
+            void Event1(int a1)
+            {
+
+            }
+            void Event2(int a1, string a2)
+            {
+
+            }
+        }
+        class TestEventInt
+        {
+            public TestEventInt()
+            {
+                // 错误用法，不能使用系统类型作为事件 id
+                EventCenter.AddListener<int>(Event);
+
+                // 可以推断出
+                EventCenter.AddListener(0, Event);
+
+                // 有参数则无法推断出泛型类型，只能自己指定泛型参数
+                EventCenter.AddListener(1, (Action<int>)Event1);
+                EventCenter.AddListener<int, int>(1, Event1);
+
+                EventCenter.AddListener(2, (Action<int, string>)Event2);
+                EventCenter.AddListener<int, int, string>(2, Event2);
+            }
+
+            void Event()
+            {
+
+            }
+            void Event1(int a1)
+            {
+
+            }
+            void Event2(int a1, string a2)
+            {
+
+            }
+        }
+        class TestEventEnum
+        {
+            public TestEventEnum()
+            {
+                // 错误用法，同一 id 事件的签名必须一致
+                EventCenter.AddListener<MsgType>(Event);
+                EventCenter.AddListener<MsgType>(Event1);
+                EventCenter.AddListener<Type>(typeof(MsgType), (Action<string>)Event);
+
+                // 可以推断出
+                EventCenter.AddListener(MsgType.None, Event);
+
+                // 有参数则无法推断出泛型类型，只能自己指定泛型参数
+                EventCenter.AddListener(MsgType.A, (Action<int>)Event1);
+                EventCenter.AddListener<MsgType, int>(MsgType.A, Event1);
+
+                EventCenter.AddListener(MsgType.B, (Action<int, string>)Event2);
+                EventCenter.AddListener<MsgType, int, string>(MsgType.B, Event2);
+
+                EventCenter.Send(MsgType.A);
+            }
+
+            void Event()
+            {
+
+            }
+            void Event(string v)
+            {
+
+            }
+            void Event1(int a1)
+            {
+
+            }
+            void Event1(MsgType a1)
+            {
+
+            }
+            void Event2(int a1, string a2)
+            {
+
+            }
+
+            enum MsgType
+            {
+                None = 0,
+                A,
+                B,
+                C,
+            }
+        }
+        class TestEventMsg
+        {
+            public TestEventMsg()
+            {
+                // 正确用法，使用自定义类型作为事件 id
+                EventCenter.AddListener<MsgID>(Event);
+                // 错误用法，同一 id 事件的签名必须一致
+                EventCenter.AddListener<MsgID>(Event1);
+
+                // 错误用法，签名不一致
+                EventCenter.Send<MsgID>();
+
+
+                /// 推荐用法
+                // 这两种用法是一样的
+                // 参数类型支持面向对象特性，可接受子类作为参数
+                EventCenter.AddListener<Msg>(Event1);
+                EventCenter.AddListener<Type, Msg>(typeof(Msg), Event1);
+
+                // 这两种用法是一样的，当有不同签名的同名函数时需显示指出
+                EventCenter.AddListener<Msg>((Action<IEventMessage>)Event1);
+                EventCenter.AddListener<Type, IEventMessage>(typeof(Msg), Event1);
+
+                // 
+                EventCenter.AddListener((Action<IEventMessage>)Event1);
+                EventCenter.AddListener<Type, Msg>(typeof(IEventMessage), Event1);
+                EventCenter.AddListener<Type, IEventMessage>(typeof(IEventMessage), Event1);
+
+                // 正确用法
+                EventCenter.SendType(new Msg());
+                EventCenter.Send<Msg, Msg1>(new Msg1());
+                EventCenter.SendType(new Msg1());
+                EventCenter.Send<IEventMessage, Msg>(new Msg());
+                // 错误用法，签名不一致
+                EventCenter.Send<Msg>();
+                EventCenter.Send<IEventMessage>();
+
+            }
+
+            void Event()
+            {
+
+            }
+            void Event1(MsgID a1)
+            {
+
+            }
+            void Event1(IEventMessage a1)
+            {
+                Debug.Log($"Event1（IEventMessage）：{a1}");
+            }
+            void Event1(Msg a1)
+            {
+                Debug.Log($"Event1（Msg）：{a1}");
+            }
+            void Event2(Msg a1, Msg a2)
+            {
+
+            }
+
+            public class MsgID : IEventMessage
+            {
+                
+            }
+            public class Msg : IEventMessage
+            {
+                public int id = 0;
+
+                
+            }
+            public class Msg1 : IEventMessage
+            {
+                public int id = 0;
+
+                
+            }
         }
     }
 }

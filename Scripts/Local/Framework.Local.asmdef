@@ -2,6 +2,7 @@
     "name": "Framework.Local",
     "rootNamespace": "",
     "references": [
+        "GUID:9a4f606abf495854485e5a9a7de52423",
         "GUID:6055be8ebefd69e48b49212b09b47b2f"
     ],
     "includePlatforms": [],

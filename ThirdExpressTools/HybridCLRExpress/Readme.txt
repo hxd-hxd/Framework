@@ -4,9 +4,9 @@
 
 注意：请在导入此扩展包之前导入 HybridCLR 插件，不然会报错。
 
-Github 仓库：https://github.com/focus-creative-games/hybridclr_unity
-Gitee 镜像：https://gitee.com/focus-creative-games/hybridclr_unity
-示例项目 Github 仓库：https://github.com/focus-creative-games/hybridclr_trial
+Github 仓库：https://github.com/focus-creative-games/hybridclr_unity.git
+Gitee 镜像：https://gitee.com/focus-creative-games/hybridclr_unity.git
+示例项目 Github 仓库：https://github.com/focus-creative-games/hybridclr_trial.git
 
 下载安装
 	通过PackageManager安装

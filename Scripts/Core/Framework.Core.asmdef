@@ -1,6 +1,6 @@
 {
     "name": "Framework.Core",
-    "rootNamespace": "",
+    "rootNamespace": "Framework.Core",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

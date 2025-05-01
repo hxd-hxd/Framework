@@ -19,29 +19,30 @@ namespace Framework.Core.Network
     {
         protected Socket _socket;
 
+        // 成对出现，且应当使用相同的协议
         protected IProtocol _readProtocol;// 用于接收的协议
         protected IProtocol _writeProtocol;// 用于发送的协议
 
-        /// <summary>需要由此协议处理的套接字连接</summary>
+        Func<bool> _receiveConditionEvent;
+        Action<SocketError> _receiveStopEvent;
+
+        protected Task _receiveDelayTask = Task.Delay(1);
+
         public Socket socket { get => _socket; set => _socket = value; }
         /// <summary>写入数据缓冲区</summary>
         protected ByteBuffer writeBuffer { get => _writeProtocol.msg.buffer; }
         /// <summary><see cref="socket"/> 是否处于连接状态</summary>
         public bool isConnected => _socket != null ? _socket.Connected : false;
 
-        /// <summary>接收条件事件</summary>
-        public Func<bool> ReceiveConditionEvent;
-        /// <summary>接收停止事件</summary>
-        public Action<SocketError> ReceiveStopEvent;
-
         protected ProtocolHandleBase(Socket socket)
         {
             _socket = socket;
         }
 
-        protected static Task _receiveDelayTask = Task.Delay(1);
+        public Func<bool> receiveConditionEvent { get => _receiveConditionEvent; set => _receiveConditionEvent = value; }
+        public Action<SocketError> receiveStopEvent { get => _receiveStopEvent; set => _receiveStopEvent = value; }
 
-        protected bool isRuning => ReceiveConditionEvent != null ? ReceiveConditionEvent() : true;
+        protected bool isRuning => receiveConditionEvent != null ? receiveConditionEvent() : true;
 
         /// <summary>处理接收数据</summary>
         public virtual void Receive(Socket socket)
@@ -59,11 +60,11 @@ namespace Framework.Core.Network
             {
                 try
                 {
-                    await _receiveDelayTask;
+                    if (_receiveDelayTask != null)
+                        await _receiveDelayTask;
 
                     //TODO：处理半包、粘包
 
-                    //_readBuffer.Clear();
                     _readProtocol.Reset();
 
                     if (_readProtocol == null)
@@ -110,7 +111,7 @@ namespace Framework.Core.Network
                 }
                 catch (SocketException ex)
                 {
-                    ReceiveStopEvent?.Invoke(ex.SocketErrorCode);
+                    receiveStopEvent?.Invoke(ex.SocketErrorCode);
                     throw;
                 }
             }
@@ -126,7 +127,7 @@ namespace Framework.Core.Network
             if (bReceived == 0)
             {
                 // 没有数据可读，对方可能已经关闭了连接
-                ReceiveStopEvent?.Invoke(SocketError.Success);
+                receiveStopEvent?.Invoke(SocketError.Success);
                 return false;
             }
             else
@@ -171,7 +172,7 @@ namespace Framework.Core.Network
             writeBuffer.Write(bytes);
 
             Send();
-        } 
+        }
         #endregion
 
         /// <summary>发送</summary>

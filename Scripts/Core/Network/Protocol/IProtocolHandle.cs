@@ -9,7 +9,7 @@ namespace Framework.Core.Network
     /// <summary>
     /// 协议处理接口
     /// </summary>
-    public interface IProtocalHandle
+    public interface IProtocolHandle
     {
         
     }

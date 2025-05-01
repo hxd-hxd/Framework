@@ -12,26 +12,28 @@ namespace Framework.Core.Network
     public class DefaultMsgHandle : MsgHandleBase
     {
 
-        public override bool Get(ByteBuffer buffer, object msg)
+        public override bool WriteHandle(ByteBuffer buffer, object msg)
         {
+            bool r = true;
             if (msg is string strMsg)
             {
                 buffer.Write(strMsg);
             }
             else
             {
-                return false;
+                r = false;
             }
 
-            return true;
+            length = dataLength;
+            return r;
         }
 
-        public override void Handle(ByteBuffer buffer)
+        public override void ReadHandle(ByteBuffer buffer)
         {
-            Handle(buffer, (out object result) =>
+            ReadHandle(buffer, (out object result) =>
             {
                 if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-                if (buffer.ReadableBytesLength() < 1) throw new Exception($"数据长度不够");
+                if (buffer.GetReadableBytesLength() < 1) throw new Exception($"数据长度不够");
 
                 result = buffer.ReadString();
                 return true;

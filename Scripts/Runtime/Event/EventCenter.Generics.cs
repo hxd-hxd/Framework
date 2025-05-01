@@ -26,6 +26,13 @@ namespace Framework.Event
             EventCenter.Add(_eventManager);
         }
 
+
+        #region 添加侦听
+        /// <summary>添加侦听</summary>
+        public static void AddListener(TID id, Action listener)
+        {
+            AddListener(id, listener as Delegate);
+        }
         /// <summary>添加侦听</summary>
         public static void AddListener<T1>(TID id, Action<T1> listener)
         {
@@ -131,8 +138,10 @@ namespace Framework.Event
 
             _eventManager.AddListener(id, listener);
         }
+        #endregion
 
 
+        #region 移除侦听
         /// <summary>移除侦听</summary>
         public static void RemoveListener(TID id, Action listener)
         {
@@ -242,7 +251,9 @@ namespace Framework.Event
             if (listener == null) return;
 
             _eventManager.RemoveListener(id, listener);
-        }
+        } 
+        #endregion
+
 
         #region 清除监听
         /// <summary>清除指定 id 的所有监听</summary>
@@ -262,7 +273,8 @@ namespace Framework.Event
         }
         #endregion
 
-        
+
+        #region 发送消息
         /// <summary>发送消息</summary>
         public static void Send(TID id)
         {
@@ -396,7 +408,8 @@ namespace Framework.Event
         internal static void SendInternal(TID id, object[] args, bool returnPool)
         {
             _eventManager.SendInternal(id, args, returnPool);
-        }
+        } 
+        #endregion
     }
 
 }

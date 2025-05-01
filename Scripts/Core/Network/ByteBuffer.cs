@@ -10,13 +10,17 @@ namespace Framework.Core.Network
     /// <summary>
     /// 字节缓存，用于构建、解析网络数据包
     /// </summary>
-    public class ByteBuffer : IDisposable
+    public partial class ByteBuffer : IDisposable
     {
         // 字节缓存区
         private byte[] _buffer;
-        // 读取索引
+        /// <summary>
+        /// 读取索引，表示即将要读取的
+        /// </summary>
         private int _readIndex;
-        // 写入索引
+        /// <summary>
+        /// 写入索引，表示即将要写入的
+        /// </summary>
         private int _writeIndex;
         // 读取索引标记
         private int _markReadIndex;
@@ -26,6 +30,15 @@ namespace Framework.Core.Network
         private int _capacity;
 
         private bool disposedValue;
+
+        //public int writeIndex
+        //{
+        //    get => _writeIndex;
+        //    protected set
+        //    {
+        //        _writeIndex = value < 0 ? 0 : value;
+        //    }
+        //}
 
         public ByteBuffer(int capacity)
         {
@@ -39,42 +52,10 @@ namespace Framework.Core.Network
             _capacity = _buffer.Length;
         }
 
-        /// <summary>
-        /// 获取写入缓冲区数据段，会改变内部读取索引
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetWriteArraySegment(int count)
+        /// <summary>是否可读索引</summary>
+        private bool IsReadableIndex(int index)
         {
-            int offset = _writeIndex;
-            var r = new ArraySegment<byte>(_buffer, offset, count);
-            _writeIndex += count;
-            return r;
-        }
-
-        /// <summary>
-        /// 获取读取缓冲区数据段，会改变内部读取索引
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetReadArraySegment(int count)
-        {
-            int offset = _readIndex;
-            var r = new ArraySegment<byte>(_buffer, offset, count);
-            _readIndex += count;
-            return r;
-        }
-
-        /// <summary>
-        /// 获取缓冲区数据段
-        /// <para><paramref name="offset"/>：索引偏移</para>
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetArraySegment(int offset, int count)
-        {
-            var r = new ArraySegment<byte>(_buffer, offset, count);
-            return r;
+            return index < _writeIndex;
         }
 
         /// <summary>根据长度，确定大于此长度的最近2次方数，如长度为11，则返回16</summary>
@@ -92,7 +73,11 @@ namespace Framework.Core.Network
         }
 
         /// <summary>确定内部字节缓存数组的大小</summary>
-        /// <returns></returns>
+        public void FixSizeAndReset(int futureLen)
+        {
+            FixSizeAndReset(_buffer.Length, futureLen);
+        }
+        /// <summary>确定内部字节缓存数组的大小</summary>
         private int FixSizeAndReset(int currLen, int futureLen)
         {
             if (futureLen > currLen)
@@ -123,16 +108,57 @@ namespace Framework.Core.Network
             return vs;
         }
 
+
+        #region 写入
+        /// <summary>
+        /// 获取写入缓冲区数据段，会改变内部读取索引
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetWriteArraySegment(int count)
+        {
+            FixSizeAndReset(_writeIndex + count);
+            int offset = _writeIndex;
+            var r = new ArraySegment<byte>(_buffer, offset, count);
+            _writeIndex += count;
+            return r;
+        }
+
+        /// <summary>
+        /// 获取读取缓冲区数据段，会改变内部读取索引
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetReadArraySegment(int count)
+        {
+            int offset = _readIndex;
+            var r = new ArraySegment<byte>(_buffer, offset, count);
+            _readIndex += count;
+            return r;
+        }
+
+        /// <summary>
+        /// 获取缓冲区数据段
+        /// <para><paramref name="index"/>：开始索引</para>
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetArraySegment(int index, int count)
+        {
+            var r = new ArraySegment<byte>(_buffer, index, count);
+            return r;
+        }
+
         /// <summary>将 bytes 字节数组从 startIndex 开始的 length 字节写入到此缓存区</summary>
         public void Write(byte[] bytes, int startIndex, int length)
         {
             //if (bytes == null || bytes.Length == 0) throw new ArgumentNullException("不可写入空数据");
             if (bytes == null || bytes.Length == 0) return;
 
+            int offset = length - startIndex;
+            if (offset <= 0) return;
             lock (this)
             {
-                int offset = length - startIndex;
-                if (offset <= 0) return;
                 int total = offset + _writeIndex;
                 int len = _buffer.Length;
                 FixSizeAndReset(len, total);
@@ -149,16 +175,15 @@ namespace Framework.Core.Network
             //if (bytes == null || bytes.Length == 0) throw new ArgumentNullException("不可写入空数据");
             if (bytes == null || bytes.Count == 0) return;
 
+            int offset = length - startIndex;// 这是接下来要写入的数据长度
+            if (offset <= 0) return;
             lock (this)
             {
-                int offset = length - startIndex;
-                if (offset <= 0) return;
                 int total = offset + _writeIndex;
                 int len = _buffer.Length;
                 FixSizeAndReset(len, total);
                 for (int i = _writeIndex, j = startIndex; i < total; i++, j++)
                 {
-                    //_buffer[i] = (bytes as IList<byte>)[j];
                     _buffer[i] = (bytes as IList<byte>)[j];
                 }
                 _writeIndex = total;
@@ -192,8 +217,18 @@ namespace Framework.Core.Network
         public void Write(ByteBuffer buffer, bool writeAll = false)
         {
             if (buffer == null) return;
-            if (!writeAll && buffer.ReadableBytesLength() <= 0) return;
-            Write(buffer.ToArraySegment());
+            //if (!writeAll && buffer.GetReadableBytesLength() <= 0) return;
+
+            if (writeAll)
+            {
+                Write(buffer.ToArraySegment());
+            }
+            else
+            {
+                if (buffer.GetReadableBytesLength() <= 0) return;
+
+                Write(buffer.ReadSurplusArraySegment());
+            }
         }
 
         /// <summary> 写入<see cref="short"/> </summary>
@@ -282,8 +317,11 @@ namespace Framework.Core.Network
                 Write(bs.Length);
                 Write(bs);
             }
-        }
+        } 
+        #endregion
 
+
+        #region 读取
         /// <summary> 读取 <see cref="byte[]"/> 
         /// <paramref name="isOffset"/>：是否偏移读取索引
         /// </summary>
@@ -291,13 +329,14 @@ namespace Framework.Core.Network
         {
             lock (this)
             {
-                byte[] bs = new byte[len];
-                Array.Copy(_buffer, _readIndex, bs, 0, len);
-                //if (BitConverter.IsLittleEndian)
-                //{
-                //    Array.Reverse(bs);
-                //}
+                //byte[] bs = new byte[len];
+                //Array.Copy(_buffer, _readIndex, bs, 0, len);
+                ////if (BitConverter.IsLittleEndian)
+                ////{
+                ////    Array.Reverse(bs);
+                ////}
 
+                var bs = Read(_readIndex, len);
                 if (isOffset)
                     _readIndex += len;
                 return bs;
@@ -345,7 +384,7 @@ namespace Framework.Core.Network
         public void ReadBytes(byte[] distBytes, int distIndex, int len)
         {
             int size = distIndex + len;
-            if (ReadableBytesLength() < size) new Exception("ByteBuffer：缓冲区有效数据不足");
+            if (GetReadableBytesLength() < size) new Exception("ByteBuffer：缓冲区有效数据不足");
             //for (int i = distIndex; i < size; i++)
             //{
             //    distBytes[i] = ReadByte();
@@ -364,7 +403,7 @@ namespace Framework.Core.Network
         public void ReadBytes(ArraySegment<byte> distBytes, int distIndex, int len)
         {
             int size = distIndex + len;
-            if (ReadableBytesLength() < size) new Exception("ByteBuffer：缓冲区有效数据不足");
+            if (GetReadableBytesLength() < size) new Exception("ByteBuffer：缓冲区有效数据不足");
             //for (int i = distIndex; i < size; i++)
             //{
             //    distBytes[i] = ReadByte();
@@ -387,7 +426,7 @@ namespace Framework.Core.Network
             lock (this)
             {
                 //if (_readIndex >= _buffer.Length) return byte.MinValue;
-                if (ReadableBytesLength() <= 0) return byte.MinValue;
+                if (GetReadableBytesLength() <= 0) return default;
 
                 byte b = _buffer[_readIndex];
                 _readIndex += 1;
@@ -407,7 +446,7 @@ namespace Framework.Core.Network
         /// </summary>
         public ushort ReadUShort(bool isOffset = true)
         {
-            return BitConverter.ToUInt16(Read(2, isOffset), 0);
+            return BitConverter.ToUInt16(filp(Read(2, isOffset)));
         }
 
         /// <summary> 读取<see cref="int"/> 
@@ -461,13 +500,13 @@ namespace Framework.Core.Network
         /// </summary>
         public bool ReadBool(bool isOffset = true)
         {
-            return BitConverter.ToBoolean(filp(Read(2)));
+            return BitConverter.ToBoolean(filp(Read(2, isOffset)));
         }
 
         /// <summary> 读取<see cref="char"/> </summary>
-        public char ReadChar()
+        public char ReadChar(bool isOffset = true)
         {
-            return BitConverter.ToChar(filp(Read(2)));
+            return BitConverter.ToChar(filp(Read(2, isOffset)));
         }
 
         /// <summary> 读取<see cref="string"/> 
@@ -482,7 +521,7 @@ namespace Framework.Core.Network
             }
             else
             {
-                length = ReadableBytesLength();
+                length = GetReadableBytesLength();
             }
             return ReadString(length);
         }
@@ -494,48 +533,64 @@ namespace Framework.Core.Network
             //var bs = Read(len);
             var bs = Read(length);
             return Encoding.UTF8.GetString(bs);
+        } 
+        #endregion
+
+        /// <summary>获取写入的字节数组</summary>
+        public byte[] ToArray()
+        {
+            byte[] bytes = new byte[_writeIndex];
+            Array.Copy(_buffer, 0, bytes, 0, bytes.Length);
+            return bytes;
+        }
+        /// <summary>获取写入的字节数组段</summary>
+        public ArraySegment<byte> ToArraySegment()
+        {
+            var vs = new ArraySegment<byte>(_buffer, 0, _writeIndex);
+            return vs;
         }
 
-        /// <summary>清除已读字节并重建缓存区</summary>
-        public void DiscardReadBytes()
+        /// <summary>获取剩余字节数组</summary>
+        public byte[] ToSurplusArray()
         {
-            lock (this)
-            {
-                if (_readIndex <= 0) return;
-                int len = _buffer.Length - _readIndex;
-                byte[] newbuf = new byte[len];
-                Array.Copy(_buffer, _readIndex, newbuf, 0, len);
-                _buffer = newbuf;
-                _writeIndex -= _readIndex;
-                _markReadIndex -= _readIndex;
-                if (_markReadIndex < 0)
-                {
-                    _markReadIndex = _readIndex;
-                }
-                _markWriteIndex -= _readIndex;
-                if (_markWriteIndex < 0 || _markWriteIndex < _readIndex || _markWriteIndex < _markReadIndex)
-                {
-                    _markWriteIndex = _writeIndex;
-                }
-                _readIndex = 0;
-            }
+            byte[] bytes = new byte[GetReadableBytesLength()];
+            Array.Copy(_buffer, _readIndex, bytes, 0, bytes.Length);
+            return bytes;
+        }
+        /// <summary>获取剩余写入的字节数组段</summary>
+        public ArraySegment<byte> ToSurplusArraySegment()
+        {
+            var vs = new ArraySegment<byte>(_buffer, _readIndex, GetReadableBytesLength());
+            return vs;
         }
 
-        /// <summary>清除</summary>
-        public void Clear()
+        /// <summary>读取剩余写入的字节数组，会改变索引</summary>
+        public byte[] ReadSurplusArray()
         {
-            // 没有写任何数据
-            if (_writeIndex <= 0) return;
+            byte[] bytes = new byte[GetReadableBytesLength()];
+            Array.Copy(_buffer, _readIndex, bytes, 0, bytes.Length);
+            _readIndex = _writeIndex;
+            return bytes;
+        }
+        /// <summary>读取剩余写入的字节数组段，会改变索引</summary>
+        public ArraySegment<byte> ReadSurplusArraySegment()
+        {
+            var vs = new ArraySegment<byte>(_buffer, _readIndex, GetReadableBytesLength());
+            _readIndex = _writeIndex;
+            return vs;
+        }
 
-            //_buffer = new byte[_buffer.Length];
-            for (int i = 0; i < _writeIndex; i++)
-            {
-                _buffer[i] = byte.MinValue;
-            }
-            _readIndex = 0;
-            _markReadIndex = 0;
-            _writeIndex = 0;
-            _markWriteIndex = 0;
+
+        /// <summary>剩余可读的有效字节数</summary>
+        public int GetReadableBytesLength()
+        {
+            return _writeIndex - _readIndex;
+        }
+
+        /// <summary>获取缓存区容量大小</summary>
+        public int GetCapacity()
+        {
+            return _capacity;
         }
 
         /// <summary>设置开始读取的索引</summary>
@@ -543,6 +598,12 @@ namespace Framework.Core.Network
         {
             if (index < 0) return;
             _readIndex = index;
+        }
+        /// <summary>设置开始写入的索引</summary>
+        public void SetWriteIndex(int index)
+        {
+            if (index < 0) return;
+            _writeIndex = index;
         }
 
         /// <summary>标记读取的索引位置</summary>
@@ -569,58 +630,54 @@ namespace Framework.Core.Network
             _writeIndex = _markWriteIndex;
         }
 
-        /// <summary>剩余可读的有效字节数</summary>
-        public int ReadableBytesLength()
+        /// <summary>剩余可写的有效字节数</summary>
+        public int GetWriteableBytesLength()
         {
-            return _writeIndex - _readIndex;
+            return _capacity - _writeIndex;
+        }
+        
+        /// <summary>清除已读字节并重建缓存区</summary>
+        public void DiscardReadBytes()
+        {
+            lock (this)
+            {
+                if (_readIndex <= 0) return;
+                int len = _buffer.Length - _readIndex;
+                byte[] newbuf = new byte[len];
+                Array.Copy(_buffer, _readIndex, newbuf, 0, len);
+                _buffer = newbuf;
+                _writeIndex -= _readIndex;
+
+                _markReadIndex -= _readIndex;
+                if (_markReadIndex < 0)
+                {
+                    _markReadIndex = _readIndex;
+                }
+                _markWriteIndex -= _readIndex;
+                if (_markWriteIndex < 0 || _markWriteIndex < _readIndex || _markWriteIndex < _markReadIndex)
+                {
+                    _markWriteIndex = _writeIndex;
+                }
+
+                _readIndex = 0;
+            }
         }
 
-        /// <summary>获取可读的写入字节数组</summary>
-        public byte[] ToArray()
+        /// <summary>清除</summary>
+        public void Clear()
         {
-            byte[] bytes = new byte[_writeIndex];
-            Array.Copy(_buffer, 0, bytes, 0, bytes.Length);
-            return bytes;
-        }
-        /// <summary>读取剩余可读的写入字节数组，会改变索引</summary>
-        public byte[] ReadableArray()
-        {
-            byte[] bytes = new byte[ReadableBytesLength()];
-            Array.Copy(_buffer, _readIndex, bytes, 0, bytes.Length);
-            _readIndex = _writeIndex;
-            return bytes;
-        }
-        /// <summary>获取剩余可读的写入字节数组</summary>
-        public byte[] ToReadableArray()
-        {
-            byte[] bytes = new byte[ReadableBytesLength()];
-            Array.Copy(_buffer, _readIndex, bytes, 0, bytes.Length);
-            return bytes;
-        }
-        /// <summary>获取可读的字节数组段</summary>
-        public ArraySegment<byte> ToArraySegment()
-        {
-            var vs = new ArraySegment<byte>(_buffer, 0, _writeIndex);
-            return vs;
-        }
-        /// <summary>读取剩余可读的字节数组段，会改变索引</summary>
-        public ArraySegment<byte> ReadableArraySegment()
-        {
-            var vs = new ArraySegment<byte>(_buffer, _readIndex, ReadableBytesLength());
-            _readIndex = _writeIndex;
-            return vs;
-        }
-        /// <summary>获取剩余可读的字节数组段</summary>
-        public ArraySegment<byte> ToReadableArraySegment()
-        {
-            var vs = new ArraySegment<byte>(_buffer, _readIndex, ReadableBytesLength());
-            return vs;
-        }
+            // 没有写任何数据
+            if (_writeIndex <= 0) return;
 
-        /// <summary>获取缓存区大小</summary>
-        public int GetCapacity()
-        {
-            return _capacity;
+            //_buffer = new byte[_buffer.Length];
+            for (int i = 0; i < _writeIndex; i++)
+            {
+                _buffer[i] = byte.MinValue;
+            }
+            _readIndex = 0;
+            _markReadIndex = 0;
+            _writeIndex = 0;
+            _markWriteIndex = 0;
         }
 
         protected virtual void Dispose(bool disposing)

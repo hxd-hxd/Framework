@@ -195,13 +195,13 @@ namespace Framework.Event
         {
             RemoveListener(id, listener as Delegate);
         }
+
+        #region 移除侦听，多参数
         /// <summary>移除侦听</summary>
         public static void RemoveListener<TID, T1>(TID id, Action<T1> listener)
         {
             RemoveListener(id, listener as Delegate);
         }
-
-        #region 移除侦听，多参数
         /// <summary>移除侦听</summary>
         public static void RemoveListener<TID, T1, T2>(TID id, Action<T1, T2> listener)
         {
@@ -338,6 +338,11 @@ namespace Framework.Event
         public static void Send<TID>()
         {
             var id = typeof(TID);
+            SendInternal(id, null);
+        }
+        /// <summary>发送消息</summary>
+        public static void Send<TID>(TID id)
+        {
             SendInternal(id, null);
         }
         /// <summary>发送消息，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id
@@ -485,6 +490,55 @@ namespace Framework.Event
             EventCenter<TID>.SendInternal(id, args, returnPool);
         } 
         #endregion
+
+
+        static Type[] _tempTypes = new Type[1];
+
+        /// <summary>
+        /// 查找一个存在的泛型管理器
+        /// </summary>
+        /// <typeparam name="T">泛型类型</typeparam>
+        /// <returns><see cref="IEventManager{TID}"/></returns>
+        public static IEventManager<T> FindMgr<T>()
+        {
+            IEventManager<T> mgr = null;
+            //_tempTypes[0] = typeof(T);
+            foreach (var item in _eventManagers)
+            {
+                //if (item.GetType() == typeof(IEventManager<>).MakeGenericType(_tempTypes))
+                //{
+                //    mgr = item as IEventManager<T>;
+                //    break;
+                //}
+                mgr = item as IEventManager<T>;
+                if (mgr != null)
+                {
+                    break;
+                }
+            }
+            //_tempTypes[0] = null;
+            return mgr;
+        }
+        /// <summary>
+        /// 查找一个存在的泛型管理器
+        /// </summary>
+        /// <param name="type">泛型类型</param>
+        /// <returns><see cref="IEventManager{TID}"/></returns>
+        public static IEventManager FindMgr(Type type)
+        {
+            IEventManager mgr = null;
+            _tempTypes[0] = type;
+            foreach (var item in _eventManagers)
+            {
+                if (item.GetType() == typeof(IEventManager<>).MakeGenericType(_tempTypes))
+                {
+                    mgr = item;
+                    break;
+                }
+            }
+            _tempTypes[0] = null;
+            return mgr;
+        }
     }
 
 }

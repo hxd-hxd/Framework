@@ -33,7 +33,7 @@ namespace Framework.Test
 
             */
 
-            /// 不主动指定 id ，则会以 Type.GetHashCode() 为 id
+            /// 不主动指定 id ，则会以 Type 为 id
 
             EventCenter.AddListener<MsgNot>((Action)HandleEvent);// 无参消息，只使用消息类型作为 id
             EventCenter.AddListener<MsgNot>(HandleEventNotMsg);

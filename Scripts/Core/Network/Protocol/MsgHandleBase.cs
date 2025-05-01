@@ -9,19 +9,20 @@ namespace Framework.Core.Network
     /// <summary>
     /// 协议消息体处理基类
     /// </summary>
-    public abstract class MsgHandleBase : IMsgHandle, IDisposable
+    public abstract class MsgHandleBase : IMsgHandle
     {
-        /// <summary>处理完成事件</summary>
-        public Action<object> HandleCompletedEvent;
-        /// <summary>处理错误事件</summary>
-        public Action<object> HandleErrorEvent;
+        private Action<object> _handleCompletedEvent;
+        private Action<object> _handleErrorEvent;
 
-        /// <summary>处理事件</summary>
-        public Action<ByteBuffer> HandleEvent;
+        /// <summary>读取处理事件</summary>
+        public Action<ByteBuffer> ReadHandleEvent;
 
-        protected ByteBuffer _buffer = new ByteBuffer(4);
+        private ByteBuffer _buffer;
 
         private bool disposedValue;
+
+        public virtual int length { get; set; }
+        public virtual int dataLength { get => buffer.GetReadableBytesLength(); }
 
         /// <summary>
         /// 内部处理用的 <see cref="ByteBuffer"/>
@@ -30,13 +31,25 @@ namespace Framework.Core.Network
         {
             get
             {
-                //if (_buffer == null)
-                //    lock (this)
-                //    {
-                //        if (_buffer == null) _buffer = new ByteBuffer(4);
-                //    }
+                if (_buffer == null)
+                    lock (this)
+                    {
+                        if (_buffer == null) _buffer = new ByteBuffer(4);
+                    }
                 return _buffer;
             }
+        }
+        /// <summary>处理完成事件</summary>
+        public Action<object> HandleCompletedEvent
+        {
+            get => _handleCompletedEvent;
+            set => _handleCompletedEvent = value;
+        }
+        /// <summary>处理错误事件</summary>
+        public Action<object> HandleErrorEvent
+        {
+            get => _handleErrorEvent;
+            set => _handleErrorEvent = value;
         }
 
         /// <summary>调用 <see cref="HandleCompletedEvent"/></summary>
@@ -44,52 +57,55 @@ namespace Framework.Core.Network
         /// <summary>调用 <see cref="HandleErrorEvent"/></summary>
         protected void CallHandleErrorEvent(object v) => HandleErrorEvent?.Invoke(v);
 
-        /// <summary>
-        /// 重置消息
-        /// </summary>
-        public virtual void ResetMsg()
+
+        public virtual bool WriteHandle(object msg)
         {
-            _buffer.Clear();
+            return WriteHandle(buffer, msg);
         }
 
         /// <summary>
         /// 将消息写入到缓冲区
         /// </summary>
-        public abstract bool Get(ByteBuffer buffer, object msg);
+        public abstract bool WriteHandle(ByteBuffer buffer, object msg);
 
-        /// <summary>处理</summary>
-        public virtual void Handle(byte[] bytes)
+
+        /// <summary>读取处理
+        /// <para>注意：不管是否处理成功，数据都会被清除掉</para>
+        /// </summary>
+        public virtual void ReadHandle()
         {
-            buffer.Write(bytes);
-            Handle(buffer);
+            try
+            {
+                ReadHandle(buffer);
+            }
+            catch (Exception)
+            {
 
-            buffer.Clear();
+                throw;
+            }
+            finally
+            {
+                buffer.Clear();
+            }
         }
 
-        /// <summary>处理</summary>
-        public virtual void Handle(ArraySegment<byte> bytes)
-        {
-            buffer.Write(bytes);
-            Handle(buffer);
-
-            buffer.Clear();
-        }
-
-        /// <summary>处理，注意实现时应当将此方法作为最终处理</summary>
-        public abstract void Handle(ByteBuffer buffer);
+        /// <summary>读取处理
+        /// <para>注意：实现时应当将此方法作为最终处理</para>
+        /// </summary>
+        public abstract void ReadHandle(ByteBuffer buffer);
 
         /// <summary>
         /// 通用处理
         /// </summary>
         /// <param name="func">处理回调，反回是否成功，处理后得到的对象</param>
-        protected void Handle(ByteBuffer buffer, HandleCallback func)
+        protected void ReadHandle(ByteBuffer buffer, HandleCallback func)
         {
             object msg = null;
             try
             {
                 if (func(out msg))
                 {
-                    HandleEvent?.Invoke(buffer);
+                    ReadHandleEvent?.Invoke(buffer);
                     CallHandleCompletedEvent(msg);
                 }
                 else
@@ -104,6 +120,19 @@ namespace Framework.Core.Network
             }
         }
 
+
+        public virtual void Reset()
+        {
+            buffer?.Clear();
+        }
+
+        public virtual void Clear()
+        {
+            _buffer?.Clear();
+            HandleCompletedEvent = null;
+            HandleErrorEvent = null;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -111,7 +140,7 @@ namespace Framework.Core.Network
                 if (disposing)
                 {
                     // 释放托管状态(托管对象)
-                    ((IDisposable)_buffer)?.Dispose();
+                    ((IDisposable)buffer)?.Dispose();
                     _buffer = null;
                     HandleCompletedEvent = null;
                     HandleErrorEvent = null;
@@ -133,7 +162,7 @@ namespace Framework.Core.Network
         public void Dispose()
         {
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 

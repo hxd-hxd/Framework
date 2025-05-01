@@ -14,8 +14,9 @@ namespace Framework.GoogleProtobufExpress
     public class ProtobufMsgHandle : MsgHandleBase
     {
 
-        public override bool Get(ByteBuffer buffer, object msg)
+        public override bool WriteHandle(ByteBuffer buffer, object msg)
         {
+            bool r = true;
             if (msg is string strMsg)
             {
                 buffer.Write(strMsg);
@@ -34,26 +35,28 @@ namespace Framework.GoogleProtobufExpress
             }
             else
             {
-                return false;
+                r = false;
             }
 
-            return true;
+            length = dataLength;
+            return r;
         }
 
-        public override void Handle(ByteBuffer buffer)
+        public override void ReadHandle(ByteBuffer buffer)
         {
             //Handle(buffer.ReadableArraySegment());
-            Handle(buffer, (out object result) =>
+            ReadHandle(buffer, (out object result) =>
             {
                 result = null;
                 try
                 {
                     buffer.MarkReadIndex();
-                    result = ProtobufTools.DeserializeByAny(buffer.ReadableArraySegment());
+                    result = ProtobufTools.DeserializeByAny(buffer.ReadSurplusArraySegment());
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Log.Error($"解析 Protobuf 类型出错：{ex.Message}");
                     buffer.ResetReadIndex();
                     result = buffer.ReadString();
                 }

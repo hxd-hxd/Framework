@@ -3,7 +3,6 @@
 // -------------------------
 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -157,6 +156,12 @@ namespace Framework.Event
         #region 移除侦听
         /// <summary>移除侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
         public void RemoveListener<TID>(Action listener)
+        {
+            var id = typeof(TID);
+            RemoveListener(id, listener as Delegate);
+        }
+        /// <summary>移除侦听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public void RemoveListener<TID>(Action<TID> listener)
         {
             var id = typeof(TID);
             RemoveListener(id, listener as Delegate);

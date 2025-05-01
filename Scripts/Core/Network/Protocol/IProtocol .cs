@@ -41,15 +41,15 @@ namespace Framework.Core.Network
     /// <summary>
     /// 协议接口
     /// </summary>
-    public interface IProtocol<HeadT, MsgT> : IProtocol
-        where HeadT : IHeadHandle
-        where MsgT : IMsgHandle
+    public interface IProtocol<THead, TMsg> : IProtocol
+        where THead : IHeadHandle
+        where TMsg : IMsgHandle
     {
         /// <summary>协议包头</summary>
-        new HeadT head { get; set; }
+        new THead head { get; set; }
 
         /// <summary>协议包体</summary>
-        new MsgT msg { get; set; }
+        new TMsg msg { get; set; }
 
     }
 }

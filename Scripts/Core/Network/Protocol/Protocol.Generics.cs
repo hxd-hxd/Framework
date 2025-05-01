@@ -7,39 +7,39 @@ namespace Framework.Core.Network
     /// <summary>
     /// 协议，由头和体组成的完整协议
     /// </summary>
-    public class Protocol<HeadT, MsgT> : IProtocol<HeadT, MsgT>
-        where HeadT : IHeadHandle
-        where MsgT : IMsgHandle
+    public class Protocol<THead, TMsg> : IProtocol<THead, TMsg>
+        where THead : IHeadHandle
+        where TMsg : IMsgHandle
     {
         // 协议包头
-        private HeadT _head;
+        private THead _head;
         // 协议包体
-        private MsgT _msg;
+        private TMsg _msg;
 
         public Protocol()
         {
 
         }
-        public Protocol(HeadT head, MsgT msg)
+        public Protocol(THead head, TMsg msg)
         {
             _head = head;
             _msg = msg;
         }
 
-        public HeadT head
+        public THead head
         {
             get { return _head; }
             set { _head = value; }
         }
 
-        public MsgT msg
+        public TMsg msg
         {
             get { return _msg; }
             set { _msg = value; }
         }
 
-        IHeadHandle IProtocol.head { get => _head; set => _head = (HeadT)value; }
-        IMsgHandle IProtocol.msg { get => _msg; set => _msg = (MsgT)value; }
+        IHeadHandle IProtocol.head { get => _head; set => _head = (THead)value; }
+        IMsgHandle IProtocol.msg { get => _msg; set => _msg = (TMsg)value; }
 
         public int length => head.buffer.GetReadableBytesLength() + msg.buffer.GetReadableBytesLength();
 

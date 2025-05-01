@@ -26,6 +26,9 @@ namespace Framework.Core.Network
             _msg = msg;
         }
 
+        //THead IProtocol<THead, TMsg>.head { get => (THead)head; set => head = value; }
+        //TMsg IProtocol<THead, TMsg>.msg { get => (TMsg)msg; set => msg = value; }
+
         public THead head
         {
             get { return _head; }
@@ -41,7 +44,7 @@ namespace Framework.Core.Network
         IHeadHandle IProtocol.head { get => _head; set => _head = (THead)value; }
         IMsgHandle IProtocol.msg { get => _msg; set => _msg = (TMsg)value; }
 
-        public int length => head.buffer.GetReadableBytesLength() + msg.buffer.GetReadableBytesLength();
+        public int length => head.dataLength + msg.dataLength;
 
         public ArraySegment<byte> GetDataArraySegment()
         {

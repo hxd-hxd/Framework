@@ -127,7 +127,7 @@ namespace Framework.YooAssetExpress
 
         protected virtual void OnDestroy()
         {
-            _eventGroup.Clear<Type>();
+            _eventGroup.Clear();
         }
 
         #region 资源热更流程

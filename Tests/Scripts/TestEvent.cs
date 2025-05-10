@@ -49,13 +49,13 @@ namespace Framework.Test
 
             /// 主动指定 id
 
-            // 以下两种写法选其一
-            //EventCenter.AddListener("ValueType", (Action<ValueType>)HandleEvent);
-            EventCenter.AddListener<IEventMessage>("ValueType", HandleEvent);
+            // 以下两种写法选其一，注意同一个侦听不会被重复添加
+            EventCenter.AddListener("ValueType", (Action<ValueType>)HandleEvent);
+            EventCenter.AddListener<ValueType>("ValueType", HandleEvent);
 
             EventCenter.AddListener<ValueType, ValueType>("ValueType2", HandleEvent);
             EventCenter.AddListener<object, object>("object2", HandleEvent);
-            EventCenter.AddListener("string2", HandleEvent);
+            EventCenter.AddListener<object, object>("string2", HandleEvent);
 
             EventCenter.AddListener<Msg1, Msg2>("Msg1_Msg2", HandleEvent);
             EventCenter.AddListener<string, Msg1, Msg2>("Msg1_Msg2", HandleMsg1_2);
@@ -116,6 +116,21 @@ namespace Framework.Test
             Send20();
 
             SendEventGroup();
+
+            Debug.Log("------------------------- 清除所有侦听 -------------------------");
+            EventCenter.Clear();
+            //EventCenter.ClearAll();
+            Debug.Log("------------------------- 发送消息 -------------------------");
+            EventCenter.Send("ValueType", 1);
+            EventCenter.Send("ValueType", 0.5f);
+            EventCenter.Send("ValueType", DateTime.Now);
+            EventCenter.Send("ValueType2", 1, 2f);
+            EventCenter.Send("ValueType2", 0.5f, -0.5f);
+
+            EventCenter.Send("ValueType2", new DateTime().AddDays(3), DateTime.Now);
+            EventCenter.Send("object2", new DateTime().AddDays(3), DateTime.Now);
+
+            EventCenter.Send("string2", "你好", DateTime.Now.ToString());
         }
 
         private void Send20()
@@ -151,8 +166,8 @@ namespace Framework.Test
             EventCenter.Send("eg_1", new Msg1());
             EventCenter.Send("eg_2", "事件组消息");
 
-            Debug.Log("------------------------- 移除侦听 -------------------------");
-            _eventGroup.Clear<string>();
+            Debug.Log("------------------------- 清除侦听 -------------------------");
+            _eventGroup.Clear();
 
             Debug.Log("------------------------- 发送消息 -------------------------");
             EventCenter.Send("eg");

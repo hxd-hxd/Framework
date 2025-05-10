@@ -2,6 +2,7 @@
     "name": "Framework.Local.YooAssetExpress",
     "rootNamespace": "",
     "references": [
+        "GUID:9a4f606abf495854485e5a9a7de52423",
         "GUID:0dc2171ec43c18749864bd4f201a01ab",
         "GUID:5cf10eb1c5acd1440ba8519ef5553216",
         "GUID:e34a5702dd353724aa315fb8011f08c3"

@@ -5,15 +5,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Framework.Event
 {
     /// <summary>
     /// 事件组
     /// </summary>
-    public partial class EventGroup
+    public partial class EventGroup : IEventGroup
     {
-        Dictionary<object, LinkedList<Delegate>> _entrepot = new Dictionary<object, LinkedList<Delegate>>(20);
+        Dictionary<Type, IEventGroup> _entrepot = new Dictionary<Type, IEventGroup>(1);
 
 
         #region 添加侦听
@@ -143,12 +144,10 @@ namespace Framework.Event
         {
             if (listener == null) return;
 
-            if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
-                _entrepot[id] = new LinkedList<Delegate>();
-            if (!_entrepot[id].Contains(listener))
-                _entrepot[id].AddLast(listener);
-
-            EventCenter<TID>.AddListener(id, listener);
+            Type t = typeof(EventGroup<TID>);
+            if (!_entrepot.ContainsKey(t) || _entrepot[t] == null)
+                _entrepot[t] = new EventGroup<TID>();
+            (_entrepot[t] as EventGroup<TID>)?.AddListener(id, listener);
         }
         #endregion
 
@@ -179,6 +178,11 @@ namespace Framework.Event
         }
 
         #region 移除侦听，多参数
+        /// <summary>移除侦听</summary>
+        public void RemoveListener<TID, T1>(TID id, Action<T1> listener)
+        {
+            RemoveListener(id, listener as Delegate);
+        }
         /// <summary>移除侦听</summary>
         public void RemoveListener<TID, T1, T2>(TID id, Action<T1, T2> listener)
         {
@@ -275,28 +279,40 @@ namespace Framework.Event
         {
             if (listener == null) return;
 
-            if (_entrepot.ContainsKey(id))
-                _entrepot[id].Remove(listener);
-
-            EventCenter<TID>.RemoveListener(id, listener);
-        } 
+            Type t = typeof(EventGroup<TID>);
+            if (_entrepot.ContainsKey(t))
+            {
+                (_entrepot[t] as EventGroup<TID>)?.RemoveListener(id, listener);
+                EventCenter<TID>.RemoveListener(id, listener);
+            }
+        }
         #endregion
 
-        /// <summary>清除所有监听</summary>
-        public void Clear<TID>()
+        public void Clear()
         {
-            foreach (var msgs in _entrepot)
+            foreach (var egs in _entrepot)
             {
-                if (msgs.Key is TID tid)
-                {
-                    foreach (var msg in msgs.Value)
-                    {
-                        EventCenter<TID>.RemoveListener(tid, msg);
-                    }
-                    msgs.Value.Clear();
-                }
+                egs.Value?.Clear();
             }
             //_entrepot.Clear();
+        }
+        public void Clear<TID>(TID id)
+        {
+            Type t = typeof(EventGroup<TID>);
+            if (_entrepot.ContainsKey(t))
+                (_entrepot[t] as EventGroup<TID>)?.Clear(id);
+        }
+        public void Clear<TID>()
+        {
+            Type t = typeof(EventGroup<TID>);
+            if (_entrepot.ContainsKey(t))
+                _entrepot[t]?.Clear();
+        }
+        public void ClearAll()
+        {
+            Clear();
+
+            _entrepot.Clear();
         }
     }
 }

@@ -13,21 +13,23 @@ namespace Framework.Event
     public interface IEventManager
     {
 
-        /// <summary>清除指定 id 的所有监听</summary>
-        void Clear(object id);
         /// <summary>清除所有监听</summary>
         void Clear();
         /// <summary>清空消息库</summary>
         void ClearAll();
+        /// <summary>清除指定 id 所有监听</summary>
+        void Clear<TID>(TID id);
+        /// <summary>清除指定 id 类型所有监听</summary>
+        void Clear<TID>();
 
         /// <summary>添加侦听</summary>
-        void AddListener(object id, Delegate listener);
+        void AddListener<TID>(TID id, Delegate listener);
 
         /// <summary>移除侦听</summary>
-        void RemoveListener(object id, Delegate listener);
+        void RemoveListener<TID>(TID id, Delegate listener);
 
         /// <summary>发送消息</summary>
-        void Send(object id, params object[] args);
+        void Send<TID>(TID id, params object[] args);
     }
     
     /// <summary>

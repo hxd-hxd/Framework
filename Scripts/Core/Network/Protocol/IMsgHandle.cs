@@ -7,7 +7,7 @@ namespace Framework.Core.Network
 {
 
     /// <summary>
-    /// 协议消息体处理接口
+    /// 协议消息处理接口
     /// </summary>
     public interface IMsgHandle : IDisposable
     {
@@ -18,9 +18,9 @@ namespace Framework.Core.Network
         int dataLength { get; }
 
         /// <summary>处理完成事件</summary>
-        Action<object> HandleCompletedEvent { get; set; }
+        Action<object> readCompletedEvent { get; set; }
         /// <summary>处理错误事件</summary>
-        Action<object> HandleErrorEvent { get; set; }
+        Action<object> readErrorEvent { get; set; }
 
         /// <summary>
         /// 内部处理用的 <see cref="ByteBuffer"/> 字节缓冲区

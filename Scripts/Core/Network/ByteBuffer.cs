@@ -110,45 +110,6 @@ namespace Framework.Core.Network
 
 
         #region 写入
-        /// <summary>
-        /// 获取写入缓冲区数据段，会改变内部读取索引
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetWriteArraySegment(int count)
-        {
-            FixSizeAndReset(_writeIndex + count);
-            int offset = _writeIndex;
-            var r = new ArraySegment<byte>(_buffer, offset, count);
-            _writeIndex += count;
-            return r;
-        }
-
-        /// <summary>
-        /// 获取读取缓冲区数据段，会改变内部读取索引
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetReadArraySegment(int count)
-        {
-            int offset = _readIndex;
-            var r = new ArraySegment<byte>(_buffer, offset, count);
-            _readIndex += count;
-            return r;
-        }
-
-        /// <summary>
-        /// 获取缓冲区数据段
-        /// <para><paramref name="index"/>：开始索引</para>
-        /// <para><paramref name="count"/>：数据段长度</para>
-        /// </summary>
-        /// <returns></returns>
-        public ArraySegment<byte> GetArraySegment(int index, int count)
-        {
-            var r = new ArraySegment<byte>(_buffer, index, count);
-            return r;
-        }
-
         /// <summary>将 bytes 字节数组从 startIndex 开始的 length 字节写入到此缓存区</summary>
         public void Write(byte[] bytes, int startIndex, int length)
         {
@@ -323,7 +284,7 @@ namespace Framework.Core.Network
 
         #region 读取
         /// <summary> 读取 <see cref="byte[]"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         private byte[] Read(int len, bool isOffset = true)
         {
@@ -343,7 +304,7 @@ namespace Framework.Core.Network
             }
         }
         /// <summary> 读取 <see cref="byte[]"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         [Obsolete("由于会翻转原始数据，此方法不能使用")]
         public Span<byte> ReadToSpan(int len, bool isOffset = true)
@@ -362,7 +323,7 @@ namespace Framework.Core.Network
             }
         }
         /// <summary> 读取 <see cref="byte[]"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         [Obsolete("由于会翻转原始数据，此方法不能使用")]
         public ReadOnlySpan<byte> ReadToReadOnlySpan(int len, bool isOffset = true)
@@ -420,7 +381,7 @@ namespace Framework.Core.Network
             }
         }
 
-        /// <summary> 读取<see cref="byte"/> </summary>
+        /// <summary> 读取 <see cref="byte"/> </summary>
         public byte ReadByte()
         {
             lock (this)
@@ -434,82 +395,82 @@ namespace Framework.Core.Network
             }
         }
 
-        /// <summary> 读取<see cref="short"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="short"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public short ReadShort(bool isOffset = true)
         {
-            return BitConverter.ToInt16(filp(Read(2, isOffset)));
+            return BitConverter.ToInt16(filp(Read(sizeof(short), isOffset)));
         }
-        /// <summary> 读取<see cref="ushort"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="ushort"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public ushort ReadUShort(bool isOffset = true)
         {
-            return BitConverter.ToUInt16(filp(Read(2, isOffset)));
+            return BitConverter.ToUInt16(filp(Read(sizeof(ushort), isOffset)));
         }
 
-        /// <summary> 读取<see cref="int"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="int"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public int ReadInt(bool isOffset = true)
         {
-            return BitConverter.ToInt32(filp(Read(4, isOffset)));
+            return BitConverter.ToInt32(filp(Read(sizeof(int), isOffset)));
         }
-        /// <summary> 读取<see cref="uint"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="uint"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public uint ReadUInt(bool isOffset = true)
         {
-            return BitConverter.ToUInt32(filp(Read(4, isOffset)));
+            return BitConverter.ToUInt32(filp(Read(sizeof(uint), isOffset)));
         }
 
-        /// <summary> 读取<see cref="int"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="int"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public long ReadLong(bool isOffset = true)
         {
-            return BitConverter.ToInt64(filp(Read(8, isOffset)));
+            return BitConverter.ToInt64(filp(Read(sizeof(long), isOffset)));
         }
-        /// <summary> 读取<see cref="uint"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="uint"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public ulong ReadULong(bool isOffset = true)
         {
-            return BitConverter.ToUInt64(filp(Read(8, isOffset)));
+            return BitConverter.ToUInt64(filp(Read(sizeof(ulong), isOffset)));
         }
 
-        /// <summary> 读取<see cref="float"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="float"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public float ReadFloat(bool isOffset = true)
         {
-            return BitConverter.ToSingle(filp(Read(4, isOffset)));
+            return BitConverter.ToSingle(filp(Read(sizeof(float), isOffset)));
         }
 
-        /// <summary> 读取<see cref="double"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="double"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public double ReadDouble(bool isOffset = true)
         {
-            return BitConverter.ToDouble(filp(Read(8, isOffset)));
+            return BitConverter.ToDouble(filp(Read(sizeof(double), isOffset)));
         }
 
-        /// <summary> 读取<see cref="bool"/> 
-        /// <paramref name="isOffset"/>：是否偏移读取索引
+        /// <summary> 读取 <see cref="bool"/> 
+        /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public bool ReadBool(bool isOffset = true)
         {
-            return BitConverter.ToBoolean(filp(Read(2, isOffset)));
+            return BitConverter.ToBoolean(filp(Read(sizeof(bool), isOffset)));
         }
 
-        /// <summary> 读取<see cref="char"/> </summary>
+        /// <summary> 读取 <see cref="char"/> </summary>
         public char ReadChar(bool isOffset = true)
         {
-            return BitConverter.ToChar(filp(Read(2, isOffset)));
+            return BitConverter.ToChar(filp(Read(sizeof(char), isOffset)));
         }
 
-        /// <summary> 读取<see cref="string"/> 
+        /// <summary> 读取 <see cref="string"/> 
         /// <para><paramref name="useHeader"/>：true 首先解析出一个 int 作为字符串长度，根据该长度解析出字符串，false 将剩余的可读字节全部解析为 字符串</para>
         /// </summary>
         public string ReadString(bool useHeader = true)
@@ -525,7 +486,7 @@ namespace Framework.Core.Network
             }
             return ReadString(length);
         }
-        /// <summary> 读取<see cref="string"/> </para>
+        /// <summary> 读取 <see cref="string"/> </para>
         /// </summary>
         public string ReadString(int length)
         {
@@ -535,6 +496,45 @@ namespace Framework.Core.Network
             return Encoding.UTF8.GetString(bs);
         } 
         #endregion
+
+        /// <summary>
+        /// 获取写入缓冲区数据段，会改变内部读取索引
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetWriteArraySegment(int count)
+        {
+            FixSizeAndReset(_writeIndex + count);
+            int offset = _writeIndex;
+            var r = new ArraySegment<byte>(_buffer, offset, count);
+            _writeIndex += count;
+            return r;
+        }
+
+        /// <summary>
+        /// 获取读取缓冲区数据段，会改变内部读取索引
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetReadArraySegment(int count)
+        {
+            int offset = _readIndex;
+            var r = new ArraySegment<byte>(_buffer, offset, count);
+            _readIndex += count;
+            return r;
+        }
+
+        /// <summary>
+        /// 获取缓冲区数据段
+        /// <para><paramref name="index"/>：开始索引</para>
+        /// <para><paramref name="count"/>：数据段长度</para>
+        /// </summary>
+        /// <returns></returns>
+        public ArraySegment<byte> GetArraySegment(int index, int count)
+        {
+            var r = new ArraySegment<byte>(_buffer, index, count);
+            return r;
+        }
 
         /// <summary>获取写入的字节数组</summary>
         public byte[] ToArray()

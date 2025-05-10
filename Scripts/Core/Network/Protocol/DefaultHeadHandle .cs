@@ -51,12 +51,14 @@ namespace Framework.Core.Network
         {
             ReadHandle(buffer, (out object result) =>
             {
+                result = null;
                 if (buffer == null) throw new ArgumentNullException(nameof(buffer));
                 if (buffer.GetReadableBytesLength() < length) throw new Exception($"数据长度不够 {length}");
+                //if (buffer.GetReadableBytesLength() < 1) return false;
 
-                msgLength = buffer.ReadInt();
+                msgLength = buffer.ReadInt(0);
                 result = msgLength;
-                return true;
+                return false;
             });
         }
     }

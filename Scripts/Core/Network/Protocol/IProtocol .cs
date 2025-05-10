@@ -14,10 +14,10 @@ namespace Framework.Core.Network
         /// <summary>构成协议消息的整体长度</summary>
         int length { get; }
 
-        /// <summary>协议包头</summary>
+        /// <summary>协议头</summary>
         IHeadHandle head { get; set; }
 
-        /// <summary>协议包体</summary>
+        /// <summary>协议体</summary>
         IMsgHandle msg { get; set; }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Framework.Core.Network
         /// <returns></returns>
         ArraySegment<byte> GetDataArraySegment();
 
-        /// <summary>重置，用于消息内部状态恢复到初始</summary>
+        /// <summary>重置，用于内部状态恢复到初始</summary>
         void Reset();
 
         /// <summary>清除</summary>
@@ -45,10 +45,10 @@ namespace Framework.Core.Network
         where THead : IHeadHandle
         where TMsg : IMsgHandle
     {
-        /// <summary>协议包头</summary>
+        /// <summary>协议头</summary>
         new THead head { get; set; }
 
-        /// <summary>协议包体</summary>
+        /// <summary>协议体</summary>
         new TMsg msg { get; set; }
 
     }

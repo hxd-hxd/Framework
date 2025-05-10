@@ -24,7 +24,7 @@ namespace Framework.Core.Network
                 r = false;
             }
 
-            length = dataLength;
+            //length = dataLength;
             return r;
         }
 
@@ -32,10 +32,15 @@ namespace Framework.Core.Network
         {
             ReadHandle(buffer, (out object result) =>
             {
+                result = null;
                 if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-                if (buffer.GetReadableBytesLength() < 1) throw new Exception($"数据长度不够");
+                //if (buffer.GetReadableBytesLength() < 1) throw new Exception($"数据长度不够");
+                if (buffer.GetReadableBytesLength() < 1) return false;
 
                 result = buffer.ReadString();
+
+                if (buffer.GetReadableBytesLength() < 1) return false;
+
                 return true;
             });
         }

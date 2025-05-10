@@ -63,8 +63,6 @@ namespace Framework.Core.Network
                     if (_receiveDelayTask != null)
                         await _receiveDelayTask;
 
-                    //TODO：处理半包、粘包
-
                     _readProtocol.Reset();
 
                     if (_readProtocol == null)
@@ -100,10 +98,12 @@ namespace Framework.Core.Network
                     }
                     bool bR = await ReceiveAsync(msgHandle, (received, data) =>
                     {
-                        msgHandle.HandleCompletedEvent = (result) =>
-                        Log.Info($"接收的 消息长度：{received}，消息内容：{result}");
+                        msgHandle.readCompletedEvent = (result) =>
+                        Log.Info($"接收消息内容：{result}");
 
                         ReadMsg();
+
+                        Log.Info($"接收的 消息长度：{received}");
                     });
 
                     if (!bR) break;
@@ -152,28 +152,11 @@ namespace Framework.Core.Network
 
             Send();
         }
-        /// <summary>写入发送数据</summary>
-        protected virtual bool SendWrite(object msg)
+        /// <summary>写入发送数据，不会立即发送，可调用 <see cref="Send()"/> 立即发送</summary>
+        public virtual bool SendWrite(object msg)
         {
             return _writeProtocol.msg.WriteHandle(msg);
         }
-
-        #region TODO：有待商榷是否去掉
-        /// <summary>发送数据</summary>
-        public virtual void Send(string msg)
-        {
-            writeBuffer.Write(msg);
-
-            Send();
-        }
-        /// <summary>发送数据</summary>
-        public virtual void Send(byte[] bytes)
-        {
-            writeBuffer.Write(bytes);
-
-            Send();
-        }
-        #endregion
 
         /// <summary>发送</summary>
         public virtual async void Send()

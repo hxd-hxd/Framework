@@ -7,26 +7,21 @@ namespace Framework.Core.Network
 {
 
     /// <summary>
-    /// 协议消息体处理基类
+    /// 协议消息处理基类
     /// </summary>
     public abstract class MsgHandleBase : IMsgHandle
     {
         private Action<object> _handleCompletedEvent;
         private Action<object> _handleErrorEvent;
 
-        /// <summary>读取处理事件</summary>
-        public Action<ByteBuffer> ReadHandleEvent;
-
         private ByteBuffer _buffer;
+        private int _length;
 
         private bool disposedValue;
 
-        public virtual int length { get; set; }
+        public virtual int length { get => _length; set => _length = value; }
         public virtual int dataLength { get => buffer.GetReadableBytesLength(); }
 
-        /// <summary>
-        /// 内部处理用的 <see cref="ByteBuffer"/>
-        /// </summary>
         public ByteBuffer buffer
         {
             get
@@ -39,23 +34,23 @@ namespace Framework.Core.Network
                 return _buffer;
             }
         }
-        /// <summary>处理完成事件</summary>
-        public Action<object> HandleCompletedEvent
+        /// <summary>读取完成事件</summary>
+        public Action<object> readCompletedEvent
         {
             get => _handleCompletedEvent;
             set => _handleCompletedEvent = value;
         }
-        /// <summary>处理错误事件</summary>
-        public Action<object> HandleErrorEvent
+        /// <summary>读取错误事件</summary>
+        public Action<object> readErrorEvent
         {
             get => _handleErrorEvent;
             set => _handleErrorEvent = value;
         }
 
-        /// <summary>调用 <see cref="HandleCompletedEvent"/></summary>
-        protected void CallHandleCompletedEvent(object v) => HandleCompletedEvent?.Invoke(v);
-        /// <summary>调用 <see cref="HandleErrorEvent"/></summary>
-        protected void CallHandleErrorEvent(object v) => HandleErrorEvent?.Invoke(v);
+        /// <summary>调用 <see cref="readCompletedEvent"/></summary>
+        protected void CallReadCompletedEvent(object v) => readCompletedEvent?.Invoke(v);
+        /// <summary>调用 <see cref="readErrorEvent"/></summary>
+        protected void CallReadErrorEvent(object v) => readErrorEvent?.Invoke(v);
 
 
         public virtual bool WriteHandle(object msg)
@@ -95,28 +90,33 @@ namespace Framework.Core.Network
         public abstract void ReadHandle(ByteBuffer buffer);
 
         /// <summary>
-        /// 通用处理
+        /// 通用处理，可处理多条消息
+        /// <para><paramref name="func"/>：处理回调，反回是否继续处理，继续处理可用于处理多条消息，result：处理后得到的对象</para>
         /// </summary>
-        /// <param name="func">处理回调，反回是否成功，处理后得到的对象</param>
         protected void ReadHandle(ByteBuffer buffer, HandleCallback func)
         {
             object msg = null;
+
             try
             {
-                if (func(out msg))
+                do
                 {
-                    ReadHandleEvent?.Invoke(buffer);
-                    CallHandleCompletedEvent(msg);
+                    bool r = func(out msg);
+
+                    CallReadCompletedEvent(msg);
+
+                    if (!r)
+                    {
+                        //CallReadErrorEvent(msg);
+                        break;
+                    }
                 }
-                else
-                {
-                    CallHandleErrorEvent(msg);
-                }
+                while (true);
             }
             catch (Exception ex)
             {
                 Log.Error(ex);
-                CallHandleErrorEvent(msg);
+                CallReadErrorEvent(msg);
             }
         }
 
@@ -129,8 +129,8 @@ namespace Framework.Core.Network
         public virtual void Clear()
         {
             _buffer?.Clear();
-            HandleCompletedEvent = null;
-            HandleErrorEvent = null;
+            readCompletedEvent = null;
+            readErrorEvent = null;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -142,8 +142,8 @@ namespace Framework.Core.Network
                     // 释放托管状态(托管对象)
                     ((IDisposable)buffer)?.Dispose();
                     _buffer = null;
-                    HandleCompletedEvent = null;
-                    HandleErrorEvent = null;
+                    readCompletedEvent = null;
+                    readErrorEvent = null;
                 }
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
@@ -171,7 +171,7 @@ namespace Framework.Core.Network
         /// 处理回调
         /// </summary>
         /// <param name="result"></param>
-        /// <returns></returns>
+        /// <returns>是否继续处理</returns>
         protected delegate bool HandleCallback(out object result);
     }
 }

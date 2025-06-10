@@ -400,14 +400,14 @@ namespace Framework.Core.Network
         /// </summary>
         public short ReadShort(bool isOffset = true)
         {
-            return BitConverter.ToInt16(filp(Read(sizeof(short), isOffset)));
+            return BitConverter.ToInt16(filp(Read(sizeof(short), isOffset)), 0);
         }
         /// <summary> 读取 <see cref="ushort"/> 
         /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public ushort ReadUShort(bool isOffset = true)
         {
-            return BitConverter.ToUInt16(filp(Read(sizeof(ushort), isOffset)));
+            return BitConverter.ToUInt16(filp(Read(sizeof(ushort), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="int"/> 
@@ -415,14 +415,14 @@ namespace Framework.Core.Network
         /// </summary>
         public int ReadInt(bool isOffset = true)
         {
-            return BitConverter.ToInt32(filp(Read(sizeof(int), isOffset)));
+            return BitConverter.ToInt32(filp(Read(sizeof(int), isOffset)), 0);
         }
         /// <summary> 读取 <see cref="uint"/> 
         /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public uint ReadUInt(bool isOffset = true)
         {
-            return BitConverter.ToUInt32(filp(Read(sizeof(uint), isOffset)));
+            return BitConverter.ToUInt32(filp(Read(sizeof(uint), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="int"/> 
@@ -430,14 +430,14 @@ namespace Framework.Core.Network
         /// </summary>
         public long ReadLong(bool isOffset = true)
         {
-            return BitConverter.ToInt64(filp(Read(sizeof(long), isOffset)));
+            return BitConverter.ToInt64(filp(Read(sizeof(long), isOffset)), 0);
         }
         /// <summary> 读取 <see cref="uint"/> 
         /// <para><paramref name="isOffset"/>：是否偏移读取索引</para>
         /// </summary>
         public ulong ReadULong(bool isOffset = true)
         {
-            return BitConverter.ToUInt64(filp(Read(sizeof(ulong), isOffset)));
+            return BitConverter.ToUInt64(filp(Read(sizeof(ulong), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="float"/> 
@@ -445,7 +445,7 @@ namespace Framework.Core.Network
         /// </summary>
         public float ReadFloat(bool isOffset = true)
         {
-            return BitConverter.ToSingle(filp(Read(sizeof(float), isOffset)));
+            return BitConverter.ToSingle(filp(Read(sizeof(float), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="double"/> 
@@ -453,7 +453,7 @@ namespace Framework.Core.Network
         /// </summary>
         public double ReadDouble(bool isOffset = true)
         {
-            return BitConverter.ToDouble(filp(Read(sizeof(double), isOffset)));
+            return BitConverter.ToDouble(filp(Read(sizeof(double), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="bool"/> 
@@ -461,13 +461,13 @@ namespace Framework.Core.Network
         /// </summary>
         public bool ReadBool(bool isOffset = true)
         {
-            return BitConverter.ToBoolean(filp(Read(sizeof(bool), isOffset)));
+            return BitConverter.ToBoolean(filp(Read(sizeof(bool), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="char"/> </summary>
         public char ReadChar(bool isOffset = true)
         {
-            return BitConverter.ToChar(filp(Read(sizeof(char), isOffset)));
+            return BitConverter.ToChar(filp(Read(sizeof(char), isOffset)), 0);
         }
 
         /// <summary> 读取 <see cref="string"/> 

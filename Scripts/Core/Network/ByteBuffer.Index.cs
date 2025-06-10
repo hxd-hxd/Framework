@@ -224,66 +224,66 @@ namespace Framework.Core.Network
         /// </summary>
         public short ReadShort(int index)
         {
-            return BitConverter.ToInt16(filp(Read(index, 2)));
+            return BitConverter.ToInt16(filp(Read(index, sizeof(short))), 0);
         }
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="ushort"/> 
         /// </summary>
         public ushort ReadUShort(int index)
         {
-            return BitConverter.ToUInt16(filp(Read(index, 2)));
+            return BitConverter.ToUInt16(filp(Read(index, sizeof(ushort))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="int"/> 
         /// </summary>
         public int ReadInt(int index)
         {
-            return BitConverter.ToInt32(filp(Read(index, 4)));
+            return BitConverter.ToInt32(filp(Read(index, sizeof(int))), 0);
         }
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="uint"/> 
         /// </summary>
         public uint ReadUInt(int index)
         {
-            return BitConverter.ToUInt32(filp(Read(index, 4)));
+            return BitConverter.ToUInt32(filp(Read(index, sizeof(uint))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="int"/> 
         /// </summary>
         public long ReadLong(int index)
         {
-            return BitConverter.ToInt64(filp(Read(index, 8)));
+            return BitConverter.ToInt64(filp(Read(index, sizeof(long))), 0);
         }
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="uint"/> 
         /// </summary>
         public ulong ReadULong(int index)
         {
-            return BitConverter.ToUInt64(filp(Read(index, 8)));
+            return BitConverter.ToUInt64(filp(Read(index, sizeof(ulong))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="float"/> 
         /// </summary>
         public float ReadFloat(int index)
         {
-            return BitConverter.ToSingle(filp(Read(index, 4)));
+            return BitConverter.ToSingle(filp(Read(index, sizeof(float))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="double"/> 
         /// </summary>
         public double ReadDouble(int index)
         {
-            return BitConverter.ToDouble(filp(Read(index, 8)));
+            return BitConverter.ToDouble(filp(Read(index, sizeof(double))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="bool"/> 
         /// </summary>
         public bool ReadBool(int index)
         {
-            return BitConverter.ToBoolean(filp(Read(index, 2)));
+            return BitConverter.ToBoolean(filp(Read(index, sizeof(bool))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取<see cref="char"/> </summary>
         public char ReadChar(int index)
         {
-            return BitConverter.ToChar(filp(Read(index, 2)));
+            return BitConverter.ToChar(filp(Read(index, sizeof(char))), 0);
         }
 
         /// <summary>从 <paramref name="index"/> 索引开始读取 <see cref="string"/> 

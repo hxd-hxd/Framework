@@ -1,0 +1,16 @@
+{
+    "name": "Framework.GoogleProtobufExpress",
+    "rootNamespace": "Framework.GoogleProtobufExpress",
+    "references": [
+        "GUID:9a4f606abf495854485e5a9a7de52423"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

@@ -1,0 +1,20 @@
+{
+    "name": "FrameworkTest.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9a4f606abf495854485e5a9a7de52423",
+        "GUID:5cf10eb1c5acd1440ba8519ef5553216",
+        "GUID:0dc2171ec43c18749864bd4f201a01ab",
+        "GUID:0a3b6cac2beaef24c8465a403cf0c9e9",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

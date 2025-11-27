@@ -20,6 +20,20 @@ namespace Framework
     /// </summary>
     public static partial class ExtendUtility
     {
+        #region Unity 物体查找扩展
+        /// <summary>
+        /// 查找对应的物体，并获取组件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static T Find<T>(this Transform obj, string name)
+        {
+            var t = obj.Find(name);
+            return t ? t.GetComponent<T>() : default(T);
+        }
+
         /// <summary>
         /// 在所有子节点中找到指定名称的第一个
         /// </summary>
@@ -51,16 +65,17 @@ namespace Framework
 
             return result;
         }
+
         /// <summary>
         /// 在所有子节点中找到指定名称的第一个，并获取其上指定组件
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static T FindOf<T>(this Transform obj, string name) where T : Component
+        public static T FindOf<T>(this Transform obj, string name)
         {
             var t = FindOf(obj, name);
-            return t ? t.GetComponent<T>() : null;
+            return t ? t.GetComponent<T>() : default(T);
         }
         /// <summary>
         /// 在所有子节点中找到指定名称的第一个，并获取其上指定组件
@@ -70,32 +85,63 @@ namespace Framework
         /// <param name="name"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryFindOf<T>(this Transform obj, string name, out T result) where T : Component
+        public static bool TryFindOf<T>(this Transform obj, string name, out T result)
         {
             result = obj.FindOf<T>(name);
-
-            return result;
+            return IsNull(result);
         }
+
         /// <summary>
         /// 在所有子节点中找到指定名称的第一个
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static Transform FindOf(this GameObject obj, string name)
+        public static GameObject FindOf(this GameObject obj, string name)
         {
-            return FindOf(obj.transform, name);
+            var t = FindOf(obj.transform, name);
+            return t ? t.gameObject : default;
+            //return FindOf(obj.transform, name);
         }
         /// <summary>
         /// 尝试在所有子节点中找到指定名称的第一个
         /// </summary>
         /// <returns></returns>
-        public static bool TryFindOf(this GameObject obj, string name, out Transform result)
+        public static bool TryFindOf(this GameObject obj, string name, out GameObject result)
         {
             result = obj.FindOf(name);
-
             return result;
         }
+
+        /// <summary>
+        /// 在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/>
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static T FindOf<T>(this GameObject obj, string name)
+        {
+            var t = FindOf(obj, name);
+            return t ? t.GetComponent<T>() : default(T);
+            //return FindOf(obj.transform, name);
+        }
+        /// <summary>
+        /// 尝试在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/>
+        /// </summary>
+        /// <returns></returns>
+        public static bool TryFindOf<T>(this GameObject obj, string name, out T result)
+        {
+            result = obj.FindOf<T>(name);
+            return IsNull(result);
+        }
+
+        // 检查是否空对象，由于 unity 对其定义的 UnityEngine.Object 做了特殊处理，这里也处理了unity 的这种特殊情况
+        private static bool IsNull<T>(T obj)
+        {
+            if (obj is UnityEngine.Object uobj) return uobj == null;
+            return obj == null;
+        }
+        #endregion
 
         /// <summary>
         /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写

@@ -78,10 +78,16 @@ namespace Framework.YooAssetExpress
             throw new System.NotImplementedException();
         }
 
+        DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
+        {
+            throw new NotImplementedException();
+        }
+
         private static uint GetManagedReadBufferSize()
         {
             return 1024;
         }
+
     }
 
     /// <summary>
@@ -145,6 +151,11 @@ namespace Framework.YooAssetExpress
         string IDecryptionServices.ReadFileText(DecryptFileInfo fileInfo)
         {
             throw new System.NotImplementedException();
+        }
+
+        DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
+        {
+            throw new NotImplementedException();
         }
 
         private static ulong GetFileOffset()

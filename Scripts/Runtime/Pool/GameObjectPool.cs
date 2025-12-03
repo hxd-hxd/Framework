@@ -98,6 +98,8 @@ namespace Framework
 
         [SerializeField]
         GameObject _template;
+        [SerializeField]
+        Transform _returnParent;
         Dictionary<GameObject, Queue<GameObject>> _pool;
         List<Coroutine> _preCreateInstanceCoroutines = new List<Coroutine>();
         ///// <summary>
@@ -132,6 +134,20 @@ namespace Framework
         /// 默认模板
         /// </summary>
         public GameObject template { get => _template; set => _template = value; }
+        /// <summary>
+        /// 池中物体的父节点
+        /// </summary>
+        public Transform returnParent {
+            get
+            {
+                if (_returnParent == null)
+                {
+                    return GOManager.transform;
+                }
+                return _returnParent;
+            }
+            set => _returnParent = value; 
+        }
 
         /// <summary>
         /// 池子的数量
@@ -244,10 +260,22 @@ namespace Framework
         /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
         public virtual GameObject Get()
         {
-            return Get(_template);
+            return Get(_template, null);
+        }
+
+        /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
+        public virtual GameObject Get(GameObject template)
+        {
+            return Get(template, null);
+        }
+        /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
+        public virtual GameObject Get(Transform parent)
+        {
+            var obj = Get(_template, parent);
+            return obj;
         }
         /// <summary>从对象池获取</summary>
-        public virtual GameObject Get(GameObject template)
+        public virtual GameObject Get(GameObject template, Transform parent)
         {
             if (template == null) return null;
 
@@ -263,8 +291,8 @@ namespace Framework
                 {
                     //tPool.TryDequeue(out obj);
                     obj = tPool.Dequeue();
-                    if (obj != null)
-                        obj.transform.SetParent(null);
+                    //if (obj != null)
+                    //    obj.transform.SetParent(null);
                 }
             }
             else
@@ -273,6 +301,8 @@ namespace Framework
                 pool[target] = tPool;
             }
             if (!obj) obj = CreateInstance(target);
+            if (obj != null)
+                obj.transform.SetParent(parent);
 
             var prc = obj.GetComponent<PoolRecordComponent>();
             if (!prc) prc = obj.AddComponent<PoolRecordComponent>();
@@ -300,21 +330,6 @@ namespace Framework
             return obj;
         }
 
-        /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
-        public virtual GameObject Get(Transform parent)
-        {
-            var obj = Get();
-            obj.transform.SetParent(parent);
-            return obj;
-        }
-        /// <summary>从对象池获取</summary>
-        public virtual GameObject Get(GameObject template, Transform parent)
-        {
-            var obj = Get(template);
-            obj.transform.SetParent(parent);
-            return obj;
-        }
-
         /// <summary>返回对象池，默认返回到 <see cref="template"/> 对应的池子，如果不确定请使用 <see cref="Return(GameObject, GameObject)"/> 已指定返回到哪个池子</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
         public virtual void Return(GameObject obj) => Return(obj, _template);
@@ -336,7 +351,11 @@ namespace Framework
             if (!tPool.Contains(obj))
             {
                 tPool.Enqueue(obj);
-                obj.transform.SetParent(GOManager.transform);
+                obj.transform.SetParent(returnParent);
+                if (returnParent != GOManager.transform)
+                {
+                    obj.SetActive(false);
+                }
 
                 // 清理操作
                 CleanupObject(obj);

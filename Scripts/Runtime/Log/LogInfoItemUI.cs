@@ -57,14 +57,6 @@ namespace Framework.LogSystem
             set { SetLogInfo(_logInfo); }
         }
 
-        void ITypePoolObject.Clear()
-        {
-            isOpenBG = false;
-            isSelected = false;
-            text = null;
-            SetLogInfo(null);
-        }
-
         void Start()
         {
             if (_btnUI)
@@ -100,6 +92,15 @@ namespace Framework.LogSystem
             {
                 _textUI.color = _logInfo.logColor;
             }
+        }
+
+        void ITypePoolObject.Clear()
+        {
+            isOpenBG = false;
+            isSelected = false;
+            text = null;
+            clickEvent = null;
+            SetLogInfo(null);
         }
     }
 }

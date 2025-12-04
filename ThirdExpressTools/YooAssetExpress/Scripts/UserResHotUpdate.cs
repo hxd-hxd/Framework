@@ -6,15 +6,16 @@
 #pragma warning disable 0219
 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Framework.Event;
-using UnityEngine.Diagnostics;
 
 namespace Framework
 {
+    /// <summary>
+    /// 用户处理的资源热更新
+    /// </summary>
     public class UserResHotUpdate : MonoBehaviour
     {
         EventGroup _eventGroup = new EventGroup();

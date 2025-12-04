@@ -39,7 +39,7 @@ namespace Framework
     /// Unity 单例模式
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class MonoBehaviourSingleton<T> : MonoBehaviour where T : Component
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : Component
     {
         readonly static object locker = new object();
 

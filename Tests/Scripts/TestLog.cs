@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Framework.Test
 {
-    public class TestLog : MonoBehaviourSingleton<TestLog>
+    public class TestLog : MonoSingleton<TestLog>
     {
         public Button logBtn;
         public InputField inputInfoUI;

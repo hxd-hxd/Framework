@@ -16,6 +16,9 @@ namespace Framework
     [Serializable]
     public partial class GameObjectPool
     {
+
+        internal static List<GameObjectPool> _pools = new List<GameObjectPool>();
+
         static GameObjectPoolMonitor _monitor;
         static GameObjectPool _root;
         static GameObject _GOManager;
@@ -96,6 +99,18 @@ namespace Framework
             //Debug.Log($"{nameof(GameObjectPool)} 静态初始化");
         }
 
+        /// <summary>
+        /// 清理所有对象池
+        /// </summary>
+        public static void ClearAllPool()
+        {
+            foreach (var pool in _pools)
+            {
+                pool.Clear();
+            }
+        }
+
+
         [SerializeField]
         GameObject _template;
         [SerializeField]
@@ -110,20 +125,28 @@ namespace Framework
         public GameObjectPool()
         {
             _pool = new Dictionary<GameObject, Queue<GameObject>>(1);
+
+            _pools.Add(this);
         }
         public GameObjectPool(int capacity)
         {
             _pool = new Dictionary<GameObject, Queue<GameObject>>(capacity);
+
+            _pools.Add(this);
         }
         public GameObjectPool(GameObject template)
         {
             _pool = new Dictionary<GameObject, Queue<GameObject>>(1);
             this._template = template;
+
+            _pools.Add(this);
         }
         public GameObjectPool(int capacity, GameObject template)
         {
             _pool = new Dictionary<GameObject, Queue<GameObject>>(capacity);
             this._template = template;
+
+            _pools.Add(this);
         }
 
         /// <summary>
@@ -422,8 +445,18 @@ namespace Framework
                     if (_go)
                         GameObject.Destroy(_go);
                 }
+                t.Value.Clear();
             }
             _pool.Clear();
+        }
+
+        /// <summary>
+        /// 销毁
+        /// </summary>
+        public void Destroy()
+        {
+            Clear();
+            _pools.Remove(this);
         }
 
         protected static Queue<GameObject> CreatePool()

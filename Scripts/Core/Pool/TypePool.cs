@@ -15,23 +15,38 @@ namespace Framework
     [Serializable]
     public class TypePool
     {
+        internal static  List<TypePool> _pools = new List<TypePool>();
+
         /// <summary>
         /// 公共池，不管理自己的对象池时使用
         /// </summary>
         public static TypePool root { get; } = new TypePool();
 
+        /// <summary>
+        /// 清理所有对象池
+        /// </summary>
+        public static void ClearAllPool()
+        {
+            foreach (var pool in _pools)
+            {
+                pool.Clear();
+            }
+        }
+
         protected Dictionary<Type, List<object>> _pool;
 
         protected Type[] _tempTypes1 = new Type[1], _tempTypes2 = new Type[2];
 
-        public TypePool()
+        public TypePool() : this(1)
         {
-            _pool = new Dictionary<Type, List<object>>();
+            //_pool = new Dictionary<Type, List<object>>();
         }
 
         public TypePool(int capacity)
         {
             _pool = new Dictionary<Type, List<object>>(capacity);
+
+            _pools.Add(this);
         }
 
         public Dictionary<Type, List<object>> pool => _pool;
@@ -1152,8 +1167,22 @@ namespace Framework
         /// <summary>清除对象池</summary>
         public virtual void Clear()
         {
+            foreach (var item in _pool)
+            {
+                item.Value?.Clear();
+            }
             _pool.Clear();
         }
+
+        /// <summary>
+        /// 销毁
+        /// </summary>
+        public void Destroy()
+        {
+            Clear();
+            _pools.Remove(this);
+        }
+
     }
 
 }

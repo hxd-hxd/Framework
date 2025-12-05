@@ -25,6 +25,7 @@ namespace Framework
         /// 主画布
         /// </summary>
         private static Canvas mainCanvas;
+        private static bool _findMainCanvas = true;
 
         static GameObject otherUIParent;
 
@@ -57,24 +58,28 @@ namespace Framework
         {
             get
             {
-                if (!mainCanvas)
+                if (_findMainCanvas)
                 {
-                    MainCanvas mc;
+                    _findMainCanvas = false;
+                    if (!mainCanvas)
+                    {
+                        MainCanvas mc;
 #if UNITY_2020_3_OR_NEWER
-                    mc = Object.FindObjectOfType<MainCanvas>(true);
+                        mc = Object.FindObjectOfType<MainCanvas>(true);
 #else
                     mc = Object.FindObjectOfType<MainCanvas>();
 #endif
-                    if (mc)
-                        mainCanvas = mc.m_mainCanvas;
+                        if (mc)
+                            mainCanvas = mc.m_mainCanvas;
+                    }
                 }
 
-                if (!mainCanvas)
-                {
-                    var mc = ResourcesManager.Load<GameObject>(Path.Combine(panelLoadPath, "MainCanvas"));
-                    if (mc)
-                        mainCanvas = Object.Instantiate(mc).GetComponent<Canvas>();
-                }
+                //if (!mainCanvas)
+                //{
+                //    var mc = ResourcesManager.Load<GameObject>(Path.Combine(panelLoadPath, "MainCanvas"));
+                //    if (mc)
+                //        mainCanvas = Object.Instantiate(mc).GetComponent<Canvas>();
+                //}
 
                 return mainCanvas;
             }
@@ -192,11 +197,13 @@ namespace Framework
                 {
                     // 如果场景中没有，就实例化出来
                     string path = assetName;
-                    GameObject prefab = ResourcesManager.Load<GameObject>(path);
+                    GameObject prefab = ResourcesManager.LoadAssetObject<GameObject>(path);
                     if (prefab != null)
                     {
                         GameObject go = Object.Instantiate(prefab);
-                        go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
+                        //go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
+                        if (MainCanvas)
+                            go.transform.SetParent(MainCanvas.transform);// 将新界面设置到 UI 节点
 
                         panel = go.GetComponent<UIPanelBase>();
                         if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);

@@ -53,13 +53,13 @@ namespace Framework
 
         /// <summary>
         /// 此界面是否启用
-        /// <para>ps：此设置只是一个额外的标识，不会真的影响界面的启用，启用界面请使用 <see cref="Enable(bool)"/></para>
+        /// <para>ps：此设置只是一个额外的标识，不会真的影响界面的显示，显示界面请使用 <see cref="Enable(bool)"/></para>
         /// </summary>
         public override bool isEnable
         {
             get
             {
-                if(gameObject==null) return false;
+                if (gameObject == null) return false;
                 return gameObject.activeInHierarchy && _isEnable;
             }
             set

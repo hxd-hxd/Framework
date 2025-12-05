@@ -9,7 +9,7 @@ namespace Framework
     /// <summary>
     /// 用于管理 <see cref="IUI"/>
     /// </summary>
-    public static class UIManager
+    public class UIManager : Singleton<UIManager>
     {
         static Dictionary<Type, IUI> uis = new Dictionary<Type, IUI>(20);
 
@@ -115,7 +115,7 @@ namespace Framework
                 return false;
             }
             Type type = ui.GetType();
-            if (uis.TryGetValue(type, out var bui))
+            if (uis.TryGetValue(type, out  var bui))
             {
                 //if (bui == ui)
                 if (object.Equals(bui, ui))

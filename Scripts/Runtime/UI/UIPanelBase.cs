@@ -14,23 +14,23 @@ namespace Framework
     /// <summary>
     /// UGUI 界面基类
     /// </summary>
-    public abstract class BaseUIPanel : BaseUI
+    public abstract class UIPanelBase : UIBase
     {
         [Tooltip("所属画布")]
         [SerializeField] protected Canvas _canvas;
 
         [Tooltip("是否被占用")]
-        [SerializeField] protected bool isOccupy;// 是否被占用
+        [SerializeField] protected bool _isOccupy;// 是否被占用
         [Tooltip("自动置顶")]
-        [SerializeField] protected bool autoPanelTopmost = true;// 自动置顶
+        [SerializeField] protected bool _autoPanelTopmost = true;// 自动置顶
         [Tooltip("常驻界面")]
-        [SerializeField] protected bool permanent = false;
+        [SerializeField] protected bool _permanent = false;
         [Tooltip("此界面是否启用")]
         [SerializeField] protected bool _isEnable = true;
         [Tooltip("是否阻挡其他射线")]
-        [SerializeField] protected bool isResistRay = true;
+        [SerializeField] protected bool _isResistRay = true;
         [Tooltip("界面排序等级。界面排序考虑到各种情况较为复杂，如遇到此选项影响不到或有问题的界面，请考虑调整界面使用策略。")]
-        [SerializeField] protected int sortOrderLevel = 0;
+        [SerializeField] protected int _sortOrderLevel = 0;
 
         public Action OnEnableEvent;
         public Action OnDisableEvent;
@@ -41,11 +41,11 @@ namespace Framework
         /// <para>ps：如果界面标识被占用，就无法通过 <see cref="UIPanelManager.GetPanel"/> 获取到，直到占用方取消占用</para>
         /// <para>请谨慎使用，以免引发不必要的麻烦</para>
         /// </summary>
-        public virtual bool IsOccupy { get => isOccupy; set => isOccupy = value; }
+        public virtual bool IsOccupy { get => _isOccupy; set => _isOccupy = value; }
         /// <summary>
         /// 自动置顶
         /// </summary>
-        public virtual bool AutoPanelTopmost { get => autoPanelTopmost; set => autoPanelTopmost = value; }
+        public virtual bool AutoPanelTopmost { get => _autoPanelTopmost; set => _autoPanelTopmost = value; }
         /// <summary>
         /// 界面所属画布
         /// </summary>
@@ -70,7 +70,7 @@ namespace Framework
         /// <summary>
         /// 常驻界面
         /// </summary>
-        public bool Permanent { get => permanent; set => permanent = value; }
+        public bool Permanent { get => _permanent; set => _permanent = value; }
         /// <summary>
         /// 是否阻挡其他射线
         /// <para>注意：获取时同时启用 <see cref="isEnable"/> 才有效</para>
@@ -79,17 +79,17 @@ namespace Framework
         {
             get
             {
-                return isResistRay && isEnable;
+                return _isResistRay && isEnable;
             }
             set
             {
-                isResistRay = value;
+                _isResistRay = value;
             }
         }
 
         /// <summary>
         /// 界面排序等级
-        /// <para>注意：会影响到 <see cref="UIPanelManager.PanelTopmost(BaseUIPanel, bool, bool)"/> 的排序策略。</para>
+        /// <para>注意：会影响到 <see cref="UIPanelManager.PanelTopmost(UIPanelBase, bool, bool)"/> 的排序策略。</para>
         /// <para>界面排序考虑到各种情况较为复杂，如遇到此选项影响不到或有问题的界面，请考虑调整界面使用策略。</para>
         /// <para>默认最会在同级、低级中排序。</para>
         /// </summary>
@@ -97,11 +97,11 @@ namespace Framework
         {
             get
             {
-                return sortOrderLevel;
+                return _sortOrderLevel;
             }
             set
             {
-                sortOrderLevel = value;
+                _sortOrderLevel = value;
             }
         }
 
@@ -127,7 +127,7 @@ namespace Framework
             //Debug.Log($"{this} OnEnable");
             UIPanelManager.GetCanvas(this);
 
-            if (autoPanelTopmost)
+            if (_autoPanelTopmost)
                 this.PanelTopmost();
 
             OnEnableEvent?.Invoke();

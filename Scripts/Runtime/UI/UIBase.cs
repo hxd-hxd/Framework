@@ -9,7 +9,7 @@ namespace Framework
     /// <summary>
     /// UGUI 基类
     /// </summary>
-    public abstract partial class BaseUI : MonoBehaviour, IUI
+    public abstract partial class UIBase : MonoBehaviour, IUI
     {
         string IUI.name
         {
@@ -47,6 +47,13 @@ namespace Framework
             UIManager.Unregister(this);
         }
 
+        /// <summary>
+        /// 在刷新的时候触发
+        /// </summary>
+        protected virtual void OnRefresh()
+        {
+
+        }
 
         public virtual void Init()
         {
@@ -66,6 +73,14 @@ namespace Framework
             if (gameObject.activeSelf == isEnable) return;
 
             gameObject.SetActive(isEnable);
+        }
+
+        /// <summary>
+        /// 刷新
+        /// </summary>
+        public void Refresh()
+        {
+            OnRefresh();
         }
 
         /// <summary>

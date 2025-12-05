@@ -9,7 +9,7 @@ namespace Framework.LogSystem
     /// <summary>
     /// »’÷æ∏°±Í ui 
     /// </summary>
-    public class LogBuoyUI : BaseUI
+    public class LogBuoyUI : UIBase
     {
         [SerializeField]
         private Button _logBtn;

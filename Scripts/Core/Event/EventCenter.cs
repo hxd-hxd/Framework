@@ -21,10 +21,10 @@ namespace Framework.Event
     public static partial class EventCenter
     {
         #region 事件管理器
-        static List<IEventManager> _eventManagers = new List<IEventManager>(2);
+        private static List<IEventManager> _eventManagers = new List<IEventManager>(2);
 
         /// <summary>添加事件管理器</summary>
-        public static void Add(IEventManager manager)
+        internal static void Add(IEventManager manager)
         {
             if (!_eventManagers.Contains(manager))
             {
@@ -32,7 +32,7 @@ namespace Framework.Event
             }
         }
         /// <summary>移除事件管理器</summary>
-        public static void Remove(IEventManager manager)
+        internal static void Remove(IEventManager manager)
         {
             _eventManagers.Remove(manager);
         }

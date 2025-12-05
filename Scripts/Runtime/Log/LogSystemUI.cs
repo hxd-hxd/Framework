@@ -7,7 +7,7 @@ namespace Framework.LogSystem
     /// <summary>
     /// 日志系统 ui
     /// </summary>
-    public class LogSystemUI : BaseUI
+    public class LogSystemUI : UIBase
     {
         private FpsCounter m_FpsCounter = null;
 

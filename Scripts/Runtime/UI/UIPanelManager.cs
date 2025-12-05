@@ -13,13 +13,13 @@ using Object = UnityEngine.Object;
 namespace Framework
 {
     /// <summary>
-    /// UGUI 界面管理器，用于管理派生自 <see cref="BaseUIPanel"/> 的界面
+    /// UGUI 界面管理器，用于管理派生自 <see cref="UIPanelBase"/> 的界面
     /// </summary>
-    public static class UIPanelManager
+    public class UIPanelManager
     {
         public static string panelLoadPath = "Prefabs/UI/";
 
-        static Dictionary<Type, BaseUIPanel> panelDic = new Dictionary<Type, BaseUIPanel>();
+        static Dictionary<Type, UIPanelBase> panelDic = new Dictionary<Type, UIPanelBase>();
 
         /// <summary>
         /// 主画布
@@ -89,9 +89,9 @@ namespace Framework
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool ExistPanel<T>() where T : BaseUIPanel
+        public static bool ExistPanel<T>() where T : UIPanelBase
         {
-            BaseUIPanel panel = GetPanel(typeof(T), false);
+            UIPanelBase panel = GetPanel(typeof(T));
             return panel != null;
         }
         /// <summary>
@@ -101,7 +101,7 @@ namespace Framework
         /// <returns></returns>
         public static bool ExistPanel(Type type)
         {
-            BaseUIPanel panel = GetPanel(type, false);
+            UIPanelBase panel = GetPanel(type);
             return panel != null;
         }
 
@@ -109,7 +109,7 @@ namespace Framework
         /// 注册界面
         /// </summary>
         /// <param name="panel"></param>
-        public static void Register<T>(T panel) where T : BaseUIPanel
+        public static void Register<T>(T panel) where T : UIPanelBase
         {
             Register(panel.GetType(), panel);
         }
@@ -117,7 +117,7 @@ namespace Framework
         /// 注册界面
         /// </summary>
         /// <param name="panel"></param>
-        public static void Register(Type type, BaseUIPanel panel)
+        public static void Register(Type type, UIPanelBase panel)
         {
             if (!panelDic.ContainsKey(type))
             {
@@ -137,78 +137,73 @@ namespace Framework
 
         /// <summary>
         /// 获取界面
+        /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T GetPanel<T>() where T : BaseUIPanel
+        public static T GetPanel<T>() where T : UIPanelBase
         {
-            BaseUIPanel panel = GetPanel(typeof(T));
+            UIPanelBase panel = GetPanel(typeof(T));
 
             if (panel) return (T)panel;
 
             return null;
         }
         /// <summary>
-        /// 获取界面，没有就自动加载
+        /// 获取界面
         /// </summary>
-        /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
         /// <typeparam name="T"></typeparam>
-        /// <param name="autoInstance">在界面不存在的时候自动实例化</param>
+        /// <param name="assetName">用于加载，界面资产名</param>
         /// <returns></returns>
-        public static T GetPanel<T>(bool autoInstance) where T : BaseUIPanel
+        public static T GetPanel<T>(string assetName) where T : UIPanelBase
         {
-            BaseUIPanel panel = GetPanel(typeof(T), autoInstance);
+            UIPanelBase panel = GetPanel(typeof(T), assetName);
 
             if (panel) return (T)panel;
 
             return null;
-        }
-        /// <summary>
-        /// 获取界面，没有就自动加载
-        /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static BaseUIPanel GetPanel(Type type)
-        {
-            return GetPanel(type, true);
         }
         /// <summary>
         /// 获取界面
         /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="autoInstance">在界面不存在的时候自动实例化</param>
         /// <returns></returns>
-        public static BaseUIPanel GetPanel(Type type, bool autoInstance)
+        public static UIPanelBase GetPanel(Type type)
         {
-            panelDic.TryGetValue(type, out BaseUIPanel panel);
+            return GetPanel(type, type.Name);
+        }
+        /// <summary>
+        /// 获取界面
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="assetName">界面资产名</param>
+        /// <returns></returns>
+        public static UIPanelBase GetPanel(Type type, string assetName)
+        {
+            panelDic.TryGetValue(type, out UIPanelBase panel);
 
             if (!panel)
             {
                 // 查看是否在场景中但未注册
-                panel = GameObject.FindObjectOfType(type, true) as BaseUIPanel;
+                panel = GameObject.FindObjectOfType(type, true) as UIPanelBase;
 
                 if (!panel)
                 {
-
-                    if (autoInstance)
+                    // 如果场景中没有，就实例化出来
+                    string path = assetName;
+                    GameObject prefab = ResourcesManager.Load<GameObject>(path);
+                    if (prefab != null)
                     {
-                        // 如果场景中没有，就实例化出来
-                        string path = Path.Combine(panelLoadPath, type.Name);
-                        GameObject prefab = ResourcesManager.Load<GameObject>(path);
-                        if (prefab != null)
-                        {
-                            GameObject go = Object.Instantiate(prefab);
-                            go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
+                        GameObject go = Object.Instantiate(prefab);
+                        go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
 
-                            panel = go.GetComponent<BaseUIPanel>();
-                            if (!panel) panel = go.GetComponentInChildren<BaseUIPanel>(true);
-                        }
-                        else
-                        {
-                            Log.Warning($"UI 界面实例化失败，请检查 Resources 路径 <color=yellow>{panelLoadPath}</color> 是否包含资源 <color=yellow>{type.Name}</color>");
-                        }
+                        panel = go.GetComponent<UIPanelBase>();
+                        if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);
+                    }
+                    else
+                    {
+                        Log.Warning($"UI 界面实例化失败，请检查是否包含资源 <color=yellow>“{type.Name}”</color>");
                     }
                 }
 
@@ -236,7 +231,7 @@ namespace Framework
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static Canvas GetCanvas<T>() where T : BaseUIPanel
+        public static Canvas GetCanvas<T>() where T : UIPanelBase
         {
             return GetCanvas(typeof(T));
         }
@@ -247,7 +242,7 @@ namespace Framework
         /// <returns></returns>
         public static Canvas GetCanvas(Type type)
         {
-            panelDic.TryGetValue(type, out BaseUIPanel panel);
+            panelDic.TryGetValue(type, out UIPanelBase panel);
 
             return GetCanvas(panel);
         }
@@ -256,7 +251,7 @@ namespace Framework
         /// </summary>
         /// <param name="panel"></param>
         /// <returns></returns>
-        public static Canvas GetCanvas(this BaseUIPanel panel)
+        public static Canvas GetCanvas(UIPanelBase panel)
         {
             // 检查是否自带 画布 的界面
             Canvas canvas = panel.canvas;
@@ -288,7 +283,7 @@ namespace Framework
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static bool DestroyPanel<T>() where T : BaseUIPanel
+        public static bool DestroyPanel<T>() where T : UIPanelBase
         {
             return DestroyPanel(typeof(T));
         }
@@ -299,7 +294,7 @@ namespace Framework
         /// <returns></returns>
         public static bool DestroyPanel(Type type)
         {
-            panelDic.TryGetValue(type, out BaseUIPanel panel);
+            panelDic.TryGetValue(type, out UIPanelBase panel);
 
             return DestroyPanel(panel);
         }
@@ -308,7 +303,7 @@ namespace Framework
         /// </summary>
         /// <param name="panel"></param>
         /// <returns></returns>
-        public static bool DestroyPanel(this BaseUIPanel panel)
+        public static bool DestroyPanel(UIPanelBase panel)
         {
             if (panel)
             {
@@ -327,7 +322,7 @@ namespace Framework
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static bool RemovePanel<T>() where T : BaseUIPanel
+        public static bool RemovePanel<T>() where T : UIPanelBase
         {
             return RemovePanel(typeof(T));
         }
@@ -352,7 +347,7 @@ namespace Framework
         /// </summary>
         /// <param name="panel"></param>
         /// <returns></returns>
-        public static bool RemovePanel(this BaseUIPanel panel)
+        public static bool RemovePanel(UIPanelBase panel)
         {
             return RemovePanel(panel.GetType());
         }
@@ -360,7 +355,7 @@ namespace Framework
         /// <summary>
         /// 将指定界面调整到最上层
         /// </summary>
-        public static void PanelTopmost<T>() where T : BaseUIPanel
+        public static void PanelTopmost<T>() where T : UIPanelBase
         {
             PanelTopmost(typeof(T));
         }
@@ -370,7 +365,7 @@ namespace Framework
         /// <param name="type"></param>
         public static void PanelTopmost(Type type)
         {
-            if (panelDic.TryGetValue(type, out BaseUIPanel panel))
+            if (panelDic.TryGetValue(type, out UIPanelBase panel))
             {
                 PanelTopmost(panel);
             }
@@ -379,14 +374,14 @@ namespace Framework
         /// 将指定界面调整到最上层
         /// </summary>
         /// <param name="panel"></param>
-        public static void PanelTopmost(this BaseUIPanel panel)
+        public static void PanelTopmost(UIPanelBase panel)
         {
             PanelTopmost(panel, false, true);
         }
         /// <summary>
         /// 将指定界面调整到最上层
         /// </summary>
-        public static void PanelTopmost(this BaseUIPanel panel, bool ignoreSortOrderLevel)
+        public static void PanelTopmost(UIPanelBase panel, bool ignoreSortOrderLevel)
         {
             PanelTopmost(panel, false, ignoreSortOrderLevel);
         }
@@ -399,7 +394,7 @@ namespace Framework
         /// 忽略排序等级的影响
         /// <para>注意：flase：会以此界面作为分水岭</para>
         /// </param>
-        public static void PanelTopmost(this BaseUIPanel panel, bool includeAllCanvas, bool ignoreSortOrderLevel)
+        public static void PanelTopmost(UIPanelBase panel, bool includeAllCanvas, bool ignoreSortOrderLevel)
         {
             if (!panel)
             {
@@ -575,4 +570,64 @@ namespace Framework
     }
 
 
+    public static class UIPanelManagerExtend
+    {
+
+        /// <summary>
+        /// 获取画布
+        /// </summary>
+        /// <param name="panel"></param>
+        /// <returns></returns>
+        public static Canvas GetCanvas(this UIPanelBase panel)
+        {
+            return UIPanelManager.GetCanvas(panel);
+        }
+        /// <summary>
+        /// 销毁界面
+        /// </summary>
+        /// <param name="panel"></param>
+        /// <returns></returns>
+        public static bool DestroyPanel(this UIPanelBase panel)
+        {
+            return UIPanelManager.DestroyPanel(panel);
+        }
+        /// <summary>
+        /// 移除界面
+        /// </summary>
+        /// <param name="panel"></param>
+        /// <returns></returns>
+        public static bool RemovePanel(this UIPanelBase panel)
+        {
+            return UIPanelManager.DestroyPanel(panel);
+        }
+        /// <summary>
+        /// 将指定界面调整到最上层
+        /// </summary>
+        /// <param name="panel"></param>
+        public static void PanelTopmost(this UIPanelBase panel)
+        {
+            UIPanelManager.PanelTopmost(panel, false, true);
+        }
+        /// <summary>
+        /// 将指定界面调整到最上层
+        /// </summary>
+        public static void PanelTopmost(this UIPanelBase panel, bool ignoreSortOrderLevel)
+        {
+            UIPanelManager.PanelTopmost(panel, false, ignoreSortOrderLevel);
+        }
+        /// <summary>
+        /// 将指定界面调整到最上层
+        /// </summary>
+        /// <param name="panel"></param>
+        /// <param name="includeAllCanvas">包括所有 canvas（将所有 canvas 纳入计算范围，效率不高，谨慎频繁使用）</param>
+        /// <param name="ignoreSortOrderLevel">
+        /// 忽略排序等级的影响
+        /// <para>注意：flase：会以此界面作为分水岭</para>
+        /// </param>
+        public static void PanelTopmost(this UIPanelBase panel, bool includeAllCanvas, bool ignoreSortOrderLevel)
+        {
+            UIPanelManager.PanelTopmost(panel, includeAllCanvas, ignoreSortOrderLevel);
+        }
+
+    }
 }

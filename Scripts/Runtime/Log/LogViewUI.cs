@@ -9,7 +9,7 @@ namespace Framework.LogSystem
     /// <summary>
     /// 日志操作视图 ui 
     /// </summary>
-    public class LogViewUI : BaseUI
+    public class LogViewUI : UIBase
     {
         [SerializeField]
         private GameObject _logInfoItemUITemplate;

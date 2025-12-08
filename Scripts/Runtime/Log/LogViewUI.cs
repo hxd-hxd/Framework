@@ -162,7 +162,7 @@ namespace Framework.LogSystem
 
         // 接收处理日志
         //private void OnHandleLog(string condition, string stackTrace, LogType type)
-        public void OnHandleLog(LogInfo info)
+        private void OnHandleLog(LogInfo info)
         {
             AddLogUI(info);
         }
@@ -225,6 +225,7 @@ namespace Framework.LogSystem
             if (_ui != null)
             {
                 //_ui.transform.SetParent(_logInfoItemUIParent);
+                //_ui.transform.localScale = Vector3.one;
                 _ui.transform.SetAsLastSibling();
                 if (!_ui.gameObject.activeSelf)
                     _ui.gameObject.SetActive(true);

@@ -172,4 +172,25 @@ namespace Framework
             waits.Clear();
         }
     }
+
+    /// <summary>
+    /// 协程扩展
+    /// </summary>
+    public static class CoroutineExtend
+    {
+        /// <summary>
+        /// 开始协程，会关闭之前的协程
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="coroutine"></param>
+        public static void StartCoroutine(this MonoBehaviour self, IEnumerator enumerator, ref Coroutine coroutine)
+        {
+            if (coroutine != null)
+            {
+                self.StopCoroutine(coroutine);
+            }
+            coroutine = self.StartCoroutine(enumerator);
+        }
+    }
 }

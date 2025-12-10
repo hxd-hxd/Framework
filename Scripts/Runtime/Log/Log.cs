@@ -93,7 +93,7 @@ namespace Framework
                     Info(msg, "#32FF00");
                     break;
                 case LogMode.NoIncur:
-                    Info($"Striking：\t{msg}", "#32FF00");
+                    Info($"Striking：{msg}", "#32FF00");
                     break;
                 default:
                     break;
@@ -121,7 +121,7 @@ namespace Framework
                     break;
                 case LogMode.NoIncur:
                     //Debuger($"Warning：\r\n\t{msg}", "yellow");
-                    Info($"Warning：\t{msg}", "#FDB30B");
+                    Info($"Warning：{msg}", "#FDB30B");
                     break;
                 default:
                     break;
@@ -161,7 +161,7 @@ namespace Framework
         /// <param name="msg"></param>
         public static void ErrorNoIncur(object msg)
         {
-            Debug.LogFormat("<color=red>Error：\t{0}</color>", msg);
+            Debug.LogFormat("<color=red>Error：{0}</color>", msg);
         }
     }
 }

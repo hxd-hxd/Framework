@@ -1138,7 +1138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.1981132, g: 0.1981132, b: 0.1981132, a: 0.33333334}
+  m_Color: {r: 0.1981132, g: 0.1981132, b: 0.1981132, a: 0.84313726}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1641,7 +1641,7 @@ MonoBehaviour:
   _errorToggle: {fileID: 767113681629441272}
   _excptionToggle: {fileID: 3538796194822103340}
   _logNumText: {fileID: 7270830149030625489}
-  _logShowType: 14
+  _logShowType: 255
 --- !u!114 &5864326861061273177
 MonoBehaviour:
   m_ObjectHideFlags: 0

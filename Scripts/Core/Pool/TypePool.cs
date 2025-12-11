@@ -949,6 +949,7 @@ namespace Framework
         #endregion
 
         /// <summary>返回对象池</summary>
+        /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
         public virtual void Return<T>(T obj) where T : class
         {
             if (obj == null) return;

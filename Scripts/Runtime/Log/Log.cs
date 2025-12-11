@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Framework
 {
-    public static class Log
+    public class Log
     {
         /// <summary>
         /// 日志模式

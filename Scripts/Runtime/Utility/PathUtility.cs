@@ -26,12 +26,12 @@ namespace Framework
         /// <returns></returns>
         public static string GetUnityAssetPath(string path)
         {
-            string l_path = ToStandardPath(path);
+            string r = ToStandardPath(path);
             //string[] strs = Regex.Split(l_path, "Assets/");
             //string assetsPath = $"Assets/{strs[strs.Length - 1]}";
             string assetsPath = IsUnityAssetPath(path) ?
-                $"Assets{l_path.Replace(Application.dataPath, null)}" :
-                l_path;
+                $"Assets{r.Replace(Application.dataPath, null)}" :
+                r;
             return assetsPath;
         }
         /// <summary>
@@ -41,8 +41,19 @@ namespace Framework
         /// <returns></returns>
         public static bool IsUnityAssetPath(string path)
         {
-            string l_path = ToStandardPath(path);
-            return l_path.Contains(Application.dataPath);
+            string r = ToStandardPath(path);
+            return r.Contains(Application.dataPath);
+        }
+
+        /// <summary>
+        /// 只获取文件名，不包括扩展名
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string GetFileNameOnly(string path)
+        {
+            string r = Path.GetFileNameWithoutExtension(path);
+            return r;
         }
 
         /// <summary>
@@ -163,5 +174,6 @@ namespace Framework
             }
             return r;
         }
+
     }
 }

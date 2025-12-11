@@ -360,6 +360,12 @@ namespace Framework
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
         public virtual void Return(GameObject obj, GameObject template)
         {
+            Return(obj, template, returnParent);
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
+        public virtual void Return(GameObject obj, GameObject template, Transform returnParent)
+        {
             if (obj == null) return;
 
             var target = template;

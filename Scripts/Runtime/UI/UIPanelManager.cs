@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
+using System.Threading.Tasks;
 
 namespace Framework
 {
@@ -212,6 +213,96 @@ namespace Framework
                     {
                         Log.Warning($"UI 界面实例化失败，请检查是否包含资源 <color=yellow>“{type.Name}”</color>");
                     }
+                }
+
+                if (panel)
+                {
+                    Register(type, panel);
+
+                    GetCanvas(panel);
+                }
+            }
+            else
+            {
+                if (panel.IsOccupy)
+                {
+                    panel = null;
+                    Log.Warning($"尝试获取的界面 {type.Name} 已被占用，获取失败");
+                }
+            }
+
+            return panel;
+        }
+
+        /// <summary>
+        /// 获取界面
+        /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
+        /// </summary>
+        public static async Task<T> GetPanelAsync<T>() where T : UIPanelBase
+        {
+            UIPanelBase panel = await GetPanelAsync(typeof(T));
+
+            if (panel) return (T)panel;
+
+            return null;
+        }
+        /// <summary>
+        /// 获取界面
+        /// </summary>
+        /// <param name="assetName">用于加载，界面资产名</param>
+        public static async Task<T> GetPanelAsync<T>(string assetName) where T : UIPanelBase
+        {
+            UIPanelBase panel = await GetPanelAsync(typeof(T), assetName);
+
+            if (panel) return (T)panel;
+
+            return null;
+        }
+        /// <summary>
+        /// 获取界面
+        /// <para>ps：预制体名称要与类名一致，才能自动加载成功</para>
+        /// </summary>
+        public static async Task<UIPanelBase> GetPanelAsync(Type type)
+        {
+            return await GetPanelAsync(type, type.Name);
+        }
+        /// <summary>
+        /// 获取界面
+        /// </summary>
+        /// <param name="assetName">界面资产名</param>
+        public static async Task<UIPanelBase> GetPanelAsync(Type type, string assetName)
+        {
+            panelDic.TryGetValue(type, out UIPanelBase panel);
+
+            if (!panel)
+            {
+                // 查看是否在场景中但未注册
+                panel = GameObject.FindObjectOfType(type, true) as UIPanelBase;
+
+                if (!panel)
+                {
+                    // 如果场景中没有，就实例化出来
+                    string path = assetName;
+                    var opertion = ResourcesManager.LoadAssetAsync<GameObject>(path);
+                    await opertion.Task;
+                    GameObject prefab = (GameObject)opertion.AssetObject;
+
+                    if (prefab != null)
+                    {
+                        GameObject go = Object.Instantiate(prefab);
+                        //go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
+                        if (MainCanvas)
+                            go.transform.SetParent(MainCanvas.transform);// 将新界面设置到 UI 节点
+
+                        panel = go.GetComponent<UIPanelBase>();
+                        if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);
+                    }
+                    else
+                    {
+                        Log.Warning($"UI 界面实例化失败，请检查是否包含资源 <color=yellow>“{type.Name}”</color>");
+                    }
+
+                    opertion.Release();
                 }
 
                 if (panel)

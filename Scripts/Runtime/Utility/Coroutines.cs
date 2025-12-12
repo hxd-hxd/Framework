@@ -135,7 +135,7 @@ namespace Framework
     /// <summary>
     /// 协程等待（推荐使用，可起到一定优化作用）
     /// </summary>
-    public static class Yielder
+    public class Yielder
     {
         static Dictionary<float, WaitForSeconds> waits = new Dictionary<float, WaitForSeconds>();
 

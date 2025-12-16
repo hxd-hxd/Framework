@@ -65,6 +65,19 @@ namespace Framework
 
             return result;
         }
+        /// <summary>
+        /// 尝试在所有子节点中找到指定名称的第一个
+        /// </summary>
+        /// <returns></returns>
+        public static bool TryFindOf(this Transform obj, string name, out GameObject result)
+        {
+            result = null;
+            var t = obj.FindOf(name);
+            if (t)
+                result = t.gameObject;
+
+            return result;
+        }
 
         /// <summary>
         /// 在所有子节点中找到指定名称的第一个，并获取其上指定组件
@@ -110,6 +123,19 @@ namespace Framework
         public static bool TryFindOf(this GameObject obj, string name, out GameObject result)
         {
             result = obj.FindOf(name);
+            return result;
+        }
+        /// <summary>
+        /// 尝试在所有子节点中找到指定名称的第一个
+        /// </summary>
+        /// <returns></returns>
+        public static bool TryFindOf(this GameObject obj, string name, out Transform result)
+        {
+            result = null;
+            var t = obj.FindOf(name);
+            if (t)
+                result = t.transform;
+
             return result;
         }
 

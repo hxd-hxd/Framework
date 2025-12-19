@@ -224,6 +224,24 @@ namespace Framework
         }
 
         /// <summary>
+        /// 创建实例
+        /// </summary>
+        /// <returns></returns>
+        protected virtual GameObject CreateInstance(GameObject template, Transform parent)
+        {
+            if (template == null)
+            {
+                Debug.LogError("[GameObjectPool]：要实例化的目标模板是空对象");
+                return null;
+            }
+
+            //GameObject resault = CreateInstanceEvent?.Invoke();
+            //if(!resault) resault = GameObject.Instantiate(value);
+            //return resault;
+            return GameObject.Instantiate(template, parent);
+        }
+
+        /// <summary>
         /// 预先为默认模板创建指定数量的实例
         /// </summary>
         public virtual void PreCreateInstance(int num) => PreCreateInstance(_template, num);
@@ -236,7 +254,7 @@ namespace Framework
         {
             for (int i = 1; i <= num; i++)
             {
-                var go = CreateInstance(template);
+                var go = CreateInstance(template, returnParent);
                 Return(go, template);
             }
         }
@@ -261,7 +279,7 @@ namespace Framework
         {
             for (int i = 1; i <= num; i++)
             {
-                var go = CreateInstance(template);
+                var go = CreateInstance(template, returnParent);
                 Return(go, template);
                 yield return null;
             }
@@ -323,7 +341,7 @@ namespace Framework
                 tPool = CreatePool();
                 pool[target] = tPool;
             }
-            if (!obj) obj = CreateInstance(target);
+            if (!obj) obj = CreateInstance(target, parent);
             if (obj != null)
                 obj.transform.SetParent(parent);
 

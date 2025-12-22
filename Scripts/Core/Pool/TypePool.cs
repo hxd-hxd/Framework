@@ -1014,7 +1014,8 @@ namespace Framework
         public void Return<T>(T[] v)
         {
             if (v == null) return;
-            for (var i = 0; i < v.Length; i++) v[i] = default;
+            //for (var i = 0; i < v.Length; i++) v[i] = default;
+            Array.Clear(v, 0, v.Length);
             Return<T[]>(v);
         }
         /// <summary>返回对象池，建议使用 <see cref="Return{T}(T[])"/></summary>
@@ -1022,20 +1023,21 @@ namespace Framework
         public void Return(Array v)
         {
             if (v == null) return;
-            var t = v.GetType();
-            var et = t.GetElementType();
-            bool isValueType = et.IsValueType;
-            for (var i = 0; i < v.Length; i++)
-            {
-                if (isValueType)
-                {
-                    v.SetValue(CreateInstance(et), i);
-                }
-                else
-                {
-                    v.SetValue(default, i);
-                }
-            }
+            //var t = v.GetType();
+            //var et = t.GetElementType();
+            //bool isValueType = et.IsValueType;
+            //for (var i = 0; i < v.Length; i++)
+            //{
+            //    if (isValueType)
+            //    {
+            //        v.SetValue(CreateInstance(et), i);
+            //    }
+            //    else
+            //    {
+            //        v.SetValue(default, i);
+            //    }
+            //}
+            Array.Clear(v, 0, v.Length);
             Return<Array>(v);
         }
         /// <summary>返回对象池</summary>

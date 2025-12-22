@@ -13,7 +13,6 @@ using UnityEngine;
 using UnityEditor;
 using HybridCLR.Editor;
 using Object = UnityEngine.Object;
-using Codice.CM.Common;
 
 namespace Framework.HybridCLRExpress
 {

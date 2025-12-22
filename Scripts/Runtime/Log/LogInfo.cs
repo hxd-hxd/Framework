@@ -66,10 +66,16 @@ namespace Framework.LogSystem
         /// 日志信息总数量
         /// </summary>
         public static int logInfoCount => _logInfos.Count;
+
         /// <summary>
         /// 日志信息列表
         /// </summary>
         public static List<LogInfo> logInfos => _logInfos;
+
+        static LogInfo()
+        {
+            ClearLastRun();
+        }
 
         public DateTime time { get => _time; set => _time = value; }
         public string condition { get => _condition; set => _condition = value; }

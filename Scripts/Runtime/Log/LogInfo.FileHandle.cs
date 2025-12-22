@@ -11,7 +11,7 @@ namespace Framework.LogSystem
     // 日志文件处理
     public partial class LogInfo
     {
-        const string _logFileName = "Log.txt";
+        const string _logFileName = "Log Last Run.txt";
         static string _logFileUniversalDir = "Log Info";// 通用目录
         // 带日期时间的名称
         static string _logFileName_DateTimeFormat = $"Log {DateTime.Now.ToDayFrontTimeText("-")}.txt";
@@ -23,10 +23,11 @@ namespace Framework.LogSystem
         {
             get
             {
-                string _path = _GetLogFilePath_SetRoot(Path.Combine(Application.dataPath, ".."));
+                string _path = _GetLogFilePath_SetRoot(Path.GetDirectoryName(Application.dataPath));
                 return _path;
             }
         }
+
         /// <summary>
         /// 移动平台
         /// </summary>
@@ -38,6 +39,7 @@ namespace Framework.LogSystem
                 return _path;
             }
         }
+
         /// <summary>
         /// 其他标准通用平台
         /// </summary>
@@ -45,12 +47,13 @@ namespace Framework.LogSystem
         {
             get
             {
-                string _path = _GetLogFilePath_SetRoot(Application.streamingAssetsPath);
+                string _path = _GetLogFilePath_SetRoot(Path.GetDirectoryName(Application.dataPath));
                 return _path;
             }
         }
+
         /// <summary>
-        /// 日志文件路径
+        /// 日志文件目录
         /// </summary>
         public static string logFilePath
         {
@@ -59,33 +62,70 @@ namespace Framework.LogSystem
                 string _path = null;
 #if UNITY_EDITOR
                 _path = logFilePath_Eitor;
-#elif UNITY_ANDROID || UNITY_IPHONE
+#elif UNITY_ANDROID || UNITY_IPHONE || UNITY_WEBGL
             _path = logFilePath_Mobile;
 #else
             _path = logFilePath_Standard;
 #endif
+                return _path;
+            }
+        }
+
+        /// <summary>
+        /// 日志文件路径 - 最后一次运行
+        /// </summary>
+        public static string logFilePath_LastRun
+        {
+            get
+            {
+                string _path = Path.Combine(logFilePath, _logFileName);
                 if (!File.Exists(_path))
                 {
                     File.Create(_path).Dispose();
                 }
-
                 return _path;
             }
         }
+
+        /// <summary>
+        /// 日志文件路径 - 每天运行的日期
+        /// </summary>
+        public static string logFilePath_DateTime
+        {
+            get
+            {
+                string _path = Path.Combine(logFilePath, _logFileName_DateTimeFormat);
+                if (!File.Exists(_path))
+                {
+                    File.Create(_path).Dispose();
+                }
+                return _path;
+            }
+        }
+
         // 获取日志文件存放目录
         static string _GetLogFilePath_SetRoot(string rootDir)
         {
             string pDir = Path.Combine(rootDir, _logFileUniversalDir);
-            string _path = Path.Combine(pDir, _logFileName_DateTimeFormat);
             if (!Directory.Exists(pDir))
             {
                 Directory.CreateDirectory(pDir);
             }
-            if (!File.Exists(_path))
+            return pDir;
+            //string path = _GetLogFilePath_SetRoot(rootDir, _logFileName_DateTimeFormat);
+            //return path;
+        }
+
+        // 获取日志文件
+        static string _GetLogFilePath_SetRoot(string rootDir, string logFileName)
+        {
+            string pDir = _GetLogFilePath_SetRoot(rootDir);
+            string path = Path.Combine(pDir, logFileName);
+            if (!File.Exists(path))
             {
-                File.Create(_path).Dispose();
+                File.Create(path).Dispose();
             }
-            return _path;
+            return path;
         }
 
         /// <summary>
@@ -117,7 +157,21 @@ namespace Framework.LogSystem
         {
             if (info != null)
             {
-                File.AppendAllText(logFilePath, info.ToFileFormat());
+                string f = info.ToFileFormat();
+                File.AppendAllText(logFilePath_DateTime, f);
+                File.AppendAllText(logFilePath_LastRun, f);
+            }
+        }
+
+        /// <summary>
+        /// 清除最后一次运行的日志到文件
+        /// </summary>
+        /// <param name="info"></param>
+        public static void ClearLastRun()
+        {
+            if (File.Exists(logFilePath_LastRun))
+            {
+                File.WriteAllText(logFilePath_LastRun, null);
             }
         }
 

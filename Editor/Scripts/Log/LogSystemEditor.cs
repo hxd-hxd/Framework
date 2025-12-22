@@ -20,19 +20,24 @@ namespace Framework.Editor
         [MenuItem(RootPath + "编辑器", false, 10)]
         public static void OpenFolder_LogEditor()
         {
-            OpenFolder.Execute(Path.GetDirectoryName(LogInfo.logFilePath_Eitor));
+            string dir = Directory.Exists(LogInfo.logFilePath_Eitor) ? LogInfo.logFilePath_Eitor : Path.GetDirectoryName(LogInfo.logFilePath_Eitor);
+            OpenFolder.Execute(dir);
         }
 
         [MenuItem(RootPath + "移动平台", false, 10)]
         public static void OpenFolder_LogMobile()
         {
-            OpenFolder.Execute(Path.GetDirectoryName(LogInfo.logFilePath_Mobile));
+            string dir = Directory.Exists(LogInfo.logFilePath_Mobile) ? LogInfo.logFilePath_Mobile : Path.GetDirectoryName(LogInfo.logFilePath_Mobile);
+            OpenFolder.Execute(dir);
+            //OpenFolder.Execute(Path.GetDirectoryName(LogInfo.logFilePath_Mobile));
         }
 
         [MenuItem(RootPath + "通用平台（PC等）", false, 10)]
         public static void OpenFolder_LogStandard()
         {
-            OpenFolder.Execute(Path.GetDirectoryName(LogInfo.logFilePath_Standard));
+            string dir = Directory.Exists(LogInfo.logFilePath_Standard) ? LogInfo.logFilePath_Standard : Path.GetDirectoryName(LogInfo.logFilePath_Standard);
+            OpenFolder.Execute(dir);
+            //OpenFolder.Execute(Path.GetDirectoryName(LogInfo.logFilePath_Standard));
         }
 
         [MenuItem(LogLoaderRootPath + "启用", false, 11)]

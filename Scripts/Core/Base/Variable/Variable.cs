@@ -1,7 +1,6 @@
 ﻿using System;
-using Framework;
 
-namespace Framework
+namespace Framework.Core
 {
     /// <summary>
     /// 变量。

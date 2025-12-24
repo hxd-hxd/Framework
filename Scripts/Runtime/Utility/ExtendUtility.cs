@@ -167,7 +167,6 @@ namespace Framework
             if (obj is UnityEngine.Object uobj) return uobj == null;
             return obj == null;
         }
-        #endregion
 
         /// <summary>
         /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写
@@ -224,6 +223,7 @@ namespace Framework
             var t = FindOfContainName(obj, containName, fuzzySearch);
             return t ? t.GetComponent<T>() : null;
         }
+        #endregion
 
         /// <summary>
         /// 期望有此组件，没有则添加

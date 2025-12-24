@@ -1,6 +1,6 @@
 {
     "name": "FrameworkTest.Runtime",
-    "rootNamespace": "",
+    "rootNamespace": "Framework.Test",
     "references": [
         "GUID:9a4f606abf495854485e5a9a7de52423",
         "GUID:5cf10eb1c5acd1440ba8519ef5553216",

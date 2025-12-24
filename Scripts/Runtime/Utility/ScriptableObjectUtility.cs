@@ -86,6 +86,57 @@ namespace Framework
 
             return so;
         }
+
+        /// <summary>
+        /// 获取
+        /// </summary>
+        public static T Get<T>() where T : ScriptableObject
+        {
+            return Get<T>(Application.dataPath);
+        }
+        /// <summary>
+        /// 获取
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static T Get<T>(string path) where T : ScriptableObject
+        {
+            T obj = null;
+
+            if (Directory.Exists(path))
+            {
+                string[] files = Directory.GetFiles(path, "*.asset");
+
+                foreach (string file in files)
+                {
+                    string assetsFile = PathUtility.GetUnityAssetPath(file);
+
+                    obj = AssetDatabase.LoadAssetAtPath<T>(assetsFile);
+
+                    //Log.Yellow($"找到 SO 文件：{assetsFile}");
+                    if (obj)
+                    {
+                        //Log.Striking($"成功加载 AssembliesCfg SO 文件：{assetsFile}");
+                        break;
+                    }
+                }
+                if (!obj)
+                {
+                    string[] dirs = Directory.GetDirectories(path);
+                    foreach (string dir in dirs)
+                    {
+                        obj = Get<T>(dir);
+                        if (obj)
+                        {
+                            //Log.Striking($"成功加载 AssembliesCfg SO 文件，在目录：{dir}");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return obj;
+        }
 #endif
     }
 }

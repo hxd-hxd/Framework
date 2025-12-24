@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Framework;
+using Framework.Core;
 
 namespace Framework.Fsm
 {

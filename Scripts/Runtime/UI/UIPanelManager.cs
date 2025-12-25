@@ -201,13 +201,7 @@ namespace Framework
                     GameObject prefab = ResourcesManager.LoadAssetObject<GameObject>(path);
                     if (prefab != null)
                     {
-                        GameObject go = Object.Instantiate(prefab);
-                        //go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
-                        if (MainCanvas)
-                            go.transform.SetParent(MainCanvas.transform);// 将新界面设置到 UI 节点
-
-                        panel = go.GetComponent<UIPanelBase>();
-                        if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);
+                        panel = InstantiatePanel(prefab);
                     }
                     else
                     {
@@ -289,13 +283,7 @@ namespace Framework
 
                     if (prefab != null)
                     {
-                        GameObject go = Object.Instantiate(prefab);
-                        //go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
-                        if (MainCanvas)
-                            go.transform.SetParent(MainCanvas.transform);// 将新界面设置到 UI 节点
-
-                        panel = go.GetComponent<UIPanelBase>();
-                        if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);
+                        panel = InstantiatePanel(prefab);
                     }
                     else
                     {
@@ -321,6 +309,34 @@ namespace Framework
                 }
             }
 
+            return panel;
+        }
+         
+        private static UIPanelBase InstantiatePanel(GameObject temlate)
+        {
+            Transform p = null;
+            if (MainCanvas)
+                p = MainCanvas.transform;// 将新界面设置到 UI 节点
+            GameObject go = Object.Instantiate(temlate, p);
+
+            //GameObject go = Object.Instantiate(temlate);
+            ////go.transform.SetParent(OtherUIParent.transform);// 将新界面设置到 UI 节点
+            //if (MainCanvas)
+            //{
+            //    go.transform.SetParent(MainCanvas.transform);// 将新界面设置到 UI 节点
+            //    go.transform.localScale = Vector3.one;
+            //    go.transform.localPosition = Vector3.zero;
+
+            //    var rectT = go.GetComponent<RectTransform>();
+            //    if (rectT)
+            //    {
+            //        rectT.pivot = new Vector2(0.5f, 0.5f);
+            //        rectT.anchorMax = Vector2.one;
+            //    }
+            //}
+
+            var panel = go.GetComponent<UIPanelBase>();
+            if (!panel) panel = go.GetComponentInChildren<UIPanelBase>(true);
             return panel;
         }
 

@@ -186,6 +186,8 @@ namespace Framework
         /// <param name="coroutine"></param>
         public static void StartCoroutine(this MonoBehaviour self, IEnumerator enumerator, ref Coroutine coroutine)
         {
+            if(!self.isActiveAndEnabled) return;
+
             if (coroutine != null)
             {
                 self.StopCoroutine(coroutine);

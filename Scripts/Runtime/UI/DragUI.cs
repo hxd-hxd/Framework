@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2024/4/2 9:25:57
 // -------------------------
 
@@ -16,13 +16,14 @@ namespace Framework
 #if UNITY_EDITOR
     using UnityEditor;
 
-    [CustomEditor(typeof(DragUI))]
+    [CustomEditor(typeof(DragUI), true)]
     [CanEditMultipleObjects]
     public partial class DragUIInspector : Editor
     {
         protected static bool _showDragGUI = true;
         protected static bool _showMidpointGUI = true;
         protected static bool _showDragRestrictZoneGUI = true;
+        protected static bool _showPointGUI = true;
 
         protected GUIStyle labelGUIStyle = new GUIStyle();
         protected GUIStyle labelGUIStyle1 = new GUIStyle();
@@ -111,7 +112,11 @@ namespace Framework
                 {
                     Handles.Label(vcPos, $"RectTransform 中点坐标\r\n{vcPos}", labelGUIStyle);
                     Handles.color = Color.green;
-                    Handles.DotHandleCap(0, vcPos, my.target.rotation, 1, EventType.Repaint);
+
+                    if (_showPointGUI)
+                    {
+                        Handles.DotHandleCap(0, vcPos, my.target.rotation, 1, EventType.Repaint);
+                    }
                 }
 
                 // 边界描述
@@ -176,7 +181,12 @@ namespace Framework
                 //EditorGUI.indentLevel -= 1;
                 //EditorGUI.indentLevel =0;
                 _showDragRestrictZoneGUI = GUILayout.Toggle(_showDragRestrictZoneGUI, $"显示拖拽限制区");
+                _showPointGUI = GUILayout.Toggle(_showPointGUI, $"显示点线");
             }
+
+            _dragTragetRectHandles.showPointGUI = _showPointGUI;
+            _dragRestrictZoneRectHandles.showPointGUI = _showPointGUI;
+
             EditorGUILayout.EndVertical();
             Handles.EndGUI();
         }
@@ -213,6 +223,7 @@ namespace Framework
             public bool showSideRight = true;
             public bool showSideDown = true;
             public bool showSideUp = true;
+            public bool showPointGUI = true;
 
             public Color handlesColor = Color.white;
             public Color handlesColorSide = Color.green;
@@ -242,13 +253,16 @@ namespace Framework
                 Handles.color = handlesColor;
 
                 // 边界中点
-                Handles.color = handlesColorSideCenter;
-                Handles.DotHandleCap(0, leftCenter, rotation, 1, EventType.Repaint);
-                Handles.DotHandleCap(0, rightCenter, rotation, 1, EventType.Repaint);
-                Handles.DotHandleCap(0, downCenter, rotation, 1, EventType.Repaint);
-                Handles.DotHandleCap(0, upCenter, rotation, 1, EventType.Repaint);
-                Handles.color = handlesColor;
-                //HandleUtility
+                if (showPointGUI)
+                {
+                    Handles.color = handlesColorSideCenter;
+                    Handles.DotHandleCap(0, leftCenter, rotation, 1, EventType.Repaint);
+                    Handles.DotHandleCap(0, rightCenter, rotation, 1, EventType.Repaint);
+                    Handles.DotHandleCap(0, downCenter, rotation, 1, EventType.Repaint);
+                    Handles.DotHandleCap(0, upCenter, rotation, 1, EventType.Repaint);
+                    //Handles.color = handlesColor;
+                    //HandleUtility
+                }
                 Handles.color = oldColor;
             }
         }
@@ -264,40 +278,44 @@ namespace Framework
         : MonoBehaviour
     {
         [Tooltip("拖拽目标")]
-        [SerializeField] private RectTransform _target;
+        [SerializeField] protected RectTransform _target;
         [Tooltip("拖拽检测区域")]
-        [SerializeField] private RectTransform _detectRectTransform;// 检测区域
+        [SerializeField] protected RectTransform _detectRectTransform;// 检测区域
 
-        private EventTrigger _detectEventTrigger;
-        private Vector2 _pointerInitPos, _targetInitPos;// 拖拽开始时记录初始位置
+        [Tooltip("拖拽控制空间")]
+        [SerializeField] protected DragSpaceMode _dragSpaceMode;
+
+        protected EventTrigger _detectEventTrigger;
+        protected Vector2 _pointerInitPos, _pointerLastPos, _targetInitPos;// 拖拽开始时记录初始位置
 
         // 这里是对拖拽目标的限制，不是拖拽限制区
         [Header("对目标的拖拽限制（注意：均不考虑旋转）")]
         [Tooltip("是否限制拖拽目标")]
-        [SerializeField] private bool _isDraggingRestrict;
-        [SerializeField] private bool _isDraggingRestrictUp = true;
-        [SerializeField] private bool _isDraggingRestrictDown = true;
-        [SerializeField] private bool _isDraggingRestrictLeft = true;
-        [SerializeField] private bool _isDraggingRestrictRight = true;
+        [SerializeField] protected bool _isDraggingRestrict;
+        [SerializeField] protected bool _isDraggingRestrictUp = true;
+        [SerializeField] protected bool _isDraggingRestrictDown = true;
+        [SerializeField] protected bool _isDraggingRestrictLeft = true;
+        [SerializeField] protected bool _isDraggingRestrictRight = true;
         //public Rect _detectRectOffset;
         [Header("检测拖拽矩形的偏移（负值向内，正值向外）")]
-        [SerializeField] private Vector2 _detectRectOffsetMin;
-        [SerializeField] private Vector2 _detectRectOffsetMax;
+        [SerializeField] protected Vector2 _detectRectOffsetMin;
+        [SerializeField] protected Vector2 _detectRectOffsetMax;
         [Header("偏移值使用百分比（1 = 100%）")]
-        [SerializeField] private bool _detectRectOffsetUseRatio = true;
-        [SerializeField] private Vector2 _detectRectOffsetMinRatio, _detectRectOffsetMaxRatio;
+        [SerializeField] protected bool _detectRectOffsetUseRatio = true;
+        [SerializeField] protected Vector2 _detectRectOffsetMinRatio, _detectRectOffsetMaxRatio;
 
         [Header("拖拽限制区域设置")]
         [Tooltip("将限制区颠倒，即 左、右互换，上、下互换。\r\n此功能仅用于一些特殊用途，例如：使用百分比偏移值时，将偏移全部设置成 -1，保持拖拽矩形比限制区大，这时可以使拖拽区始终包围限制区。")]
-        [SerializeField] private bool _dragRestrictZoneReversal;// 将限制区颠倒
-        [SerializeField] private DragRestrictZoneMode _dragRestrictZoneMode;
-        [SerializeField] private MinMax<float> _dragRestrictZoneX, _dragRestrictZoneY;
-        [SerializeField] private RectTransform _dragRestrictZoneTarget;
+        [SerializeField] protected bool _dragRestrictZoneReversal;// 将限制区颠倒
+        [SerializeField] protected DragRestrictZoneMode _dragRestrictZoneMode;
+        [SerializeField] protected MinMax<float> _dragRestrictZoneX, _dragRestrictZoneY;
+        [SerializeField] protected RectTransform _dragRestrictZoneTarget;
         //[SerializeField] private MinMax<float>  _dragRestrictZoneY;
 
         //[Space] public List<Vector2> v2s = new List<Vector2>();
 
         // 事件
+
         [Space(16)]
         public UnityEvent beginDragEvent;
         /// <summary>拖拽中事件</summary>
@@ -306,7 +324,35 @@ namespace Framework
         public UnityEvent endDragEvent;
 
         public RectTransform target { get { return _target; } set { _target = value; } }
+
+        /// <summary>
+        /// 目标位置，根据 <see cref="_dragSpaceMode"/> 的设定获取不同值
+        /// </summary>
+        public Vector2 targetPosition
+        {
+            get
+            {
+                if (_dragSpaceMode == DragSpaceMode.Local)
+                    return _target.localPosition;
+                return _target.position;
+            }
+            set
+            {
+                if (_dragSpaceMode == DragSpaceMode.Local)
+                {
+                    _target.localPosition = value;
+                }
+                else
+                {
+                    _target.position = value;
+                }
+            }
+        }
+
         public RectTransform detectRectTransform { get { return _detectRectTransform; } set { _detectRectTransform = value; } }
+        /// <summary>
+        /// 是否限制拖拽目标
+        /// </summary>
         public bool isDraggingRestrict { get { return _isDraggingRestrict; } set { _isDraggingRestrict = value; } }
         public bool isDraggingRestrictUp { get => _isDraggingRestrictUp; set => _isDraggingRestrictUp = value; }
         public bool isDraggingRestrictDown { get => _isDraggingRestrictDown; set => _isDraggingRestrictDown = value; }
@@ -337,6 +383,11 @@ namespace Framework
             Init();
         }
 
+        protected virtual void Update()
+        {
+
+        }
+
         public virtual void Init()
         {
             if (!_target) _target = GetComponent<RectTransform>();
@@ -360,24 +411,36 @@ namespace Framework
 
         protected virtual void OnBeginDrag(BaseEventData data)
         {
+            if (!isActiveAndEnabled) return;
+
             if (_target)
             {
                 // 指针 按下
                 var eData = data as PointerEventData;
+
+                _pointerLastPos = eData.position;
                 // 记录指针初始位置
                 _pointerInitPos = eData.position;
-                _targetInitPos = _target.position;
+
+                _targetInitPos = targetPosition;
             }
 
             beginDragEvent?.Invoke();
         }
+
         protected virtual void OnEndDrag(BaseEventData data)
         {
+            if (!isActiveAndEnabled) return;
 
             endDragEvent?.Invoke();
         }
+
         protected virtual void OnDrag(BaseEventData data)
         {
+            if (!isActiveAndEnabled) return;
+
+            var eData = data as PointerEventData;
+
             bool canDrag = true;
             for (int _ = 0; _ < 1; _++)// 这里的 for 没有其他作用，仅用于跳出执行条件，以保证后续代码执行
             {
@@ -407,21 +470,44 @@ namespace Framework
                     }
 
                     // 拖拽
-                    var eData = data as PointerEventData;
                     // 计算指针位置差值
-                    var pOffsetPos = eData.position - _pointerInitPos;
-                    var newPos = pOffsetPos + _targetInitPos;
-                    // 添加屏幕内限制，使目标保持在屏幕内
-                    // 指针移动差值就是目标移动的位置
-                    _target.position = newPos;
-                    if (_isDraggingRestrict)
-                    {
-                        AmendPos();
-                    }
+                    var pointerOffsetPos = eData.position - _pointerInitPos;
+                    var newTargetPos = pointerOffsetPos + _targetInitPos;
+
+                    OnDrag(eData, pointerOffsetPos, newTargetPos);
                 }
             }
 
+            _pointerLastPos = eData.position;
+
             dragEvent?.Invoke(canDrag);
+        }
+
+        /// <summary>
+        /// 处理由 <see cref="OnDrag(BaseEventData)"/> 计算好的数据
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pointerOffsetPos"></param>
+        /// <param name="newTargetPos"></param>
+        protected virtual void OnDrag(PointerEventData data, Vector2 pointerOffsetPos, Vector2 newTargetPos)
+        {
+            SetPos(newTargetPos);
+        }
+
+        /// <summary>
+        /// 设置位置
+        /// </summary>
+        /// <param name="newTargetPos"></param>
+        protected void SetPos(Vector2 newTargetPos)
+        {
+            // 指针移动差值就是目标移动的位置
+            targetPosition = newTargetPos;
+
+            // 添加屏幕内限制，使目标保持在屏幕内
+            if (_isDraggingRestrict)
+            {
+                AmendPos();
+            }
         }
 
         /// <summary>
@@ -752,22 +838,33 @@ namespace Framework
             /// 屏幕
             /// </summary>
             Sreen,
+
             /// <summary>
             /// 固定值范围
             /// </summary>
             Fixed,
+
             /// <summary>
             /// 设置的目标区域
             /// </summary>
             Target
         }
 
-        [Serializable]
-        struct Test
+        /// <summary>
+        /// 拖拽控制空间
+        /// </summary>
+        public enum DragSpaceMode
         {
-            public string name;
-            public int num;
-            public DragRestrictZoneMode mode;
+            /// <summary>
+            /// 世界空间
+            /// </summary>
+            World,
+
+            /// <summary>
+            /// 本地空间
+            /// </summary>
+            Local,
         }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,12 +85,12 @@ namespace Framework
         }
 
 
-        protected static IEnumerator DelayCoroutine(float time, System.Action e)
+        internal static IEnumerator DelayCoroutine(float time, System.Action e)
         {
             yield return Yielder.WaitForSeconds(time);
             e?.Invoke();
         }
-        protected static IEnumerator DelayCoroutine(System.Action e)
+        internal static IEnumerator DelayCoroutine(System.Action e)
         {
             yield return null;
             e?.Invoke();
@@ -181,18 +181,66 @@ namespace Framework
         /// <summary>
         /// 开始协程，会关闭之前的协程
         /// </summary>
-        /// <param name="self"></param>
+        /// <param name="instance"></param>
         /// <param name="enumerator"></param>
         /// <param name="coroutine"></param>
-        public static void StartCoroutine(this MonoBehaviour self, IEnumerator enumerator, ref Coroutine coroutine)
+        public static void StartCoroutine(this MonoBehaviour instance, IEnumerator enumerator, ref Coroutine coroutine)
         {
-            if(!self.isActiveAndEnabled) return;
+            if (instance == null) return;
+            if(!instance.isActiveAndEnabled) return;
 
             if (coroutine != null)
             {
-                self.StopCoroutine(coroutine);
+                instance.StopCoroutine(coroutine);
             }
-            coroutine = self.StartCoroutine(enumerator);
+            coroutine = instance.StartCoroutine(enumerator);
         }
+
+        /// <summary>
+        /// 延时处理，会关闭之前的协程
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="enumerator"></param>
+        /// <param name="coroutine"></param>
+        public static void Delay(this MonoBehaviour instance, float time, System.Action e, ref Coroutine coroutine)
+        {
+            StartCoroutine(instance, Coroutines.DelayCoroutine(time, e), ref coroutine);
+        }
+
+        /// <summary>
+        /// 延时处理，会关闭之前的协程
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="coroutine"></param>
+        public static void Delay(this MonoBehaviour instance, System.Action e, ref Coroutine coroutine)
+        {
+            StartCoroutine(instance, Coroutines.DelayCoroutine(e), ref coroutine);
+        }
+
+        /// <summary>
+        /// 延时处理
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public static Coroutine Delay(this MonoBehaviour instance, float time, System.Action e)
+        {
+            if (instance == null) return null;
+            if(!instance.isActiveAndEnabled) return null;
+            return instance.StartCoroutine(Coroutines.DelayCoroutine(time, e));
+        }
+
+        /// <summary>
+        /// 延时一帧处理
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public static Coroutine Delay(this MonoBehaviour instance, System.Action e)
+        {
+            if (instance == null) return null;
+            if(!instance.isActiveAndEnabled) return null;
+            return instance.StartCoroutine(Coroutines.DelayCoroutine(e));
+        }
+
     }
 }

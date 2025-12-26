@@ -678,38 +678,6 @@ namespace Framework
             return uiRCam;
         }
 
-        static IEnumerator DelayCoroutine(float time, System.Action e)
-        {
-            yield return Yielder.WaitForSeconds(time);
-            e?.Invoke();
-        }
-        static IEnumerator DelayCoroutine(System.Action e)
-        {
-            yield return null;
-            e?.Invoke();
-        }
-        /// <summary>
-        /// 延时处理
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public static Coroutine Delay(this MonoBehaviour instance, float time, System.Action e)
-        {
-            if (instance == null) return null;
-            return instance.StartCoroutine(DelayCoroutine(time, e));
-        }
-        /// <summary>
-        /// 延时一帧处理
-        /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public static Coroutine Delay(this MonoBehaviour instance, System.Action e)
-        {
-            if (instance == null) return null;
-            return instance.StartCoroutine(DelayCoroutine(e));
-        }
-
         // 省去重复判断的麻烦
         /// <summary>
         /// 获取 <see cref="Component.gameObject"/> 的激活状态

@@ -179,6 +179,21 @@ namespace Framework
     public static class CoroutineExtend
     {
         /// <summary>
+        /// 关闭协程
+        /// </summary>
+        public static void StopCoroutine(this MonoBehaviour instance, ref Coroutine coroutine)
+        {
+            if (instance == null) return;
+            if(!instance.isActiveAndEnabled) return;
+
+            if (coroutine != null)
+            {
+                instance.StopCoroutine(coroutine);
+            }
+            coroutine = null;
+        }
+
+        /// <summary>
         /// 开始协程，会关闭之前的协程
         /// </summary>
         /// <param name="instance"></param>

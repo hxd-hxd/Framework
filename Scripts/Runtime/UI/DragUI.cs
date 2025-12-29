@@ -286,7 +286,9 @@ namespace Framework
         [SerializeField] protected DragSpaceMode _dragSpaceMode;
 
         protected EventTrigger _detectEventTrigger;
-        protected Vector2 _pointerInitPos, _pointerLastPos, _targetInitPos;// 拖拽开始时记录初始位置
+        protected Vector2 _pointerInitPos;// 拖拽开始时记录初始位置
+        protected Vector2 _pointerLastPos;// 拖拽指针最后一次位置
+        protected Vector2 _targetInitPos;// 拖拽开始时记录初始位置
 
         // 这里是对拖拽目标的限制，不是拖拽限制区
         [Header("对目标的拖拽限制（注意：均不考虑旋转）")]

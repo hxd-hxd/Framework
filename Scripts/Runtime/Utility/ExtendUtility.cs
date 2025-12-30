@@ -161,13 +161,6 @@ namespace Framework
             return IsNull(result);
         }
 
-        // 检查是否空对象，由于 unity 对其定义的 UnityEngine.Object 做了特殊处理，这里也处理了unity 的这种特殊情况
-        private static bool IsNull<T>(T obj)
-        {
-            if (obj is UnityEngine.Object uobj) return uobj == null;
-            return obj == null;
-        }
-
         /// <summary>
         /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写
         /// </summary>
@@ -178,6 +171,7 @@ namespace Framework
         {
             return FindOfContainName(obj.transform, containName, fuzzySearch);
         }
+
         /// <summary>
         /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写
         /// </summary>
@@ -223,7 +217,39 @@ namespace Framework
             var t = FindOfContainName(obj, containName, fuzzySearch);
             return t ? t.GetComponent<T>() : null;
         }
+
+        /// <summary>
+        /// 尝试找到指定索引的子节点，并获取其上指定组件
+        /// </summary>
+        public static bool TryGetChildComponent<T>(this Transform obj, int index, out T result)
+        {
+            result = default;
+            if (index < 0) return false;
+            if (obj.childCount <= 0) return false;
+            if (obj.childCount <= index) return false;
+
+            var child = obj.GetChild(index);
+            result = child.GetComponent<T>();
+            return IsNull(result);
+        }
+
+        /// <summary>
+        /// 尝试找到指定索引的子节点，并获取其上指定组件
+        /// </summary>
+        public static bool TryGetChildComponent<T>(this GameObject obj, int index, out T result)
+        {
+            return TryGetChildComponent(obj.transform, index, out result);
+        }
         #endregion
+
+        /// <summary>
+        /// 检查是否空对象，由于 unity 对其定义的 UnityEngine.Object 做了特殊处理，这里也处理了unity 的这种特殊情况
+        /// </summary>
+        private static bool IsNull<T>(T obj)
+        {
+            if (obj is UnityEngine.Object uobj) return uobj == null;
+            return obj == null;
+        }
 
         /// <summary>
         /// 期望有此组件，没有则添加

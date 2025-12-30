@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -16,7 +16,7 @@ namespace Framework.Event
     /// public class Msg1 : IEventMessage { }
     /// public class Msg2 : IEventMessage { }
     /// </code>
-    /// <para>注意：当以类型作为 id 时，不要用系统类型作为 id，应该自定义专用的消息类型作为 id，为了通用性，将不对作为 id 的类型进行限制</para>
+    /// <para>注意：当以类型作为 id 时，不要用系统类型作为 id，应该自定义专用的消息类型作为 id，例如 typeof(Msg1)，为了通用性，将不对作为 id 的类型进行限制</para>
     /// </summary>
     public static partial class EventCenter
     {
@@ -340,11 +340,15 @@ namespace Framework.Event
             var id = typeof(TID);
             SendInternal(id, null);
         }
-        /// <summary>发送消息</summary>
+
+        /// <summary>发送消息
+        /// <para>如果想将 <typeparamref name="TID"/> 的实例作为消息参数，请调用 <see cref="SendType{TID}(TID)"/>。或者显示指定 <see cref="Send{TID, T1}(TID, T1)"/> id 和参数</para>
+        /// </summary>
         public static void Send<TID>(TID id)
         {
             SendInternal(id, null);
         }
+
         /// <summary>发送消息，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id
         /// <code><see cref="Send{TID, T1}(TID, T1)"/> 的简便形式</code>
         /// </summary>
@@ -353,6 +357,7 @@ namespace Framework.Event
             var id = typeof(TID);
             Send(id, msg);
         }
+
         /// <summary>发送消息，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id
         public static void Send<TID, T1>(T1 msg1)
         {
@@ -360,6 +365,7 @@ namespace Framework.Event
             var args = TypePool.root.GetArrayE<object>(msg1);
             SendInternal(id, args);
         }
+
         /// <summary>发送消息</summary>
         public static void Send<TID, T1>(TID id, T1 msg1)
         {

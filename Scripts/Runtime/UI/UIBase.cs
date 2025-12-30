@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Framework
 {
     /// <summary>
-    /// UGUI »ùÀà
+    /// UGUI åŸºç±»
     /// </summary>
     public abstract partial class UIBase : MonoBehaviour, IUI
     {
@@ -48,7 +48,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// ÔÚË¢ĞÂµÄÊ±ºò´¥·¢
+        /// åœ¨åˆ·æ–°çš„æ—¶å€™è§¦å‘
         /// </summary>
         protected virtual void OnRefresh()
         {
@@ -61,9 +61,9 @@ namespace Framework
         }
 
         /// <summary>
-        /// ·´ÏòÆôÓÃ¡£¼´µ±Ç°ÎªÆôÓÃÔò½ûÓÃ£¬µ±Ç°Îª½ûÓÃÔòÆôÓÃ
+        /// åå‘å¯ç”¨ã€‚å³å½“å‰ä¸ºå¯ç”¨åˆ™ç¦ç”¨ï¼Œå½“å‰ä¸ºç¦ç”¨åˆ™å¯ç”¨
         /// </summary>
-        public void Enable() => _Enable(gameObject.activeSelf);
+        public void Enable() => _Enable(!gameObject.activeSelf);
         public virtual void Enable(bool isEnable)
         {
             _Enable(isEnable);
@@ -76,7 +76,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// Ë¢ĞÂ
+        /// åˆ·æ–°
         /// </summary>
         public void Refresh()
         {
@@ -84,7 +84,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// Ïú»Ù½çÃæ
+        /// é”€æ¯ç•Œé¢
         /// </summary>
         public virtual void Destroy()
         {

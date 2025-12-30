@@ -7,25 +7,25 @@ using Object = UnityEngine.Object;
 namespace Framework
 {
     /// <summary>
-    /// ÓÃÓÚ¹ÜÀí <see cref="IUI"/>
+    /// ç”¨äºç®¡ç† <see cref="IUI"/>
     /// </summary>
     public class UIManager : Singleton<UIManager>
     {
         static Dictionary<Type, IUI> uis = new Dictionary<Type, IUI>(20);
 
-        /// <summary>Ö¸¶¨½çÃæÊÇ·ñ´æÔÚÊµÀı£¬»á³¢ÊÔ»ñÈ¡ÊµÀı <see cref="ExpectGetUI{T}"/></summary>
+        /// <summary>æŒ‡å®šç•Œé¢æ˜¯å¦å­˜åœ¨å®ä¾‹ï¼Œä¼šå°è¯•è·å–å®ä¾‹ <see cref="ExpectGetUI{T}"/></summary>
         public static bool IsExistInstance<T>() where T : class, IUI
         {
             bool r = !ObjectUtility.IsNull(ExpectGetUI<T>());
             return r;
         }
-        /// <summary>Ö¸¶¨½çÃæÊÇ·ñ×¢²á</summary>
+        /// <summary>æŒ‡å®šç•Œé¢æ˜¯å¦æ³¨å†Œ</summary>
         public static bool IsRegister<T>() where T : class, IUI
         {
             Type type = typeof(T);
             if (uis.TryGetValue(type, out var bui))
             {
-                // ÅĞ¶ÏÊµÀı
+                // åˆ¤æ–­å®ä¾‹
                 if (ObjectUtility.IsNull(bui))
                 {
                     return false;
@@ -37,18 +37,18 @@ namespace Framework
             }
             return true;
         }
-        /// <summary>Ö¸¶¨½çÃæÊÇ·ñ×¢²á</summary>
+        /// <summary>æŒ‡å®šç•Œé¢æ˜¯å¦æ³¨å†Œ</summary>
         public static bool IsRegister<T>(T ui) where T : class, IUI
         {
             if (ui == null)
             {
-                //Debug.LogError("¿Õ ui ");
+                //Debug.LogError("ç©º ui ");
                 return false;
             }
             Type type = ui.GetType();
             if (uis.TryGetValue(type, out var bui))
             {
-                // ÅĞ¶ÏÊµÀı
+                // åˆ¤æ–­å®ä¾‹
                 if (bui is UnityEngine.Object uui)
                 {
                     return uui;
@@ -69,7 +69,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// ×¢²á
+        /// æ³¨å†Œ
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ui"></param>
@@ -78,7 +78,7 @@ namespace Framework
         {
             if (ObjectUtility.IsNull(ui))
             {
-                Debug.LogError("²»ÄÜ×¢²á¿Õ ui");
+                Debug.LogError("ä¸èƒ½æ³¨å†Œç©º ui");
                 return false;
             }
             Type type = ui.GetType();
@@ -87,12 +87,12 @@ namespace Framework
                 //if (bui == ui)
                 if (object.Equals(bui, ui))
                 {
-                    Debug.LogWarning($"ÒÑ¾­×¢²á¹ı ui \"{ui.name}\"");
+                    Debug.LogWarning($"å·²ç»æ³¨å†Œè¿‡ ui \"{ui.name}\"");
                     return false;
                 }
                 else
                 {
-                    Debug.LogWarning($"ÒÑ¾­×¢²á¹ı \"{type.Name}\" µÄÍ¬ÀàĞÍ ui£¬½«Ê¹ÓÃ \"{ui.name}\" Ìæ»» \"{bui?.name}\"");
+                    Debug.LogWarning($"å·²ç»æ³¨å†Œè¿‡ \"{type.Name}\" çš„åŒç±»å‹ uiï¼Œå°†ä½¿ç”¨ \"{ui.name}\" æ›¿æ¢ \"{bui?.name}\"");
                 }
             }
 
@@ -101,7 +101,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// ×¢Ïú
+        /// æ³¨é”€
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ui"></param>
@@ -111,7 +111,7 @@ namespace Framework
             Object uui = ui as Object;
             if (ui == null || uui == null)
             {
-                Debug.LogError($"²»ÄÜ×¢Ïú¿Õ ui ÊµÀı \"{typeof(T)}\"");
+                Debug.LogError($"ä¸èƒ½æ³¨é”€ç©º ui å®ä¾‹ \"{typeof(T)}\"");
                 return false;
             }
             Type type = ui.GetType();
@@ -124,7 +124,7 @@ namespace Framework
                 }
                 else
                 {
-                    Debug.LogWarning($"²»ÄÜ×¢Ïú ui ÊµÀı \"{ui}\"£¬ºÍÒÑ×¢²áµÄ \"{bui}\" ²»ÊÇÍ¬Ò»¸ö \"{typeof(T)}\" ÊµÀı");
+                    Debug.LogWarning($"ä¸èƒ½æ³¨é”€ ui å®ä¾‹ \"{ui}\"ï¼Œå’Œå·²æ³¨å†Œçš„ \"{bui}\" ä¸æ˜¯åŒä¸€ä¸ª \"{typeof(T)}\" å®ä¾‹");
                     return false;
                 }
             }
@@ -132,7 +132,7 @@ namespace Framework
             return true;
         }
         /// <summary>
-        /// ×¢Ïú
+        /// æ³¨é”€
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -149,7 +149,7 @@ namespace Framework
         }
 
         /// <summary>
-        /// »ñÈ¡ <typeparamref name="T"/> µÄÊµÀı
+        /// è·å– <typeparamref name="T"/> çš„å®ä¾‹
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -167,7 +167,7 @@ namespace Framework
                 //    }
                 //    else
                 //    {
-                //        Debug.LogWarning($"Òª»ñÈ¡µÄ ui \"{type}\" Îª¿Õ£¬¿ÉÄÜÒÑ¾­±»Ïú»Ù");
+                //        Debug.LogWarning($"è¦è·å–çš„ ui \"{type}\" ä¸ºç©ºï¼Œå¯èƒ½å·²ç»è¢«é”€æ¯");
                 //    }
                 //}
                 //else
@@ -181,18 +181,18 @@ namespace Framework
                 }
                 else
                 {
-                    //Debug.LogWarning($"Òª»ñÈ¡µÄ ui \"{type}\" Îª¿Õ£¬¿ÉÄÜÒÑ¾­±»Ïú»Ù");
+                    //Debug.LogWarning($"è¦è·å–çš„ ui \"{type}\" ä¸ºç©ºï¼Œå¯èƒ½å·²ç»è¢«é”€æ¯");
                 }
             }
             else
             {
-                //Debug.LogWarning($"Òª»ñÈ¡µÄ ui \"{type}\" ²»´æÔÚ£¬¿ÉÄÜÎ´×¢²áµ½¹ÜÀíÆ÷");
+                //Debug.LogWarning($"è¦è·å–çš„ ui \"{type}\" ä¸å­˜åœ¨ï¼Œå¯èƒ½æœªæ³¨å†Œåˆ°ç®¡ç†å™¨");
             }
             return ui;
         }
         /// <summary>
-        /// ÆÚÍû»ñÈ¡ <typeparamref name="T"/> µÄÊµÀı
-        /// <para>Èç¹ûÎ´´ÓÒÑ×¢²áÁĞ±íÖĞÕÒµ½£¬Ôò»á³¢ÊÔ´ÓÒÑ¼ÓÔØµÄ Unity ¶ÔÏóÖĞÕÒ£¬ÕÒµ½ºó»á½«Æä×¢²áµ½¹ÜÀíÆ÷</para>
+        /// æœŸæœ›è·å– <typeparamref name="T"/> çš„å®ä¾‹
+        /// <para>å¦‚æœæœªä»å·²æ³¨å†Œåˆ—è¡¨ä¸­æ‰¾åˆ°ï¼Œåˆ™ä¼šå°è¯•ä»å·²åŠ è½½çš„ Unity å¯¹è±¡ä¸­æ‰¾ï¼Œæ‰¾åˆ°åä¼šå°†å…¶æ³¨å†Œåˆ°ç®¡ç†å™¨</para>
         /// </summary>
         public static T ExpectGetUI<T>() where T : class, IUI
         {
@@ -204,7 +204,7 @@ namespace Framework
                 //var m = ui as MonoBehaviour;
                 //if (m == null)
                 //{
-                //    ui = GameObject.FindObjectOfType(type, true) as T;// ³¢ÊÔ´ÓÒÑ¼ÓÔØµÄ Unity ¶ÔÏóÖĞÕÒ
+                //    ui = GameObject.FindObjectOfType(type, true) as T;// å°è¯•ä»å·²åŠ è½½çš„ Unity å¯¹è±¡ä¸­æ‰¾
                 //    if (ui != null)
                 //    {
                 //        Register(ui);
@@ -212,16 +212,16 @@ namespace Framework
                 //}
 
 #if UNITY_2020_1_OR_NEWER
-                ui = GameObject.FindObjectOfType(type, true) as T;// ³¢ÊÔ´ÓÒÑ¼ÓÔØµÄ Unity ¶ÔÏóÖĞÕÒ
+                ui = GameObject.FindObjectOfType(type, true) as T;// å°è¯•ä»å·²åŠ è½½çš„ Unity å¯¹è±¡ä¸­æ‰¾
 #else
-                //ui = GameObject.FindObjectOfType(type) as T;// ³¢ÊÔ´ÓÒÑ¼ÓÔØµÄ Unity ¶ÔÏóÖĞÕÒ
+                //ui = GameObject.FindObjectOfType(type) as T;// å°è¯•ä»å·²åŠ è½½çš„ Unity å¯¹è±¡ä¸­æ‰¾
                 var uis = Resources.FindObjectsOfTypeAll(type);
                 //ui = (uis.Length > 0 ? uis[0] : null) as T;
                 foreach (var item in uis)
                 {
                     if (item is MonoBehaviour cui)
                     {
-                        if(cui.gameObject.scene.path != "")// ÅÅ³ıÔ¤ÖÆÌå
+                        if(cui.gameObject.scene.path != "")// æ’é™¤é¢„åˆ¶ä½“
                         {
                             ui = item as T;
                             break;
@@ -232,19 +232,19 @@ namespace Framework
 #endif
                 if (ui != null)
                 {
-                    Debug.Log($"Òª»ñÈ¡µÄ ui \"{type}\" Îª¿Õ£¬ÕÒµ½ÒÑ´´½¨µÄÊµÀı²¢×¢²á");
+                    Debug.Log($"è¦è·å–çš„ ui \"{type}\" ä¸ºç©ºï¼Œæ‰¾åˆ°å·²åˆ›å»ºçš„å®ä¾‹å¹¶æ³¨å†Œ");
                     Register(ui);
                 }
                 else
                 {
-                    Debug.LogWarning($"Òª»ñÈ¡µÄ ui \"{type}\" Îª¿Õ£¬²¢ÇÒÃ»ÓĞÕÒµ½ÈÎºÎÒÑ´´½¨µÄÊµÀı");
+                    Debug.LogWarning($"è¦è·å–çš„ ui \"{type}\" ä¸ºç©ºï¼Œå¹¶ä¸”æ²¡æœ‰æ‰¾åˆ°ä»»ä½•å·²åˆ›å»ºçš„å®ä¾‹");
                 }
             }
             return ui;
         }
         /// <summary>
-        /// ³¢ÊÔÆÚÍû»ñÈ¡ <typeparamref name="T"/> µÄÊµÀı
-        /// <para>Èç¹ûÎ´´ÓÒÑ×¢²áÁĞ±íÖĞÕÒµ½£¬Ôò»á³¢ÊÔ´ÓÒÑ¼ÓÔØµÄ Unity ¶ÔÏóÖĞÕÒ£¬ÕÒµ½ºó»á½«Æä×¢²áµ½¹ÜÀíÆ÷</para>
+        /// å°è¯•æœŸæœ›è·å– <typeparamref name="T"/> çš„å®ä¾‹
+        /// <para>å¦‚æœæœªä»å·²æ³¨å†Œåˆ—è¡¨ä¸­æ‰¾åˆ°ï¼Œåˆ™ä¼šå°è¯•ä»å·²åŠ è½½çš„ Unity å¯¹è±¡ä¸­æ‰¾ï¼Œæ‰¾åˆ°åä¼šå°†å…¶æ³¨å†Œåˆ°ç®¡ç†å™¨</para>
         /// </summary>
         public static bool TryExpectGetUI<T>(out T ui) where T : class, IUI
         {
@@ -253,7 +253,7 @@ namespace Framework
             return r;
         }
 
-        /// <summary>ÆôÓÃ ui</summary>
+        /// <summary>å¯ç”¨ ui</summary>
         public static bool EnableUI<T>(bool enable) where T : class, IUI
         {
             if (!ObjectUtility.IsNull(ExpectGetUI<T>()))
@@ -264,7 +264,7 @@ namespace Framework
 
             return false;
         }
-        /// <summary>ÆôÓÃËùÓĞ ui£¬Ö»»áÆôÓÃÒÑ×¢²áµÄ</summary>
+        /// <summary>å¯ç”¨æ‰€æœ‰ uiï¼Œåªä¼šå¯ç”¨å·²æ³¨å†Œçš„</summary>
         public static void EnableUIAll(bool enable)
         {
             foreach (var item in uis)

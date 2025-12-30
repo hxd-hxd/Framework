@@ -5,14 +5,33 @@ using UnityEngine;
 namespace Framework.LogSystem
 {
     /// <summary>
-    /// 日志系统 ui
+    /// 鏃ュ織绯荤粺 ui
     /// </summary>
     public class LogSystemUI : UIBase
     {
+        [SerializeField]
+        private LogBuoyUI _logBuoy;
+        [SerializeField]
+        private LogViewUI _logView;
+
         private FpsCounter m_FpsCounter = null;
 
-        LogBuoyUI logBuoy => UIManager.ExpectGetUI<LogBuoyUI>();
-        LogViewUI logView => UIManager.ExpectGetUI<LogViewUI>();
+        LogBuoyUI logBuoy
+        {
+            get
+            {
+                if (!_logBuoy) return _logBuoy;
+                return _logBuoy = UIManager.ExpectGetUI<LogBuoyUI>();
+            }
+        }
+        LogViewUI logView
+        {
+            get
+            {
+                if (!_logView) return _logView;
+                return _logView = UIManager.ExpectGetUI<LogViewUI>();
+            }
+        }
 
         public FpsCounter fpsCounter { get => m_FpsCounter; private set => m_FpsCounter = value; }
 

@@ -1076,6 +1076,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4545a25f3fe8fd4c8ccf7704b8348b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _logBuoy: {fileID: 952433064891869247}
+  _logView: {fileID: 2939040075953480273}
 --- !u!1 &8935448367248919541
 GameObject:
   m_ObjectHideFlags: 0
@@ -1184,6 +1186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _target: {fileID: 8935448367248919498}
   _detectRectTransform: {fileID: 4665909848730116992}
+  _dragSpaceMode: 0
   _isDraggingRestrict: 1
   _isDraggingRestrictUp: 1
   _isDraggingRestrictDown: 1
@@ -1656,6 +1659,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _target: {fileID: 8935448367472629368}
   _detectRectTransform: {fileID: 5680989509306325887}
+  _dragSpaceMode: 0
   _isDraggingRestrict: 1
   _isDraggingRestrictUp: 1
   _isDraggingRestrictDown: 1

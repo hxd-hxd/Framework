@@ -20,7 +20,7 @@ namespace Framework.LogSystem
         {
             get
             {
-                if (!_logBuoy) return _logBuoy;
+                if (_logBuoy) return _logBuoy;
                 return _logBuoy = UIManager.ExpectGetUI<LogBuoyUI>();
             }
         }
@@ -28,7 +28,7 @@ namespace Framework.LogSystem
         {
             get
             {
-                if (!_logView) return _logView;
+                if (_logView) return _logView;
                 return _logView = UIManager.ExpectGetUI<LogViewUI>();
             }
         }

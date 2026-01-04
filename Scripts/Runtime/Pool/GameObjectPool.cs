@@ -373,12 +373,18 @@ namespace Framework
 
         /// <summary>返回对象池，默认返回到 <see cref="template"/> 对应的池子，如果不确定请使用 <see cref="Return(GameObject, GameObject)"/> 已指定返回到哪个池子</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
-        public virtual void Return(GameObject obj) => Return(obj, _template);
+        public virtual void Return(GameObject obj) => Return(obj, _template, returnParent);
         /// <summary>返回对象池</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
         public virtual void Return(GameObject obj, GameObject template)
         {
             Return(obj, template, returnParent);
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
+        public virtual void Return(GameObject obj, Transform returnParent)
+        {
+            Return(obj, _template, returnParent);
         }
         /// <summary>返回对象池</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>

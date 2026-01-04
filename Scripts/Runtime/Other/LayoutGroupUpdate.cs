@@ -6,24 +6,14 @@ using UnityEngine.UI;
 namespace Framework
 {
     /// <summary>
-    /// ´¦Àí <see cref="LayoutGroup"/> ×é¼ş³õÊ¼¹Ø±Õ£¬µÚÒ»´Î¼¤»î²»¼°Ê±¸üĞÂ¼ÆËã²¼¾ÖµÄÎÊÌâ
-    /// <para>½«´Î×é¼ş¹ÒÔÚ <see cref="LayoutGroup"/> Í¬ÎïÌåÉÏ¼´¿É</para>
+    /// å¤„ç† <see cref="LayoutGroup"/> ç»„ä»¶åˆå§‹å…³é—­ï¼Œç¬¬ä¸€æ¬¡æ¿€æ´»ä¸åŠæ—¶æ›´æ–°è®¡ç®—å¸ƒå±€çš„é—®é¢˜
+    /// <para>å°†æ­¤ç»„ä»¶æŒ‚åœ¨ <see cref="LayoutGroup"/> åŒç‰©ä½“ä¸Šå³å¯</para>
     /// </summary>
     public class LayoutGroupUpdate : MonoBehaviour
     {
         IEnumerator Start()
         {
-            yield return null;
-            var lg = GetComponent<LayoutGroup>();
-            if (lg != null)
-            {
-                if (lg.enabled)
-                {
-                    lg.enabled = false;
-                    yield return null;
-                    lg.enabled = true;
-                }
-            }
+            yield return UpdateLayoutGroup();
         }
 
         private void OnEnable()
@@ -40,17 +30,19 @@ namespace Framework
         {
             var lg = GetComponent<LayoutGroup>();
 
-            while (true)
+            //while (true)
             {
+                yield return null;
                 if (lg != null)
                 {
-                    if (lg.enabled)
-                    {
-                        lg.enabled = false;
-                        yield return null;
-                        lg.enabled = true;
-                        yield return null;
-                    }
+                    lg.SetLayoutHorizontal();
+                    lg.SetLayoutVertical();
+                    //if (lg.enabled)
+                    //{
+                    //    lg.enabled = false;
+                    //    yield return null;
+                    //    lg.enabled = true;
+                    //}
                 }
             }
         }

@@ -64,10 +64,12 @@ namespace Framework
         /// 反向启用。即当前为启用则禁用，当前为禁用则启用
         /// </summary>
         public void Enable() => _Enable(!gameObject.activeSelf);
+
         public virtual void Enable(bool isEnable)
         {
             _Enable(isEnable);
         }
+
         protected void _Enable(bool isEnable)
         {
             if (gameObject.activeSelf == isEnable) return;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Framework.Runtime
@@ -11,7 +11,7 @@ namespace Framework.Runtime
     {
         [SerializeField]
         private T _value;
-        private Action<T, T> m_ChangeCallback;
+        private Action<T, T> _changeCallback;
 
         /// <summary>
         /// 初始化变量的新实例。
@@ -29,7 +29,7 @@ namespace Framework.Runtime
         {
             _value = default(T);
 
-            m_ChangeCallback = changeCallback;
+            _changeCallback = changeCallback;
         }
 
         /// <summary>
@@ -51,11 +51,11 @@ namespace Framework.Runtime
         {
             add
             {
-                m_ChangeCallback += value;
+                _changeCallback += value;
             }
             remove
             {
-                m_ChangeCallback -= value;
+                _changeCallback -= value;
             }
         }
 
@@ -101,7 +101,7 @@ namespace Framework.Runtime
         public override void Clear()
         {
             _value = default(T);
-            m_ChangeCallback = null;
+            _changeCallback = null;
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Framework.Runtime
             var oldValue = _value;
             _value = value;
 
-            m_ChangeCallback?.Invoke(oldValue, value);
+            _changeCallback?.Invoke(oldValue, value);
         }
 
     }

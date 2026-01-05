@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Framework.Core
 {
@@ -9,7 +9,7 @@ namespace Framework.Core
     public class ProperttyVariable<T> : ProperttyVariable
     {
         private T m_Value;
-        private Action<object, object> m_ChangeCallback;
+        private Action<object, object> _changeCallback;
 
         /// <summary>
         /// 初始化变量的新实例。
@@ -27,18 +27,18 @@ namespace Framework.Core
         {
             m_Value = default(T);
 
-            m_ChangeCallback = changeCallback;
+            _changeCallback = changeCallback;
         }
 
         public override event Action<object, object> changeCallback
         {
             add
             {
-                m_ChangeCallback += value;
+                _changeCallback += value;
             }
             remove
             {
-                m_ChangeCallback -= value;
+                _changeCallback -= value;
             }
         }
 
@@ -110,7 +110,7 @@ namespace Framework.Core
         public override void Clear()
         {
             m_Value = default(T);
-            m_ChangeCallback = null;
+            _changeCallback = null;
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Framework.Core
             var oldValue = m_Value;
             m_Value = value;
 
-            m_ChangeCallback?.Invoke(oldValue, value);
+            _changeCallback?.Invoke(oldValue, value);
         }
 
         public override bool Equals(object obj)

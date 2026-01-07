@@ -1,4 +1,6 @@
 
+using System;
+
 namespace Framework.Event
 {
     /// <summary>
@@ -26,6 +28,16 @@ namespace Framework.Event
             msg.sender = sender;
             EventCenter.SendType(msg);
             TypePool.root.Return(msg);
+        }
+
+        public static void AddListener(Action<T> listener)
+        {
+            EventCenter.AddListener(listener);
+        }
+
+        public static void RemoveListener(Action<T> listener)
+        {
+            EventCenter.RemoveListener(listener);
         }
 
         public virtual void Clear()

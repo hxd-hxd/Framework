@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -249,7 +249,7 @@ namespace Framework.Event
             if (_entrepot.ContainsKey(id))
                 //if (_entrepot[id].Contains(listener))
                 _entrepot[id].Remove(listener);
-        } 
+        }
         #endregion
 
 
@@ -441,30 +441,35 @@ namespace Framework.Event
         {
             if (id is TID tid)
                 Clear(tid);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 
         void IEventManager.Clear<TID1>()
         {
             if (typeof(TID) == typeof(TID1))
                 Clear();
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 
         void IEventManager.AddListener<TID1>(TID1 id, Delegate listener)
         {
             if (id is TID tid)
                 AddListener(tid, listener);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 
         void IEventManager.RemoveListener<TID1>(TID1 id, Delegate listener)
         {
             if (id is TID tid)
                 RemoveListener(tid, listener);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 
         void IEventManager.Send<TID1>(TID1 id, params object[] args)
         {
             if (id is TID tid)
                 Send(tid, args);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 
         //void IEventManager.Clear(object id)

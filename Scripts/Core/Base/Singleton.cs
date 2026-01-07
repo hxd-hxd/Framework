@@ -2,7 +2,7 @@
 namespace Framework
 {
     /// <summary>
-    /// 单例基类
+    /// 鍗曚緥鍩虹被
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class Singleton<T> where T : new()

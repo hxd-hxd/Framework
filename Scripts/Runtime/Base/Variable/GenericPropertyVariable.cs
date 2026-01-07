@@ -47,6 +47,11 @@ namespace Framework.Runtime
             }
         }
 
+        /// <summary>
+        /// 属性改变事件。
+        /// <para><typeparamref name="T"/> 参数 1：旧值</para>
+        /// <para><typeparamref name="T"/> 参数 2：新值</para>
+        /// </summary>
         new public event Action<T, T> changeCallback
         {
             add

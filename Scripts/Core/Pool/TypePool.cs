@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -15,7 +15,7 @@ namespace Framework
     [Serializable]
     public class TypePool
     {
-        internal static  List<TypePool> _pools = new List<TypePool>();
+        internal static List<TypePool> _pools = new List<TypePool>();
 
         /// <summary>
         /// 公共池，不管理自己的对象池时使用
@@ -23,7 +23,7 @@ namespace Framework
         public static TypePool root { get; } = new TypePool();
 
         /// <summary>
-        /// 清理所有对象池
+        /// 清理所有 <see cref="TypePool"/> 对象池
         /// </summary>
         public static void ClearAllPool()
         {
@@ -55,6 +55,7 @@ namespace Framework
         /// 池子数量，每个类型对应一个池子
         /// </summary>
         public virtual int poolCount => _pool.Count;
+
         /// <summary>
         /// 池子里的对象数量
         /// </summary>
@@ -74,18 +75,27 @@ namespace Framework
         /// <summary>
         /// 创建实例
         /// </summary>
-        /// <returns></returns>
         protected virtual T CreateInstance<T>() => Activator.CreateInstance<T>();
+
         /// <summary>
         /// 创建实例
         /// </summary>
-        /// <returns></returns>
         protected virtual object CreateInstance(Type type) => Activator.CreateInstance(type);
+
         /// <summary>
         /// 创建实例
         /// </summary>
-        /// <returns></returns>
         protected virtual object CreateInstance(Type type, params object[] args) => Activator.CreateInstance(type, args);
+
+        /// <summary>从对象池获取
+        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
+        /// </summary>
+        public virtual T Get<T>()
+        {
+            var target = typeof(T);
+            T obj = (T)Get(target, null);
+            return obj;
+        }
 
         /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
@@ -97,6 +107,7 @@ namespace Framework
             T obj = (T)Get(target, ctorArgs);
             return obj;
         }
+
         /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
         /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
@@ -140,6 +151,7 @@ namespace Framework
 
         /// <summary>获取 <see cref="List{T}"/></summary>
         public List<T> GetList<T>() => Get<List<T>>();
+
         /// <summary>获取 <see cref="List{T}"/></summary>
         public IList GetList(Type itemType)
         {
@@ -150,6 +162,7 @@ namespace Framework
 
         /// <summary>获取 <see cref="Dictionary{TKey, TValue}"/></summary>
         public Dictionary<TKey, TValue> GetDic<TKey, TValue>() => Get<Dictionary<TKey, TValue>>();
+
         /// <summary>获取 <see cref="Dictionary{TKey, TValue}"/></summary>
         public IDictionary GetDic(Type keyType, Type valueType)
         {
@@ -161,12 +174,14 @@ namespace Framework
 
         /// <summary>获取 <see cref="Queue{T}"/></summary>
         public Queue<T> GetQueue<T>() => Get<Queue<T>>();
+
         /// <summary>获取 <see cref="Stack{T}"/></summary>
         public Stack<T> GetStack<T>() => Get<Stack<T>>();
+
         /// <summary>获取 <see cref="HashSet{T}"/></summary>
         public HashSet<T> GetHashSet<T>() => Get<HashSet<T>>();
 
-        /// <summary>获取 <typeparamref name="T"/>[]</summary>
+        ///// <summary>获取 <typeparamref name="T"/>[]</summary>
         //public T[] GetArray<T>(int length)
         //{
         //    object obj = null;
@@ -200,7 +215,13 @@ namespace Framework
 
         //    return obj as T[];
         //}
+
+        /// <summary>获取 <see cref="object"/>[]</summary>
+        public object[] GetArray(int length) => GetArray<object>(length);
+
+        /// <summary>获取 <typeparamref name="T"/>[]</summary>
         public T[] GetArray<T>(int length) => GetArray(typeof(T), length) as T[];
+
         /// <summary>获取 <see cref="Array"/></summary>
         public Array GetArray(Type elementType, int length)
         {
@@ -948,6 +969,128 @@ namespace Framework
         }
         #endregion
 
+        #region 转换成数组
+        /// <summary>
+        /// 转换成可重复利用的 <typeparamref name="T"/>[] 数组
+        /// </summary>
+        public T[] ToArray<T>(ICollection<T> v)
+        {
+            if (v == null) return null;
+            return ToArray<T>(v, (Func<T, T>)null);
+        }
+
+        /// <summary>
+        /// 转换成可重复利用的数组
+        /// <para><typeparamref name="T"/>：要转换的目标数组元素类型</para>
+        /// </summary>
+        public T[] ToArray<T, S>(ICollection<S> v)
+        {
+            if (v == null) return null;
+            return ToArray<T, S>(v, (Func<S, T>)null);
+        }
+
+        /// <summary>
+        /// 转换成可重复利用的 <see cref="object"/>[] 数组
+        /// </summary>
+        public object[] ToObjectArray<T>(ICollection<T> v)
+        {
+            if (v == null) return null;
+            return ToObjectArray(v, (Func<T, object>)null);
+        }
+
+        /// <summary>
+        /// 转换成可重复利用的 <typeparamref name="T"/>[] 数组
+        /// ，自行处理元素的转换结果
+        /// </summary>
+        public T[] ToArray<T>(ICollection<T> v, Func<T, T> handle)
+        {
+            if (v == null) return null;
+            var objs = GetArray<T>(v.Count);
+            int i = 0;
+            foreach (var t in v)
+            {
+                if (handle != null)
+                    objs[i] = handle(t);
+                else
+                    objs[i] = t;
+                i++;
+            }
+            return objs;
+        }
+
+        /// <summary>
+        /// 转换成可重复利用的数组
+        /// ，自行处理元素的转换结果
+        /// <para><typeparamref name="T"/>：要转换的目标数组元素类型</para>
+        /// </summary>
+        public T[] ToArray<T, S>(ICollection<S> v, Func<S, T> handle)
+        {
+            if (v == null) return null;
+            var objs = GetArray<T>(v.Count);
+            int i = 0;
+            foreach (var t in v)
+            {
+                if (handle != null)
+                    objs[i] = handle(t);
+                else
+                    objs[i] = (T)(object)t;
+                i++;
+            }
+            return objs;
+        }
+
+        /// <summary>
+        /// 转换成可重复利用的 <see cref="object"/>[] 数组
+        /// ，自行处理元素的转换结果
+        /// </summary>
+        public object[] ToObjectArray<T>(ICollection<T> v, Func<T, object> handle)
+        {
+            if (v == null) return null;
+            var objs = GetArray(v.Count);
+            int i = 0;
+            foreach (var t in v)
+            {
+                if (handle != null)
+                    objs[i] = handle(t);
+                else
+                    objs[i] = t;
+                i++;
+            }
+            return objs;
+        }
+
+        ///// <summary>
+        ///// 转换成可重复利用的数组
+        ///// <para><typeparamref name="T"/>：要转换的目标数组元素类型</para>
+        ///// </summary>
+        //public T[] ToArray<T>(ICollection v)
+        //{
+        //    var objs = GetArray<T>(v.Count);
+        //    int i = 0;
+        //    foreach (var t in v)
+        //    {
+        //        objs[i] = (T)(object)t;
+        //        i++;
+        //    }
+        //    return objs;
+        //}
+
+        ///// <summary>
+        ///// 转换成可重复利用的 <see cref="object"/>[] 数组
+        ///// </summary>
+        //public object[] ToObjectArray(ICollection v)
+        //{
+        //    var objs = GetArray(v.Count);
+        //    int i = 0;
+        //    foreach (var t in v)
+        //    {
+        //        objs[i] = t;
+        //        i++;
+        //    }
+        //    return objs;
+        //} 
+        #endregion
+
         /// <summary>返回对象池</summary>
         /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
         public virtual void Return<T>(T obj) where T : class
@@ -967,6 +1110,7 @@ namespace Framework
             */
             //var target = typeof(T);
             var target = obj.GetType();
+
             var has = _pool.TryGetValue(target, out var tPool);
 
             if (!has)
@@ -984,6 +1128,33 @@ namespace Framework
             }
         }
 
+        /// <summary>返回对象池</summary>
+        /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
+        public virtual void Return(object obj)
+        {
+            if (obj == null) return;
+
+            var target = obj.GetType();
+            if (target.IsValueType) return;
+
+            var has = _pool.TryGetValue(target, out var tPool);
+
+            if (!has)
+            {
+                tPool = CreatePool();
+                _pool[target] = tPool;
+            }
+
+            if (!tPool.Contains(obj))
+            {
+                //tPool.Enqueue(obj);
+                tPool.Add(obj);
+
+                CleanupObject(obj);
+            }
+        }
+
+        #region 不同对象返回对象池的处理
         // 以下处理基本容器类型
         /// <summary>返回对象池</summary>
         /// <remarks>会清空</remarks>
@@ -1113,6 +1284,7 @@ namespace Framework
             v.Clear();
             Return<IList>(v);
         }
+
         /// <summary>返回对象池</summary>
         /// <remarks>会清空</remarks>
         public void Return(IDictionary v)
@@ -1121,6 +1293,7 @@ namespace Framework
             v.Clear();
             Return<IDictionary>(v);
         }
+
         /// <summary>返回对象池</summary>
         /// <remarks>会清空</remarks>
         public void Return<T>(ICollection<T> v)
@@ -1128,6 +1301,520 @@ namespace Framework
             if (v == null) return;
             v.Clear();
             Return<ICollection<T>>(v);
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(List<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<List<T>>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ArrayList v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<ArrayList>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<TKey, TValue>(Dictionary<TKey, TValue> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v.Keys)
+                {
+                    Return(item);
+                }
+                foreach (var item in v.Values)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Dictionary<TKey, TValue>>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会将元素置为默认值</para>
+        /// </summary>
+        public void Return<T>(T[] v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            //for (var i = 0; i < v.Length; i++) v[i] = default;
+            Array.Clear(v, 0, v.Length);
+            Return<T[]>(v);
+        }
+        /// <summary>返回对象池，建议使用 <see cref="Return{T}(T[], bool)"/>
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会将元素置为默认值</para>
+        /// </summary>
+        public void Return(Array v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            //var t = v.GetType();
+            //var et = t.GetElementType();
+            //bool isValueType = et.IsValueType;
+            //for (var i = 0; i < v.Length; i++)
+            //{
+            //    if (isValueType)
+            //    {
+            //        v.SetValue(CreateInstance(et), i);
+            //    }
+            //    else
+            //    {
+            //        v.SetValue(default, i);
+            //    }
+            //}
+            Array.Clear(v, 0, v.Length);
+            Return<Array>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(Queue<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Queue<T>>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(Queue v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Queue>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(Stack<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Stack<T>>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(Stack v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Stack>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(HashSet<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<HashSet<T>>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(Hashtable v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<Hashtable>(v);
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(LinkedList<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<LinkedList<T>>(v);
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(IList v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<IList>(v);
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(IDictionary v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn)
+            {
+                foreach (var item in v.Keys)
+                {
+                    Return(item);
+                }
+                foreach (var item in v.Values)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<IDictionary>(v);
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ICollection<T> v, bool eReturn)
+        {
+            if (v == null) return;
+            if (eReturn
+                && typeof(T).IsClass)
+            {
+                foreach (var item in v)
+                {
+                    Return(item);
+                }
+            }
+            v.Clear();
+            Return<ICollection<T>>(v);
+        }
+
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(List<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(ArrayList v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<TKey, TValue>(Dictionary<TKey, TValue> v)
+        {
+            if (v == null) return;
+            foreach (var item in v.Keys)
+            {
+                Return(item);
+            }
+            foreach (var item in v.Values)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会将元素置为默认值</para>
+        public void ReturnE<T>(T[] v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            Array.Clear(v, 0, v.Length);
+        }
+        /// <summary>将元素返回对象池，建议使用 <see cref="ReturnE{T}(T[])"/>
+        /// <para>会将元素置为默认值</para>
+        /// </summary>
+        public void ReturnE(Array v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            //var t = v.GetType();
+            //var et = t.GetElementType();
+            //bool isValueType = et.IsValueType;
+            //for (var i = 0; i < v.Length; i++)
+            //{
+            //    if (isValueType)
+            //    {
+            //        v.SetValue(CreateInstance(et), i);
+            //    }
+            //    else
+            //    {
+            //        v.SetValue(default, i);
+            //    }
+            //}
+            Array.Clear(v, 0, v.Length);
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(Queue<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(Queue v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(Stack<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(Stack v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(HashSet<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(Hashtable v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(LinkedList<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(IList v)
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE(IDictionary v)
+        {
+            if (v == null) return;
+            foreach (var item in v.Keys)
+            {
+                Return(item);
+            }
+            foreach (var item in v.Values)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+
+        /// <summary>将元素返回对象池
+        /// <para>会清空</para>
+        /// </summary>
+        public void ReturnE<T>(ICollection<T> v) where T : class
+        {
+            if (v == null) return;
+            foreach (var item in v)
+            {
+                Return(item);
+            }
+            v.Clear();
+        }
+        #endregion
+
+        /// <summary>清除对象池</summary>
+        public virtual void Clear()
+        {
+            foreach (var item in _pool)
+            {
+                item.Value?.Clear();
+            }
+            _pool.Clear();
+        }
+
+        /// <summary>
+        /// 销毁
+        /// </summary>
+        public void Destroy()
+        {
+            Clear();
+            _pools.Remove(this);
         }
 
 
@@ -1165,25 +1852,6 @@ namespace Framework
         protected virtual void InitializeObject(object obj)
         {
             if (obj is ITypePoolObjectInit tpo) tpo.Init();
-        }
-
-        /// <summary>清除对象池</summary>
-        public virtual void Clear()
-        {
-            foreach (var item in _pool)
-            {
-                item.Value?.Clear();
-            }
-            _pool.Clear();
-        }
-
-        /// <summary>
-        /// 销毁
-        /// </summary>
-        public void Destroy()
-        {
-            Clear();
-            _pools.Remove(this);
         }
 
     }

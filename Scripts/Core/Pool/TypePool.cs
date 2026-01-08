@@ -36,6 +36,8 @@ namespace Framework
         protected Dictionary<Type, List<object>> _pool;
 
         protected Type[] _tempTypes1 = new Type[1], _tempTypes2 = new Type[2];
+        protected object[] _tempObjArray1 = new object[1], _tempObjArray2 = new object[2];
+        protected object[] _tempObjArray3 = new object[3], _tempObjArray4 = new object[4];
 
         public TypePool() : this(1)
         {
@@ -109,6 +111,15 @@ namespace Framework
         }
 
         /// <summary>从对象池获取
+        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
+        /// </summary>
+        public virtual object Get(Type type)
+        {
+            var obj = Get(type, null);
+            return obj;
+        }
+
+        /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
         /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
         /// </summary>
@@ -123,9 +134,6 @@ namespace Framework
             {
                 if (tPool.Count > 0)
                 {
-                    //tPool.TryDequeue(out obj);
-                    //obj = tPool.Dequeue();
-                    //obj = tPool.Last();
                     obj = Fetch(tPool);
                 }
             }
@@ -1797,6 +1805,26 @@ namespace Framework
             v.Clear();
         }
         #endregion
+
+        /// <summary>获取池中指定类型实例的可用数量</summary>
+        public virtual int GetFreeCount<T>()
+        {
+            return GetFreeCount(typeof(T));
+        }
+
+        /// <summary>获取池中指定类型实例的可用数量</summary>
+        public virtual int GetFreeCount(Type type)
+        {
+            int count = 0;
+            var target = type;
+            var has = _pool.TryGetValue(target, out var tPool);
+
+            if (has)
+            {
+                count = tPool.Count;
+            }
+            return count;
+        }
 
         /// <summary>清除对象池</summary>
         public virtual void Clear()

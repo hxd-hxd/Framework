@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2022/10/29 10:29:37
 // -------------------------
 
@@ -39,7 +39,7 @@ namespace Framework
     /// Unity 单例模式
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class MonoSingleton<T> : MonoBehaviour where T : Component
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
     {
         readonly static object locker = new object();
 
@@ -97,7 +97,7 @@ namespace Framework
         {
             if (isSoloInstance && instance && instance.GetType() == typeof(T))
             {
-                isSoloInstance = false;
+                //isSoloInstance = false;
 
                 Destroy(gameObject);
 

@@ -1,9 +1,8 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
 using System;
-using System.Security.Cryptography;
 
 namespace Framework.Event
 {

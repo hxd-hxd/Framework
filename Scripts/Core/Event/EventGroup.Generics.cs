@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -11,7 +11,7 @@ namespace Framework.Event
     /// <summary>
     /// 事件组
     /// </summary>
-    public partial class EventGroup<TID> : IEventGroup<TID>
+    public partial class EventGroup<TID> : IEventGroup<TID>, ITypePoolObject
     {
         Dictionary<TID, LinkedList<Delegate>> _entrepot = new Dictionary<TID, LinkedList<Delegate>>(20);
 

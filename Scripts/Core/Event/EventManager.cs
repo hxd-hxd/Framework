@@ -9,9 +9,9 @@ using System.Collections.Generic;
 namespace Framework.Event
 {
     /// <summary>
-    /// 事件管理器基类
+    /// 事件管理器
     /// </summary>
-    public partial class EventManager<TID> : IEventManager<TID>
+    public partial class EventManager<TID> : IEventManager<TID>, ITypePoolObject
     {
         private Dictionary<TID, LinkedList<Delegate>> _entrepot;
 
@@ -253,33 +253,6 @@ namespace Framework.Event
         #endregion
 
 
-        #region 清除监听
-        /// <summary>清除指定 id 的所有监听</summary>
-        public virtual void Clear(TID id)
-        {
-            if (_entrepot.TryGetValue(id, out var listeners))
-            {
-                listeners?.Clear();
-            }
-        }
-        /// <summary>清除所有监听</summary>
-        public virtual void Clear()
-        {
-            foreach (var listeners in _entrepot)
-            {
-                listeners.Value?.Clear();
-            }
-        }
-        /// <summary>清空消息库</summary>
-        public virtual void ClearAll()
-        {
-            Clear();
-
-            _entrepot?.Clear();
-        }
-        #endregion
-
-
         #region 发送消息
         /// <summary>发送消息</summary>
         public void Send(TID id)
@@ -435,6 +408,34 @@ namespace Framework.Event
         }
 
         #endregion
+
+
+        #region 清除监听
+        /// <summary>清除指定 id 的所有监听</summary>
+        public virtual void Clear(TID id)
+        {
+            if (_entrepot.TryGetValue(id, out var listeners))
+            {
+                listeners?.Clear();
+            }
+        }
+        /// <summary>清除所有监听</summary>
+        public virtual void Clear()
+        {
+            foreach (var listeners in _entrepot)
+            {
+                listeners.Value?.Clear();
+            }
+        }
+        /// <summary>清空消息库</summary>
+        public virtual void ClearAll()
+        {
+            Clear();
+
+            _entrepot?.Clear();
+        }
+        #endregion
+
 
         #region 显式实现
         void IEventManager.Clear<TID1>(TID1 id)

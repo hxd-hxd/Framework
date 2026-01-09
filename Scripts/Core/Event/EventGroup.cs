@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -12,7 +12,7 @@ namespace Framework.Event
     /// <summary>
     /// 事件组
     /// </summary>
-    public partial class EventGroup : IEventGroup
+    public partial class EventGroup : IEventGroup, ITypePoolObject
     {
         Dictionary<Type, IEventGroup> _entrepot = new Dictionary<Type, IEventGroup>(1);
 

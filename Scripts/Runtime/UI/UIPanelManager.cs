@@ -696,6 +696,7 @@ namespace Framework
         {
             return UIPanelManager.GetCanvas(panel);
         }
+
         /// <summary>
         /// 销毁界面
         /// </summary>
@@ -705,6 +706,7 @@ namespace Framework
         {
             return UIPanelManager.DestroyPanel(panel);
         }
+
         /// <summary>
         /// 移除界面
         /// </summary>
@@ -714,6 +716,7 @@ namespace Framework
         {
             return UIPanelManager.DestroyPanel(panel);
         }
+
         /// <summary>
         /// 将指定界面调整到最上层
         /// </summary>
@@ -722,6 +725,7 @@ namespace Framework
         {
             UIPanelManager.PanelTopmost(panel, false, true);
         }
+
         /// <summary>
         /// 将指定界面调整到最上层
         /// </summary>
@@ -729,6 +733,7 @@ namespace Framework
         {
             UIPanelManager.PanelTopmost(panel, false, ignoreSortOrderLevel);
         }
+
         /// <summary>
         /// 将指定界面调整到最上层
         /// </summary>

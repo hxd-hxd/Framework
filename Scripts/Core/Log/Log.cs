@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 
 namespace Framework.Core
 {
     /// <summary>
-    /// 日志
+    /// 鏃ュ織
     /// </summary>
     public class Log
     {
@@ -19,7 +17,7 @@ namespace Framework.Core
         }
 
         /// <summary>
-        /// 消息日志
+        /// 娑堟伅鏃ュ織
         /// </summary>
         /// <param name="msg"></param>
         public static void Info(object msg)
@@ -27,8 +25,9 @@ namespace Framework.Core
             if (!enableLog) return;
             _logger?.Info(msg);
         }
+
         /// <summary>
-        /// 警告日志
+        /// 璀﹀憡鏃ュ織
         /// </summary>
         /// <param name="msg"></param>
         public static void Warning(object msg)
@@ -36,8 +35,9 @@ namespace Framework.Core
             if (!enableLog) return;
             _logger?.Warning(msg);
         }
+
         /// <summary>
-        /// 错误日志
+        /// 閿欒鏃ュ織
         /// </summary>
         /// <param name="msg"></param>
         public static void Error(object msg)

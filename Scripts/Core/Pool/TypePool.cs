@@ -90,7 +90,7 @@ namespace Framework
         protected virtual object CreateInstance(Type type, params object[] args) => Activator.CreateInstance(type, args);
 
         /// <summary>从对象池获取
-        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
+        /// <para>注意：要获取 <see cref="Array"/> 请使用 <see cref="GetArray(int)"/></para>
         /// </summary>
         public virtual T Get<T>()
         {
@@ -101,7 +101,7 @@ namespace Framework
 
         /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
-        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
+        /// <para>注意：要获取 <see cref="Array"/> 请使用 <see cref="GetArray(int)"/></para>
         /// </summary>
         public virtual T Get<T>(params object[] ctorArgs)
         {
@@ -111,17 +111,8 @@ namespace Framework
         }
 
         /// <summary>从对象池获取
-        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
-        /// </summary>
-        public virtual object Get(Type type)
-        {
-            var obj = Get(type, null);
-            return obj;
-        }
-
-        /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
-        /// <para>注意：要获取 <see cref="Array"/> 请使用 <paramref name="GetArray"/></para>
+        /// <para>注意：要获取 <see cref="Array"/> 请使用 <see cref="GetArray(int)"/></para>
         /// </summary>
         public virtual object Get(Type type, params object[] ctorArgs)
         {
@@ -129,6 +120,8 @@ namespace Framework
 
             var target = type;
             var has = _pool.TryGetValue(target, out var tPool);
+
+            // TODO：需判断是否引用类型
 
             if (has)
             {
@@ -155,6 +148,68 @@ namespace Framework
             //Debug.Log($"目标是 {target} ,\r\n有池子 {has}，\t从池子里取出的 <color=yellow>{_o}</color> ，\t最终得到的 {obj}");
 
             return obj;
+        }
+
+        /// <summary>从对象池获取
+        /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
+        /// </summary>
+        public virtual bool TryGet<T>(out T obj)
+        {
+            var target = typeof(T);
+            obj = (T)Get(target, null);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
+        /// </summary>
+        public virtual bool TryGet<T>(out T obj, params object[] ctorArgs)
+        {
+            var target = typeof(T);
+            obj = (T)Get(target, ctorArgs);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// </summary>
+        public virtual bool TryGet(Type type, out object obj)
+        {
+            obj = Get(type, null);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
+        /// </summary>
+        public virtual bool TryGet(Type type, out object obj, params object[] ctorArgs)
+        {
+            obj = Get(type, ctorArgs);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// </summary>
+        public virtual bool TryGet<T>(int length, out T[] obj)
+        {
+            obj = GetArray<T>(length);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// </summary>
+        public virtual bool TryGet(int length, out object[] obj)
+        {
+            obj = GetArray(length);
+            return obj != null;
+        }
+
+        /// <summary>从对象池获取
+        /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
+        /// </summary>
+        public virtual bool TryGet(Type type, int length, out Array obj)
+        {
+            obj = GetArray(type, length);
+            return obj != null;
         }
 
         /// <summary>获取 <see cref="List{T}"/></summary>
@@ -1162,6 +1217,22 @@ namespace Framework
             }
         }
 
+        /// <summary>返回对象池</summary>
+        /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
+        public virtual void Return<T>(ref T obj) where T : class
+        {
+            Return(obj);
+            obj = null;
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
+        public virtual void Return(ref object obj)
+        {
+            Return(obj);
+            obj = null;
+        }
+
         #region 不同对象返回对象池的处理
         // 以下处理基本容器类型
         /// <summary>返回对象池</summary>
@@ -1598,6 +1669,262 @@ namespace Framework
             }
             v.Clear();
             Return<ICollection<T>>(v);
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref List<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref ArrayList v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<TKey, TValue>(ref Dictionary<TKey, TValue> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会将元素置为默认值</remarks>
+        public void Return<T>(ref T[] v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池，建议使用 <see cref="Return{T}(T[])"/></summary>
+        /// <remarks>会将元素置为默认值</remarks>
+        public void Return(ref Array v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref Queue<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref Queue v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref Stack<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref Stack v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref HashSet<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref Hashtable v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref LinkedList<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref StringBuilder v)
+        {
+            Return(v);
+            v = null;
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref IList v)
+        {
+            Return(v);
+            v = null;
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return(ref IDictionary v)
+        {
+            if (v == null) return;
+            v.Clear();
+            Return<IDictionary>(v);
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(ref ICollection<T> v)
+        {
+            Return(v);
+            v = null;
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref List<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref ArrayList v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<TKey, TValue>(ref Dictionary<TKey, TValue> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会将元素置为默认值</para>
+        /// </summary>
+        public void Return<T>(ref T[] v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池，建议使用 <see cref="Return{T}(T[], bool)"/>
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会将元素置为默认值</para>
+        /// </summary>
+        public void Return(ref Array v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref Queue<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref Queue v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref Stack<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref Stack v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref HashSet<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref Hashtable v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref LinkedList<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref IList v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return(ref IDictionary v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
+        }
+
+        /// <summary>返回对象池
+        /// <para><paramref name="eReturn"/>：true 将元素返回对象池</para>
+        /// <para>会清空</para>
+        /// </summary>
+        public void Return<T>(ref ICollection<T> v, bool eReturn)
+        {
+            Return(v, eReturn);
+            v = null;
         }
 
         /// <summary>将元素返回对象池

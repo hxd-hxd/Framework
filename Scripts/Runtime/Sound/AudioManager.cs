@@ -37,20 +37,20 @@ namespace Framework
                 EditorGUILayout.BeginVertical("box");
                 SoundGUI("主声音"
                     , ref my.soundSettings._mainVolume, ref my.soundSettings._mainSwitch
-                    , () => AudioManager.mainVolume = my.soundSettings.mainVolume
-                    , () => AudioManager.mainSwitch = my.soundSettings.mainSwitch
+                    , () => my.mainVolume = my.soundSettings.mainVolume
+                    , () => my.mainSwitch = my.soundSettings.mainSwitch
                     , 10);
 
                 SoundGUI("背景声音"
                     , ref my.soundSettings._bgmVolume, ref my.soundSettings._bgmSwitch
-                    , () => AudioManager.bgmVolume = my.soundSettings.bgmVolume
-                    , () => AudioManager.bgmSwitch = my.soundSettings.bgmSwitch
+                    , () => my.bgmVolume = my.soundSettings.bgmVolume
+                    , () => my.bgmSwitch = my.soundSettings.bgmSwitch
                     );
 
                 SoundGUI("其他声音（UI、3D等）"
                     , ref my.soundSettings._soundVolume, ref my.soundSettings._soundSwitch
-                    , () => AudioManager.soundVolume = my.soundSettings.soundVolume
-                    , () => AudioManager.soundSwitch = my.soundSettings.soundSwitch
+                    , () => my.soundVolume = my.soundSettings.soundVolume
+                    , () => my.soundSwitch = my.soundSettings.soundSwitch
                     );
                 EditorGUILayout.EndVertical();
 
@@ -142,7 +142,6 @@ namespace Framework
         public List<AudioClip> _clips = new List<AudioClip>();
         public List<AudioClip> _bgmClips = new List<AudioClip>();
 
-
         public SoundSettings soundSettings { get => _soundSettings; }
         public AudioSource audioSourceBGM
         {
@@ -157,117 +156,117 @@ namespace Framework
             }
         }
 
-        public static float mainVolume
+        public float mainVolume
         {
             get
             {
-                float v = Instance._soundSettings.mainVolume;
+                float v = _soundSettings.mainVolume;
                 return v;
             }
             set
             {
-                Instance._soundSettings.mainVolume = value;
-                Instance._audioSourcePool.SetVolume(Instance._soundSettings.soundVolume);
-                if (Instance.audioSourceBGM)
-                    Instance.audioSourceBGM.volume = Instance._soundSettings.bgmVolume;
+                _soundSettings.mainVolume = value;
+                _audioSourcePool.SetVolume(_soundSettings.soundVolume);
+                if (audioSourceBGM)
+                    audioSourceBGM.volume = _soundSettings.bgmVolume;
             }
         }
         /// <summary>始终不超过主音量
         /// </summary>
-        public static float bgmVolume
+        public float bgmVolume
         {
             get
             {
-                float v = Instance._soundSettings.bgmVolume;
+                float v = _soundSettings.bgmVolume;
                 return v;
             }
             set
             {
-                Instance._soundSettings.bgmVolume = value;
-                if (Instance.audioSourceBGM)
-                    Instance.audioSourceBGM.volume = Instance._soundSettings.bgmVolume;
+                _soundSettings.bgmVolume = value;
+                if (audioSourceBGM)
+                    audioSourceBGM.volume = _soundSettings.bgmVolume;
             }
         }
         /// <summary>始终不超过主音量
         /// </summary>
-        public static float soundVolume
+        public float soundVolume
         {
             get
             {
-                float v = Instance._soundSettings.soundVolume;
+                float v = _soundSettings.soundVolume;
                 return v;
             }
             set
             {
-                Instance._soundSettings.soundVolume = value;
-                Instance._audioSourcePool.SetVolume(Instance._soundSettings.soundVolume);
+                _soundSettings.soundVolume = value;
+                _audioSourcePool.SetVolume(_soundSettings.soundVolume);
             }
         }
 
-        public static bool mainSwitch
+        public bool mainSwitch
         {
             get
             {
-                return Instance._soundSettings.mainSwitch;
+                return _soundSettings.mainSwitch;
             }
             set
             {
-                Instance._soundSettings.mainSwitch = value;
-                if (Instance.audioSourceBGM)
-                    if (Instance._soundSettings.bgmSwitch)
+                _soundSettings.mainSwitch = value;
+                if (audioSourceBGM)
+                    if (_soundSettings.bgmSwitch)
                     {
-                        Instance.audioSourceBGM.Play();
+                        audioSourceBGM.Play();
                     }
                     else
                     {
-                        //Instance.audioSourceBGM.Stop();
-                        Instance.audioSourceBGM.Pause();
+                        //audioSourceBGM.Stop();
+                        audioSourceBGM.Pause();
                     }
-                if (!Instance._soundSettings.soundSwitch)
+                if (!_soundSettings.soundSwitch)
                 {
-                    Instance._audioSourcePool.Stop();
+                    _audioSourcePool.Stop();
                 }
             }
         }
         /// <summary>
         /// 如果主开关关闭，则本开关始终关闭
         /// </summary>
-        public static bool bgmSwitch
+        public bool bgmSwitch
         {
             get
             {
-                return Instance._soundSettings.bgmSwitch;
+                return _soundSettings.bgmSwitch;
             }
             set
             {
-                Instance._soundSettings.bgmSwitch = value;
-                if (Instance.audioSourceBGM)
-                    if (Instance._soundSettings.bgmSwitch)
+                _soundSettings.bgmSwitch = value;
+                if (audioSourceBGM)
+                    if (_soundSettings.bgmSwitch)
                     {
-                        Instance.audioSourceBGM.Play();
+                        audioSourceBGM.Play();
                     }
                     else
                     {
-                        //Instance.audioSourceBGM.Stop();
-                        Instance.audioSourceBGM.Pause();
+                        //audioSourceBGM.Stop();
+                        audioSourceBGM.Pause();
                     }
             }
         }
         /// <summary>
         /// 如果主开关关闭，则本开关始终关闭
         /// </summary>
-        public static bool soundSwitch
+        public bool soundSwitch
         {
             get
             {
-                return Instance._soundSettings.soundSwitch;
+                return _soundSettings.soundSwitch;
             }
             set
             {
-                Instance._soundSettings.soundSwitch = value;
-                if (!Instance._soundSettings.soundSwitch)
+                _soundSettings.soundSwitch = value;
+                if (!_soundSettings.soundSwitch)
                 {
-                    Instance._audioSourcePool.Stop();
+                    _audioSourcePool.Stop();
                 }
             }
         }
@@ -285,16 +284,19 @@ namespace Framework
                 bgmSwitch = _soundSettings.bgmSwitch;
                 soundSwitch = _soundSettings.soundSwitch;
 
-                _audioSourcePool._parent = new GameObject("AudioSource - Common").GetComponent<Transform>();
-                _audioSourcePool._parent.SetParent(transform);
+                if (!_audioSourcePool._parent)
+                {
+                    _audioSourcePool._parent = new GameObject("AudioSource - Common").GetComponent<Transform>();
+                    _audioSourcePool._parent.SetParent(transform);
+                }
             }
 
         }
 
-        public static AudioClip GetClipByName(string name)
+        public AudioClip GetClipByName(string name)
         {
             if (!Instance) return null;
-            var c = Instance._clips.Find(x => x.name == name);
+            var c = _clips.Find(x => x.name == name);
             return c;
         }
 
@@ -302,18 +304,19 @@ namespace Framework
         /// 使用通用音源播放音效
         /// </summary>
         /// <param name="clip"></param>
-        public static void PlayAudioByName(string name)
+        public void PlayAudioByName(string name)
         {
             if (!Instance) return;
             if (!soundSwitch) return;
 
             PlayAudio(GetClipByName(name));
         }
+
         /// <summary>
         /// 使用通用音源播放音效
         /// </summary>
         /// <param name="clip"></param>
-        public static void PlayAudioByName(GameObject source, string name)
+        public void PlayAudioByName(GameObject source, string name)
         {
             if (!Instance) return;
             if (!soundSwitch) return;
@@ -325,21 +328,22 @@ namespace Framework
         /// 使用通用音源播放音效
         /// </summary>
         /// <param name="clip"></param>
-        public static void PlayAudio(AudioClip clip)
+        public void PlayAudio(AudioClip clip)
         {
             if (!Instance) return;
             if (!soundSwitch) return;
 
-            var source = Instance._audioSourcePool.Play(clip);
+            var source = _audioSourcePool.Play(clip);
             source.volume = soundVolume;
         }
+
         /// <summary>
         /// 指定物体播放 3d 音效
         /// <para></para>2d、全局音效用 <see cref="PlayAudio(AudioClip)"/>
         /// </summary>
         /// <param name="source"></param>
         /// <param name="clip"></param>
-        public static void PlayAudio(GameObject source, AudioClip clip)
+        public void PlayAudio(GameObject source, AudioClip clip)
         {
             if (!soundSwitch) return;
 
@@ -357,57 +361,49 @@ namespace Framework
             }
 
             a.volume = soundVolume;
-            PlayAudio(a, clip);
+            Play(a, clip);
         }
-        public static void PlayAudio(AudioSource source, AudioClip clip)
-        {
-            if (!mainSwitch) return;
 
-            //if (GameAttribute.instance.soundOn)
-            //AudioSource.PlayClipAtPoint(clip, PlayerController.instance.transform.position);
-
-            source.Stop();
-            source.clip = clip;
-            source.Play();
-
-        }
-        public static void PlayAudio(Vector3 position, AudioClip clip)
+        public void PlayAudio(Vector3 position, AudioClip clip)
         {
             if (!soundSwitch) return;
 
             AudioSource.PlayClipAtPoint(clip, position, soundVolume);
         }
 
-        public static void PlayBGM(int index)
+        public void PlayBGM(int index)
         {
             if (!Instance) return;
 
-            if (!Instance._bgmClips.TryIndex(index, out var a))
+            if (!_bgmClips.TryIndex(index, out var a))
             {
-                Instance._bgmClips.TryIndex(0, out a);
+                _bgmClips.TryIndex(0, out a);
             }
 
             PlayBGM(a);
         }
+
         /// <summary>
         /// 播放 bgm
         /// </summary>
         /// <param name="clip"></param>
-        public static void PlayBGM(AudioClip clip)
+        public void PlayBGM(AudioClip clip)
         {
             if (!Instance) return;
             if (!bgmSwitch) return;
 
-            Instance.audioSourceBGM.volume = bgmVolume;
-            PlayAudio(Instance.audioSourceBGM, clip);
+            audioSourceBGM.volume = bgmVolume;
+            Play(audioSourceBGM, clip);
         }
 
-        public static void PlayButtonAudio()
+        protected void Play(AudioSource source, AudioClip clip)
         {
-            if (!Instance) return;
-            PlayAudio(Instance.button);
-        }
+            if (!mainSwitch) return;
 
+            source.Stop();
+            source.clip = clip;
+            source.Play();
+        }
     }
 
     [Serializable]
@@ -440,6 +436,7 @@ namespace Framework
         [SerializeField]
         public bool _soundSwitch = true;
 
+        /// <summary>主音量</summary>
         public float mainVolume
         {
             get
@@ -452,7 +449,8 @@ namespace Framework
                 _mainVolume = Mathf.Clamp01(value);
             }
         }
-        /// <summary>始终不超过主音量
+
+        /// <summary>背景音量，始终不超过主音量
         /// <para></para>注意：此属性经过处理，获取原始值 <see cref="_bgmVolume"/>
         /// </summary>
         public float bgmVolume
@@ -467,7 +465,8 @@ namespace Framework
                 _bgmVolume = Mathf.Clamp01(value);
             }
         }
-        /// <summary>始终不超过主音量
+
+        /// <summary>声音音量，始终不超过主音量
         /// <para></para>注意：此属性经过处理，获取原始值 <see cref="_soundVolume"/>
         /// </summary>
         public float soundVolume
@@ -495,6 +494,7 @@ namespace Framework
 
             }
         }
+
         /// <summary>
         /// 如果主开关关闭，则本开关始终关闭
         /// <para></para>注意：此属性经过处理，获取原始值 <see cref="_bgmSwitch"/>
@@ -615,5 +615,133 @@ namespace Framework
 
             return r;
         }
+    }
+
+    /// <summary>音频代理</summary>
+    [Serializable]
+    public class AudioAgent : AudioAgentBase
+    {
+        private AudioSource _audioSource;
+        private AudioClip _clip;
+
+        public override bool isWorking
+        {
+            get
+            {
+                return _audioSource != null && _audioSource.isPlaying;
+            }
+        }
+
+        public AudioSource audioSource
+        {
+            get
+            {
+                return _audioSource;
+            }
+        }
+
+        public void Init(AudioSource audioSource, AudioClip clip)
+        {
+            _audioSource = audioSource;
+            _clip = clip;
+        }
+
+        public void Init(AudioSource audioSource)
+        {
+            _audioSource = audioSource;
+        }
+
+        public override void Init()
+        {
+            if (_audioSource)
+                _audioSource.Stop();
+        }
+
+        public override void Start()
+        {
+            if (_audioSource)
+            {
+                if (_clip) _audioSource.clip = _clip;
+                _audioSource.Play();
+            }
+        }
+
+        public override void Update()
+        {
+
+        }
+
+        public override void Recover()
+        {
+            if (_audioSource)
+            {
+                _audioSource.UnPause();
+            }
+        }
+
+        public override void Pause()
+        {
+            if (_audioSource)
+            {
+                _audioSource.Pause();
+            }
+        }
+
+        public override void Stop()
+        {
+            if (_audioSource)
+            {
+                _audioSource.Stop();
+            }
+        }
+
+        public override void Clear()
+        {
+            _audioSource = null;
+            _clip = null;
+        }
+    }
+
+    /// <summary>音频代理基类</summary>
+    public abstract class AudioAgentBase
+    {
+        /// <summary>工作中</summary>
+        public virtual bool isWorking
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>优先级</summary>
+        public virtual int priority
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>初始化代理</summary>
+        public abstract void Init();
+
+        /// <summary>开始</summary>
+        public abstract void Start();
+
+        /// <summary>更新</summary>
+        public abstract void Update();
+
+        /// <summary>恢复</summary>
+        public abstract void Recover();
+
+        /// <summary>暂停</summary>
+        public abstract void Pause();
+
+        /// <summary>停止</summary>
+        public abstract void Stop();
+
+        /// <summary>清理</summary>
+        public abstract void Clear();
     }
 }

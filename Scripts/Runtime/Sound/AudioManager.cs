@@ -171,7 +171,7 @@ namespace Framework
                     audioSourceBGM.volume = _soundSettings.bgmVolume;
             }
         }
-        /// <summary>始终不超过主音量
+        /// <summary>背景音乐，始终不超过主音量
         /// </summary>
         public float bgmVolume
         {
@@ -187,7 +187,7 @@ namespace Framework
                     audioSourceBGM.volume = _soundSettings.bgmVolume;
             }
         }
-        /// <summary>始终不超过主音量
+        /// <summary>声音音量，始终不超过主音量
         /// </summary>
         public float soundVolume
         {
@@ -619,36 +619,29 @@ namespace Framework
 
     /// <summary>音频代理</summary>
     [Serializable]
-    public class AudioAgent : AudioAgentBase
+    public class AudioAgent : AudioAgentBase, ITypePoolObject
     {
-        private AudioSource _audioSource;
-        private AudioClip _clip;
+        private AudioPlayTask _task;
 
         public override bool isWorking
         {
             get
             {
-                return _audioSource != null && _audioSource.isPlaying;
+                return _task?.isRun ?? false;
             }
         }
 
-        public AudioSource audioSource
+        public override AudioPlayTask task
         {
-            get
-            {
-                return _audioSource;
-            }
+            get => _task;
         }
 
-        public void Init(AudioSource audioSource, AudioClip clip)
-        {
-            _audioSource = audioSource;
-            _clip = clip;
-        }
+        private AudioSource _audioSource => _task?._audioSource;
+        private AudioClip _clip => _task?._clip;
 
-        public void Init(AudioSource audioSource)
+        public void Init(AudioPlayTask task)
         {
-            _audioSource = audioSource;
+            _task = task;
         }
 
         public override void Init()
@@ -697,14 +690,14 @@ namespace Framework
 
         public override void Clear()
         {
-            _audioSource = null;
-            _clip = null;
+            _task.Clear();
         }
     }
 
     /// <summary>音频代理基类</summary>
     public abstract class AudioAgentBase
     {
+
         /// <summary>工作中</summary>
         public virtual bool isWorking
         {
@@ -721,6 +714,12 @@ namespace Framework
             {
                 return 0;
             }
+        }
+
+        /// <summary>音频播放任务</summary>
+        public abstract AudioPlayTask task
+        {
+            get;
         }
 
         /// <summary>初始化代理</summary>
@@ -743,5 +742,183 @@ namespace Framework
 
         /// <summary>清理</summary>
         public abstract void Clear();
+    }
+
+    /// <summary>音频播放任务</summary>
+    public class AudioPlayTask : ITypePoolObject
+    {
+        public AudioSource _audioSource;
+        public AudioClip _clip;
+
+        /// <summary>任务是否在执行中</summary>
+        public bool isRun
+        {
+            get
+            {
+                return _audioSource != null && _audioSource.isPlaying;
+            }
+        }
+
+        public void Clear()
+        {
+            _audioSource = null;
+            _clip = null;
+        }
+    }
+
+    /// <summary>音频组</summary>
+    [Serializable]
+    public class AudioGroup
+    {
+        private string _name;
+        private int _priority;
+        private int _maxWorkAgentCount = 1;
+
+        // 音频播放任务
+        private List<AudioPlayTask> _tasks = new List<AudioPlayTask>();
+
+        // 空闲代理
+        private List<AudioAgent> _freeAgents = new List<AudioAgent>();
+        // 工作代理
+        private List<AudioAgent> _workAgents = new List<AudioAgent>();
+        // 等待代理
+        private List<AudioAgent> _waitAgents = new List<AudioAgent>();
+
+        /// <summary>组名</summary>
+        public string name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+
+        /// <summary>优先级</summary>
+        public int priority
+        {
+            get
+            {
+                return _priority;
+            }
+            set
+            {
+                _priority = value;
+            }
+        }
+
+        /// <summary>代理总数量</summary>
+        public int agentCount
+        {
+            get
+            {
+                return _freeAgents.Count + _workAgents.Count + _waitAgents.Count;
+            }
+        }
+
+        /// <summary>可用代理数</summary>
+        public int freeAgentCount => _freeAgents.Count;
+
+        /// <summary>工作代理数</summary>
+        public int workAgentCount => _workAgents.Count;
+
+        /// <summary>等待代理数</summary>
+        public int waitAgentCount => _waitAgents.Count;
+
+        /// <summary>最大工作代理数量</summary>
+        public int maxWorkAgentCount
+        {
+            get
+            {
+                return _maxWorkAgentCount;
+            }
+        }
+
+        /// <summary>初始化</summary>
+        public void Init(int maxWorkAgentCount)
+        {
+            SetMaxWorkAgentCount(maxWorkAgentCount);
+        }
+
+        /// <summary>开始</summary>
+        public void Start(AudioPlayTask task)
+        {
+            if (_tasks.Contains(task)) return;
+            _tasks.Add(task);
+        }
+
+        /// <summary>更新</summary>
+        public void Update()
+        {
+
+        }
+
+        /// <summary>恢复</summary>
+        public void Recover()
+        {
+
+        }
+
+        /// <summary>暂停</summary>
+        public void Pause()
+        {
+
+        }
+
+        /// <summary>停止</summary>
+        public void Stop()
+        {
+
+        }
+
+        /// <summary>清理</summary>
+        public void Clear()
+        {
+
+        }
+
+        /// <summary>设置代理数量</summary>
+        public void SetMaxWorkAgentCount(int agentCount)
+        {
+            _maxWorkAgentCount = Math.Max(1, agentCount);
+            AdjustAgentCount(agentCount);
+        }
+
+        /// <summary>调整代理数量</summary>
+        private void AdjustAgentCount(int agentCount)
+        {
+            // TODO：只调整空闲的，其他代理等工作结束后根据数量自动调整
+            while (_freeAgents.Count > agentCount)
+            {
+                int lastIndex = _freeAgents.Count - 1;
+                var agent = _freeAgents[lastIndex];
+                _freeAgents.RemoveAt(lastIndex);
+                Return(agent);
+            }
+        }
+
+        private void GetAgent(AudioAgent agent)
+        {
+
+        }
+
+        /// <summary>将代理置为空闲</summary>
+        private void FreeAgent(AudioAgent agent)
+        {
+
+        }
+
+        private AudioAgent CreateAgent()
+        {
+            return TypePool.root.Get<AudioAgent>();
+        }
+
+        private void Return(AudioAgent agent)
+        {
+            TypePool.root.Return(agent);
+        }
     }
 }

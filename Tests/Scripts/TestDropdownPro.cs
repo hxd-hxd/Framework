@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/4/7 18:21:33
 // -------------------------
 
@@ -116,7 +116,7 @@ namespace Framework.Test
         {
             if (dp)
             {
-                dp.SelectedEvent += (data) =>
+                dp.onSelectedEvent += (data) =>
                 {
                     Log.Yellow($"选中：{data}");
                 };

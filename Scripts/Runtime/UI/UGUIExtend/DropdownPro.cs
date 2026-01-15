@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/3/31 14:41:15
 // -------------------------
 
@@ -76,11 +76,11 @@ namespace Framework
         /// 选项选择事件
         /// <para>取消选中时 <see cref="DropdownItemData"/> 参数将为 <see cref="null"/></para>
         /// </summary>
-        public event Action<DropdownItemData> SelectedEvent;
+        public event Action<DropdownItemData> onSelectedEvent;
         /// <summary>
         /// 菜单显示时
         /// </summary>
-        public event Action<bool> MenuEnableEvent;
+        public event Action<bool> onMenuEnableEvent;
 
         #region 优化
 
@@ -718,11 +718,11 @@ namespace Framework
         }
 
         /// <summary>
-        /// 执行 <see cref="SelectedEvent"/> ，发送 <see cref="currentData"/>
+        /// 执行 <see cref="onSelectedEvent"/> ，发送 <see cref="currentData"/>
         /// </summary>
         protected virtual void SelectedEvent_Action()
         {
-            SelectedEvent?.Invoke(currentData);
+            onSelectedEvent?.Invoke(currentData);
         }
 
         #endregion
@@ -1016,7 +1016,7 @@ namespace Framework
                 }
             }
 
-            MenuEnableEvent?.Invoke(isShow);
+            onMenuEnableEvent?.Invoke(isShow);
         }
 
         /// <summary>
@@ -1538,6 +1538,11 @@ namespace Framework
             /// 选项显示
             /// </summary>
             public string text { get => m_Text; set => m_Text = value; }
+
+            /// <summary>
+            /// 自定义数据
+            /// </summary>
+            public object userData { get; set; }
 
             public DropdownItemData(string text)
             {

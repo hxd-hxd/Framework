@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,6 @@ namespace Framework.YooAssetExpress
 {
 #if UNITY_EDITOR
     using UnityEditor;
-    using UnityEngine.UI;
 
     [CustomEditor(typeof(GameResHotUpdate))]
     class GameResHotUpdateInspector : Editor
@@ -58,6 +57,19 @@ namespace Framework.YooAssetExpress
 
     public class GameResHotUpdate : MonoBehaviour
     {
+        /// <summary>
+        /// 资源系统模式
+        /// </summary>
+        [Header("播放模式，用于资源加载方式等")]
+        public EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
+
+        [Header("默认的打包时使用的播放模式，\r\n如果打包后 PlayMode 仍然指定的是\r\n EditorSimulateMode，<color=red>会出错</color>，则会使用此默认模式。\r\n此选项相当于后备方案。")]
+        public EPlayMode DefaultBuildPackPlayMode = EPlayMode.OfflinePlayMode;
+
+        // 资源包名，可能会有多个资源包
+        [Header("资源包名，可能会有多个资源包")]
+        public string packageName = "DefaultPackage";
+
         [Header("资源下载服务器地址")]
         [TextArea]
         //string hostServerIP = "http://10.0.2.2"; //安卓模拟器地址
@@ -68,18 +80,10 @@ namespace Framework.YooAssetExpress
         public string resPath = "CDN";      // 资源在服务器上的根路径
         [Header("版本号路径")]
         public string gameVersion = "v1.0"; // 要更新的版本号
-        // 资源包名，可能会有多个资源包
-        [Header("资源包名，可能会有多个资源包")]
-        public string packageName = "DefaultPackage";
 
         [Header("自动开始热更新流程")]
         public bool autoStartHotUpdate = true;
 
-        /// <summary>
-        /// 资源系统模式
-        /// </summary>
-        [Header("资源系统模式")]
-        public EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
         [Header("需要动态加载的热更新 dll 文件，例如要加载\r\n“Assembly-CSharp.dll.bytes”填\r\n“Assembly-CSharp.dll”或者\r\n“Assets/HotUpdateAssemblies/Use/Assembly-CSharp.dll.bytes”")]
         public List<string> loadHotUpdateDlls = new List<string>() { "Game.HotUpdate.dll" };
@@ -121,6 +125,11 @@ namespace Framework.YooAssetExpress
 
         protected virtual void Start()
         {
+            if (!Application.isEditor && PlayMode == EPlayMode.EditorSimulateMode)
+            {
+                PlayMode = DefaultBuildPackPlayMode;
+            }
+
             if (autoStartHotUpdate)
                 StartHotUpdate();
         }

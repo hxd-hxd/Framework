@@ -50,9 +50,14 @@ namespace Framework.Event
     /// 事件基类 - 1 个参数
     /// <para>注意：不要缓存事件消息实例，因为发送完毕之后会被对象池回收</para>
     /// </summary>
-    public abstract class EventBase<T, P1> : EventBase<EventBase<T, P1>>
+    public abstract class EventBase<T, P1> : ITypePoolObject, IEventMessage
         where T : EventBase<T, P1>
     {
+        /// <summary>
+        /// 发送者
+        /// </summary>
+        public object sender;
+
         public P1 p1;
 
         public static void Send(P1 p1)
@@ -69,9 +74,19 @@ namespace Framework.Event
             TypePool.root.Return(msg);
         }
 
-        public override void Clear()
+        public static void AddListener(Action<T> listener)
         {
-            base.Clear();
+            EventCenter.AddListener(listener);
+        }
+
+        public static void RemoveListener(Action<T> listener)
+        {
+            EventCenter.RemoveListener(listener);
+        }
+
+        public virtual void Clear()
+        {
+            sender = null;
             p1 = default;
         }
     }
@@ -80,9 +95,14 @@ namespace Framework.Event
     /// 事件基类 - 2 个参数
     /// <para>注意：不要缓存事件消息实例，因为发送完毕之后会被对象池回收</para>
     /// </summary>
-    public abstract class EventBase<T, P1, P2> : EventBase<EventBase<T, P1, P2>>
+    public abstract class EventBase<T, P1, P2> : ITypePoolObject, IEventMessage
         where T : EventBase<T, P1, P2>
     {
+        /// <summary>
+        /// 发送者
+        /// </summary>
+        public object sender;
+
         public P1 p1;
         public P2 p2;
 
@@ -101,9 +121,19 @@ namespace Framework.Event
             TypePool.root.Return(msg);
         }
 
-        public override void Clear()
+        public static void AddListener(Action<T> listener)
         {
-            base.Clear();
+            EventCenter.AddListener(listener);
+        }
+
+        public static void RemoveListener(Action<T> listener)
+        {
+            EventCenter.RemoveListener(listener);
+        }
+
+        public virtual void Clear()
+        {
+            sender = null;
             p1 = default;
             p2 = default;
         }
@@ -113,9 +143,14 @@ namespace Framework.Event
     /// 事件基类 - 3 个参数
     /// <para>注意：不要缓存事件消息实例，因为发送完毕之后会被对象池回收</para>
     /// </summary>
-    public abstract class EventBase<T, P1, P2, P3> : EventBase<EventBase<T, P1, P2, P3>>
+    public abstract class EventBase<T, P1, P2, P3> : ITypePoolObject, IEventMessage
         where T : EventBase<T, P1, P2, P3>
     {
+        /// <summary>
+        /// 发送者
+        /// </summary>
+        public object sender;
+
         public P1 p1;
         public P2 p2;
         public P3 p3;
@@ -136,9 +171,19 @@ namespace Framework.Event
             TypePool.root.Return(msg);
         }
 
-        public override void Clear()
+        public static void AddListener(Action<T> listener)
         {
-            base.Clear();
+            EventCenter.AddListener(listener);
+        }
+
+        public static void RemoveListener(Action<T> listener)
+        {
+            EventCenter.RemoveListener(listener);
+        }
+
+        public virtual void Clear()
+        {
+            sender = null;
             p1 = default;
             p2 = default;
             p3 = default;
@@ -149,9 +194,14 @@ namespace Framework.Event
     /// 事件基类 - 4 个参数
     /// <para>注意：不要缓存事件消息实例，因为发送完毕之后会被对象池回收</para>
     /// </summary>
-    public abstract class EventBase<T, P1, P2, P3, P4> : EventBase<EventBase<T, P1, P2, P3, P4>>
+    public abstract class EventBase<T, P1, P2, P3, P4> : ITypePoolObject, IEventMessage
         where T : EventBase<T, P1, P2, P3, P4>
     {
+        /// <summary>
+        /// 发送者
+        /// </summary>
+        public object sender;
+
         public P1 p1;
         public P2 p2;
         public P3 p3;
@@ -174,9 +224,19 @@ namespace Framework.Event
             TypePool.root.Return(msg);
         }
 
-        public override void Clear()
+        public static void AddListener(Action<T> listener)
         {
-            base.Clear();
+            EventCenter.AddListener(listener);
+        }
+
+        public static void RemoveListener(Action<T> listener)
+        {
+            EventCenter.RemoveListener(listener);
+        }
+
+        public virtual void Clear()
+        {
+            sender = null;
             p1 = default;
             p2 = default;
             p3 = default;

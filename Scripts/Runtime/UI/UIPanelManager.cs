@@ -311,7 +311,17 @@ namespace Framework
 
             return panel;
         }
-         
+        
+        /// <summary>关闭所有界面</summary>
+        public static void CloseAllPanel()
+        {
+            foreach (var item in panelDic)
+            {
+                if (item.Value == null) continue;
+                item.Value.Enable(false);
+            }
+        }
+
         private static UIPanelBase InstantiatePanel(GameObject temlate)
         {
             Transform p = null;

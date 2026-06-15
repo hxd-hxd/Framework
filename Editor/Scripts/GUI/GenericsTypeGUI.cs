@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/4/11 15:27:24
 // -------------------------
 
@@ -56,6 +56,7 @@ namespace Framework.Editor
         protected Action<object, object, MemberInfo> _setValueEndEvent;// root
         protected Func<GenericsTypeGUI> _createChildEvent;// root
         // 自定义 gui 事件
+        protected Action<bool> _fieldFoldoutChangeEvent, _propertyFoldoutChangeEvent;// root，字段、属性折页变化事件
         protected Action _fieldStartGUIEvent, _fieldEndGUIEvent;
         protected Action _propertyStartGUIEvent, _propertyEndGUIEvent;
         protected Action _memberStartGUIEvent, _memberEndGUIEvent;
@@ -96,6 +97,18 @@ namespace Framework.Editor
         {
             get => root._createChildEvent;
             set => root._createChildEvent = value;
+        }
+        /// <summary>字段折页变化事件<para>此属性始终是 <see cref="root"/> 的</para></summary>
+        public Action<bool> fieldFoldoutChangeEvent
+        {
+            get => root._fieldFoldoutChangeEvent;
+            set => root._fieldFoldoutChangeEvent = value;
+        }
+        /// <summary>属性折页变化事件<para>此属性始终是 <see cref="root"/> 的</para></summary>
+        public Action<bool> propertyFoldoutChangeEvent
+        {
+            get => root._propertyFoldoutChangeEvent;
+            set => root._propertyFoldoutChangeEvent = value;
         }
 
         /// <summary>显示不支持的成员<para>此属性始终是 <see cref="root"/> 的</para></summary>
@@ -697,6 +710,8 @@ namespace Framework.Editor
 
             // 字段
             if (typeFieldInfos.Count > 0 && _showFiled)
+            {
+                bool foldout = _fieldFoldout;
                 OnMemberGUI(ref rect, ref _fieldFoldout, _showFieldFoldout, "字段", typeFieldInfos
                 , (ref Rect _r) =>
                 {
@@ -711,8 +726,16 @@ namespace Framework.Editor
                     _fieldEndRectGUIEvent?.Invoke(ref _r);
                 });
 
+                if (foldout != _fieldFoldout)
+                {
+                    _fieldFoldoutChangeEvent?.Invoke(_fieldFoldout);
+                }
+            }
+
             // 属性
             if (typePropertyInfos.Count > 0 && _showProperty)
+            {
+                bool foldout = _propertyFoldout;
                 OnMemberGUI(ref rect, ref _propertyFoldout, _showPropertyFoldout, "属性", typePropertyInfos
                 , (ref Rect _r) =>
                 {
@@ -727,6 +750,12 @@ namespace Framework.Editor
                     _propertyEndRectGUIEvent?.Invoke(ref _r);
                 });
 
+                if (foldout != _propertyFoldout)
+                {
+                    _propertyFoldoutChangeEvent?.Invoke(_propertyFoldout);
+                }
+            }
+
             _memberEndRectGUIEvent?.Invoke(ref rect);
         }
         protected virtual void OnMemberGUI()
@@ -737,6 +766,8 @@ namespace Framework.Editor
 
             // 字段
             if (typeFieldInfos.Count > 0 && _showFiled)
+            {
+                bool foldout = _fieldFoldout;
                 OnMemberGUI(ref _fieldFoldout, _showFieldFoldout, "字段", typeFieldInfos
                 , () =>
                 {
@@ -751,8 +782,16 @@ namespace Framework.Editor
                     _fieldEndGUIEvent?.Invoke();
                 });
 
+                if (foldout != _fieldFoldout)
+                {
+                    _fieldFoldoutChangeEvent?.Invoke(_fieldFoldout);
+                }
+            }
+
             // 属性
             if (typePropertyInfos.Count > 0 && _showProperty)
+            {
+                bool foldout = _propertyFoldout;
                 OnMemberGUI(ref _propertyFoldout, _showPropertyFoldout, "属性", typePropertyInfos
                 , () =>
                 {
@@ -766,6 +805,12 @@ namespace Framework.Editor
                         OnRootPropertyEndGUI();
                     _propertyEndGUIEvent?.Invoke();
                 });
+
+                if (foldout != _propertyFoldout)
+                {
+                    _propertyFoldoutChangeEvent?.Invoke(_propertyFoldout);
+                }
+            }
 
             _memberEndGUIEvent?.Invoke();
         }

@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/4/11 15:27:24
 // -------------------------
 
@@ -19,14 +19,27 @@ namespace Framework
         [NonSerialized]
         public int _num;
 
+        // 目标设置折叠
         [HideInInspector]
         public bool cTargetSettingsFoldout = true;
+        // 字段折叠
+        [HideInInspector]
+        public bool fieldFoldout = true;
+        // 属性折叠
+        [HideInInspector]
+        public bool propertyFoldout = true;
+        // 显示不支持的成员
         [HideInInspector]
         public bool showNonsupportMember = true;
+        // 显示不支持的成员
         [HideInInspector]
         public bool showInheritRelation = true;
+        // GUI 最大深度
         [HideInInspector]
-        public int maxDepth = 10, minTextLine = 1, maxTextLine = 5;
+        public int maxDepth = 10;
+        // 最小、最大文本显示行数
+        [HideInInspector]
+        public int minTextLine = 1, maxTextLine = 5;
 
         public Component target { get => _target; set => _target = value; }
 

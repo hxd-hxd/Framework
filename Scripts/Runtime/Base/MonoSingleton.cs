@@ -108,9 +108,13 @@ namespace Framework
 
             instance = this as T;
 
+            DontDestroyOnLoadVirtual();
+        }
+
+        protected virtual void DontDestroyOnLoadVirtual()
+        {
             if (transform.root == transform)
                 DontDestroyOnLoad(gameObject);
         }
-
     }
 }

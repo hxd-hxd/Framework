@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/4/11 15:27:24
 // -------------------------
 
@@ -49,6 +49,16 @@ namespace Framework.Editor
                 Undo.RecordObject(my.target.gameObject, $"修改组件查看器目标 {_info?.MemberType} {_info?.Name}");
                 Undo.RecordObject(my.target, $"修改组件查看器目标 {_info?.MemberType} {_info?.Name}");
                 EditorUtility.SetDirty(my.target);
+            };
+            cTargetGUI.fieldFoldout = my.fieldFoldout;
+            cTargetGUI.propertyFoldout = my.propertyFoldout;
+            cTargetGUI.fieldFoldoutChangeEvent = (foldout) =>
+            {
+                my.fieldFoldout = foldout;
+            };
+            cTargetGUI.propertyFoldoutChangeEvent = (foldout) =>
+            {
+                my.propertyFoldout = foldout;
             };
 
             _numGUI = new GenericsTypeGUI(my._num, my, my.GetType().GetField("_num", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));

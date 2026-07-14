@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Framework.LogSystem
 {
     /// <summary>
-    /// 日志浮标 ui 
+    /// 鏃ュ織娴爣 ui 
     /// </summary>
     public class LogBuoyUI : UIBase
     {
@@ -19,7 +20,7 @@ namespace Framework.LogSystem
         private LogSystemUI _logSystemUI;
 
         /// <summary>
-        /// 点击 log 按钮时触发此事件
+        /// 鐐瑰嚮 log 鎸夐挳鏃惰Е鍙戞浜嬩欢
         /// </summary>
         public Action logClickEvent;
 
@@ -36,14 +37,26 @@ namespace Framework.LogSystem
             AddEvent(_logBtn, OnLogClick);
         }
 
+        float tiemer = 0;
+        //StringBuilder _fpsSB = new StringBuilder();
         protected virtual void Update()
         {
-            string fpsT = "打开日志";
+            if (tiemer < 0.2f)
+            {
+                tiemer += Time.deltaTime;
+                return;
+            }
+            tiemer = 0;
+
+            var _fpsSB = TypePool.root.Get<StringBuilder>();
+            //_fpsSB.Clear();
+            _fpsSB.Append("鎵撳紑鏃ュ織");
             if (_logSystemUI && _logSystemUI.fpsCounter != null)
             {
-                fpsT = $"FPS：{_logSystemUI.fpsCounter.CurrentFps:F}";
-                // 颜色
-                Color color = LogInfo.GetLogColor(LogType.Log);
+                _fpsSB.Clear();
+                //fpsT = $"FPS锛歿_logSystemUI.fpsCounter.CurrentFps:F}";
+                // 棰滆壊
+                Color color = default;
                 if (LogInfo.ErrorCount > 0
                     || LogInfo.ExceptionCount > 0
                     || LogInfo.AssertCount > 0
@@ -55,9 +68,17 @@ namespace Framework.LogSystem
                 {
                     color = LogInfo.GetLogColor(LogType.Warning);
                 }
-                fpsT = $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{fpsT}</color>";
+                else
+                {
+                    color = LogInfo.GetLogColor(LogType.Log);
+                }
+                //fpsT = $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{fpsT}</color>";
+                _fpsSB.AppendFormat("<color=#{0}>", ColorUtility.ToHtmlStringRGBA(color));
+                _fpsSB.AppendFormat("FPS锛歿0}", _logSystemUI.fpsCounter.CurrentFps.ToString("f1"));
+                _fpsSB.Append("</color>");
             }
-            ExtendUtility.SetText(_fpsText, fpsT);
+            ExtendUtility.SetText(_fpsText, _fpsSB.ToString());
+            TypePool.root.Return(_fpsSB);
         }
 
         protected virtual void OnLogClick()
@@ -66,5 +87,5 @@ namespace Framework.LogSystem
             logClickEvent?.Invoke();
         }
     }
-    
+
 }

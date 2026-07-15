@@ -773,6 +773,7 @@ namespace Framework
         private string _name;
         private int _priority;
         private int _maxWorkAgentCount = 1;
+        private int _maxTaskCount = 1;
 
         // 音频播放任务
         private List<AudioPlayTask> _tasks = new List<AudioPlayTask>();
@@ -837,6 +838,15 @@ namespace Framework
             }
         }
 
+        /// <summary>最大任务数量</summary>
+        public int maxTaskCount
+        {
+            get
+            {
+                return _maxTaskCount;
+            }
+        }
+
         /// <summary>初始化</summary>
         public void Init(int maxWorkAgentCount)
         {
@@ -853,7 +863,10 @@ namespace Framework
         /// <summary>更新</summary>
         public void Update()
         {
+            if (_workAgents.Count >= _maxWorkAgentCount)
+            {
 
+            }
         }
 
         /// <summary>恢复</summary>
@@ -884,21 +897,21 @@ namespace Framework
         public void SetMaxWorkAgentCount(int agentCount)
         {
             _maxWorkAgentCount = Math.Max(1, agentCount);
-            AdjustAgentCount(agentCount);
+            //AdjustAgentCount(agentCount);
         }
 
-        /// <summary>调整代理数量</summary>
-        private void AdjustAgentCount(int agentCount)
-        {
-            // TODO：只调整空闲的，其他代理等工作结束后根据数量自动调整
-            while (_freeAgents.Count > agentCount)
-            {
-                int lastIndex = _freeAgents.Count - 1;
-                var agent = _freeAgents[lastIndex];
-                _freeAgents.RemoveAt(lastIndex);
-                Return(agent);
-            }
-        }
+        ///// <summary>调整代理数量</summary>
+        //private void AdjustAgentCount(int agentCount)
+        //{
+        //    // TODO：只调整空闲的，其他代理等工作结束后根据数量自动调整
+        //    while (_freeAgents.Count > agentCount)
+        //    {
+        //        int lastIndex = _freeAgents.Count - 1;
+        //        var agent = _freeAgents[lastIndex];
+        //        _freeAgents.RemoveAt(lastIndex);
+        //        Return(agent);
+        //    }
+        //}
 
         private void GetAgent(AudioAgent agent)
         {

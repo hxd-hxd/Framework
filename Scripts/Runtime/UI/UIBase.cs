@@ -50,7 +50,13 @@ namespace Framework
         /// <summary>
         /// 在刷新的时候触发
         /// </summary>
-        protected virtual void OnRefresh()
+        protected internal virtual void OnRefresh()
+        {
+
+        }
+
+        /// <summary>在置顶的时候触发</summary>
+        protected internal virtual void OnTopmost()
         {
 
         }

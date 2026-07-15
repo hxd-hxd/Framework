@@ -617,6 +617,8 @@ namespace Framework
                     //item.Value.transform.SetSiblingIndex();
                 }
             }
+
+            panel.OnTopmost();
         }
 
         /// <summary>

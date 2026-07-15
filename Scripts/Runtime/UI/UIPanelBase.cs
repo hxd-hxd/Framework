@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2022/10/27 10:13:13
 // -------------------------
 
@@ -167,6 +167,9 @@ namespace Framework
         /// <param name="enable"></param>
         public override void Enable(bool enable)
         {
+            if (_autoPanelTopmost)
+                this.PanelTopmost();
+
             if (gameObject.activeSelf == enable) return;
 
             gameObject.SetActive(enable);

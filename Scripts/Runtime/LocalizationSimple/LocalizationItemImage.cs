@@ -20,6 +20,7 @@ namespace Framework.LocalizationSimple
 
         protected override void Execute(LocalizationData data)
         {
+            if (_item == null) return;
             if (data != null && data._sprite != null)
             {
                 _item.sprite = data._sprite;

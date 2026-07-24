@@ -115,7 +115,7 @@ namespace Framework
         GameObject _template;
         [SerializeField]
         Transform _returnParent;
-        Dictionary<GameObject, Queue<GameObject>> _pool;
+        Dictionary<GameObject, List<GameObject>> _pool;
         List<Coroutine> _preCreateInstanceCoroutines = new List<Coroutine>();
         ///// <summary>
         ///// 实例化事件
@@ -124,26 +124,26 @@ namespace Framework
 
         public GameObjectPool()
         {
-            _pool = new Dictionary<GameObject, Queue<GameObject>>(1);
+            _pool = new Dictionary<GameObject, List<GameObject>>(1);
 
             _pools.Add(this);
         }
         public GameObjectPool(int capacity)
         {
-            _pool = new Dictionary<GameObject, Queue<GameObject>>(capacity);
+            _pool = new Dictionary<GameObject, List<GameObject>>(capacity);
 
             _pools.Add(this);
         }
         public GameObjectPool(GameObject template)
         {
-            _pool = new Dictionary<GameObject, Queue<GameObject>>(1);
+            _pool = new Dictionary<GameObject, List<GameObject>>(1);
             this._template = template;
 
             _pools.Add(this);
         }
         public GameObjectPool(int capacity, GameObject template)
         {
-            _pool = new Dictionary<GameObject, Queue<GameObject>>(capacity);
+            _pool = new Dictionary<GameObject, List<GameObject>>(capacity);
             this._template = template;
 
             _pools.Add(this);
@@ -152,7 +152,7 @@ namespace Framework
         /// <summary>
         /// 模板池
         /// </summary>
-        public Dictionary<GameObject, Queue<GameObject>> pool => _pool;
+        public Dictionary<GameObject, List<GameObject>> pool => _pool;
         /// <summary>
         /// 默认模板
         /// </summary>
@@ -331,7 +331,7 @@ namespace Framework
                 while (tPool.Count > 0 && obj == null)
                 {
                     //tPool.TryDequeue(out obj);
-                    obj = tPool.Dequeue();
+                    obj = FetchLast(tPool);
                     //if (obj != null)
                     //    obj.transform.SetParent(null);
                 }
@@ -403,7 +403,7 @@ namespace Framework
 
             if (!tPool.Contains(obj))
             {
-                tPool.Enqueue(obj);
+                tPool.Add(obj);
                 obj.transform.SetParent(returnParent);
                 if (returnParent != GOManager.transform)
                 {
@@ -450,7 +450,19 @@ namespace Framework
             TypePool.root.Return(tpos);
         }
 
+        protected GameObject FetchLast(List<GameObject> objs)
+        {
+            GameObject obj = null;
+            if (objs.Count > 0)
+            {
+                int i = objs.Count - 1;
+                obj = objs[i];
+                objs.RemoveAt(i);
+            }
+            return obj;
+        }
 
+        /// <summary>清理对应模板的池</summary>
         public virtual void Clear(GameObject template)
         {
             var target = template;
@@ -461,11 +473,13 @@ namespace Framework
                 //tPool = new Queue<GameObject>();
                 while (tPool.Count > 0)
                 {
-                    var _go = tPool.Dequeue();
+                    var _go = FetchLast(tPool);
                     GameObject.Destroy(_go);
                 }
             }
         }
+
+        /// <summary>清理对象池</summary>
         public virtual void Clear()
         {
             foreach (var t in _pool)
@@ -480,18 +494,23 @@ namespace Framework
             _pool.Clear();
         }
 
-        /// <summary>
-        /// 销毁
-        /// </summary>
+        /// <summary>销毁对应模板的池</summary>
+        public void Destroy(GameObject template)
+        {
+            Clear(template);
+            _pool.Remove(template);
+        }
+
+        /// <summary>销毁对象池</summary>
         public void Destroy()
         {
             Clear();
             _pools.Remove(this);
         }
 
-        protected static Queue<GameObject> CreatePool()
+        protected static List<GameObject> CreatePool()
         {
-            return new Queue<GameObject>(1);
+            return new List<GameObject>(1);
         }
     }
 

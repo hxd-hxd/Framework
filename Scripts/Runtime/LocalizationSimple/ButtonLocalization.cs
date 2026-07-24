@@ -15,15 +15,17 @@ namespace Framework.LocalizationSimple
         public override void SetLanguage(string language)
         {
             _currentLanguage = language;
-            var cur = language;
-            var def = _defaultLanguage;
 
-            if (_itemsButton != null && _itemsButton.Count > 0)
-                foreach (var item in _itemsButton)
-                {
-                    //item.SetLanguage(cur);
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
-                }
+            //var cur = language;
+            //var def = _defaultLanguage;
+
+            //if (_itemsButton != null && _itemsButton.Count > 0)
+            //    foreach (var item in _itemsButton)
+            //    {
+            //        SetItemLanguage(item, cur, def);
+            //    }
+
+            SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, language);
         }
 
         public override void SetLanguage<T>(T languageProvider)
@@ -34,15 +36,17 @@ namespace Framework.LocalizationSimple
                 return;
             }
             _currentProvider = langProvider;
-            var cur = langProvider;
-            var def = _defaultProvider;
 
-            if (_itemsButton != null && _itemsButton.Count > 0)
-                foreach (var item in _itemsButton)
-                {
-                    //item.SetLanguage(cur);
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
-                }
+            //var cur = langProvider;
+            //var def = _defaultProvider;
+
+            //if (_itemsButton != null && _itemsButton.Count > 0)
+            //    foreach (var item in _itemsButton)
+            //    {
+            //        SetItemLanguage(item, cur, def);
+            //    }
+
+            SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, languageProvider);
         }
     }
 }

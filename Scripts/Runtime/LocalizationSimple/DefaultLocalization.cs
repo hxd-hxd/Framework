@@ -28,19 +28,19 @@ namespace Framework.LocalizationSimple
             if (_itemsText != null && _itemsText.Count > 0)
                 foreach (var item in _itemsText)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
 
             if (_itemsImage != null && _itemsImage.Count > 0)
                 foreach (var item in _itemsImage)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
 
             if (_itemsGameObject != null && _itemsGameObject.Count > 0)
                 foreach (var item in _itemsGameObject)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
         }
 
@@ -58,30 +58,19 @@ namespace Framework.LocalizationSimple
             if (_itemsText != null && _itemsText.Count > 0)
                 foreach (var item in _itemsText)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
 
             if (_itemsImage != null && _itemsImage.Count > 0)
                 foreach (var item in _itemsImage)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
 
             if (_itemsGameObject != null && _itemsGameObject.Count > 0)
                 foreach (var item in _itemsGameObject)
                 {
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
-                }
-        }
-
-        private void SetLanguageInternal<T, Data>(List<T> items, string cur) where T : LocalizationItemBase<Data> where Data : LocalizationDataBase
-        {
-            var def = _defaultLanguage;
-            if (items != null && items.Count > 0)
-                foreach (var item in items)
-                {
-                    //item.SetLanguage(language);
-                    if (item.TryGetData(cur, out var data) || (cur != def && item.TryGetData(def, out data))) item.SetLanguage(data);
+                    SetItemLanguage(item, cur, def);
                 }
         }
 

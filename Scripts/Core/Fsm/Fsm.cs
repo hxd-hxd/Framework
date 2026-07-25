@@ -17,6 +17,7 @@ namespace Framework.Fsm
         private FsmState<T> m_CurrentState;
         private float m_CurrentStateTime;
         private bool m_IsDestroyed;
+        private bool m_IsStateSupportSerive;
 
         /// <summary>
         /// 初始化有限状态机的新实例。
@@ -85,6 +86,11 @@ namespace Framework.Fsm
                 return m_IsDestroyed;
             }
         }
+
+        /// <summary>是否支持派生关系，用于在 <see cref="HasState(Type)"/>、<see cref="HasState{TState}()"/> 或 <see cref="GetState(Type)"/>、<see cref="GetState{TState}()"/> 时判断状态类型的派生关系。
+        /// <para></para>比较消耗性能，建议只在确实有需要的时候使用。
+        /// </summary>
+        public bool IsStateSupportSerive { get => m_IsStateSupportSerive; set => m_IsStateSupportSerive = value; }
 
         /// <summary>
         /// 获取当前有限状态机状态。
@@ -325,7 +331,25 @@ namespace Framework.Fsm
                 throw new Exception(string.Format("State type '{0}' is invalid.", stateType.FullName));
             }
 
-            return m_States.ContainsKey(stateType);
+            bool has = m_States.ContainsKey(stateType);
+            if (IsStateSupportSerive)
+            {
+                if (!has)
+                {
+                    // 支持继承关系，已存在的类型是从要获取的类型继承的，这样就可以使用接口和抽象类了，更加灵活，但也更加消耗性能
+                    foreach (var item in m_States)
+                    {
+                        //if (item.Key.IsSubclassOf(stateType))
+                        if (item.Key.IsAssignableFrom(stateType))
+                        {
+                            has = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return has;
         }
 
         /// <summary>
@@ -365,6 +389,22 @@ namespace Framework.Fsm
             if (m_States.TryGetValue(stateType, out state))
             {
                 return state;
+            }
+            else
+            {
+                if (IsStateSupportSerive)
+                {
+                    // 支持继承关系，已存在的类型是从要获取的类型继承的，这样就可以使用接口和抽象类了，更加灵活，但也更加消耗性能
+                    foreach (var item in m_States)
+                    {
+                        //if (item.Key.IsSubclassOf(stateType))
+                        if (item.Key.IsAssignableFrom(stateType))
+                        {
+                            state = item.Value;
+                            break;
+                        }
+                    }
+                }
             }
 
             return null;

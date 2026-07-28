@@ -36,7 +36,7 @@ namespace Framework.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            // µ÷ÓÃ¸¸Àà¸üĞÂ
+            // è°ƒç”¨çˆ¶ç±»æ›´æ–°
             base.GetPropertyHeight(property, label);
 
             return totalHeight;
@@ -47,7 +47,7 @@ namespace Framework.Editor
             EditorGUI.PropertyField(pos, property, label, true);
         }
 
-        /// <summary>ÊÇ·ñÔÚÒ»ĞĞÖĞÏÔÊ¾</summary>
+        /// <summary>æ˜¯å¦åœ¨ä¸€è¡Œä¸­æ˜¾ç¤º</summary>
         protected bool IsUniline(SerializedPropertyType type)
         {
             //return false;
@@ -55,7 +55,7 @@ namespace Framework.Editor
                 ;
         }
 
-        /// <summary>Ö¸¶¨µÄ <see cref="SerializedPropertyType"/> ÊÇ·ñÔÚÒ»ĞĞÖĞÏÔÊ¾</summary>
+        /// <summary>æŒ‡å®šçš„ <see cref="SerializedPropertyType"/> æ˜¯å¦åœ¨ä¸€è¡Œä¸­æ˜¾ç¤º</summary>
         protected bool IsUnilineSerializedPropertyType(SerializedPropertyType type)
         {
             //return false;

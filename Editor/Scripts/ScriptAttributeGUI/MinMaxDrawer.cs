@@ -13,11 +13,11 @@ namespace Framework.Editor
     public class MinMaxDrawer : LineCountPropertyDrawer
     {
         /// <summary>
-        /// ÊÇ·ñ <see cref="MinMax{T}"/>
+        /// æ˜¯å¦ <see cref="MinMax{T}"/>
         /// </summary>
         protected bool isMinMaxT = true;
         /// <summary>
-        /// <see cref="MinMax{T}"/> ·ºĞÍ T µÄÀàĞÍ
+        /// <see cref="MinMax{T}"/> æ³›å‹ T çš„ç±»å‹
         /// </summary>
         protected SerializedPropertyType minMaxTType;
 
@@ -27,7 +27,7 @@ namespace Framework.Editor
             pos.height = singleLineHeight;
             label = EditorGUI.BeginProperty(pos, label, property);
 
-            // ·Ç MinMax<T> ·ºĞÍÀà
+            // é MinMax<T> æ³›å‹ç±»
             //if (min == null || max == null)
             if (property.type != "MinMax`1")
             {
@@ -46,8 +46,8 @@ namespace Framework.Editor
             minMaxTType = min.propertyType;
             if (IsUniline(min.propertyType))
             {
-                //»æÖÆ±êÇ©
-                // »áµ¼ÖÂºóĞøµÄ gui x ÖáÎ»ÖÃ¸Ä±ä
+                //ç»˜åˆ¶æ ‡ç­¾
+                // ä¼šå¯¼è‡´åç»­çš„ gui x è½´ä½ç½®æ”¹å˜
                 EditorGUIUtilityExtend.SetLabelWidth(EditorGUIUtility.labelWidth *= 0.75f,
                     () => pos = EditorGUI.PrefixLabel(pos, GUIUtility.GetControlID(FocusType.Keyboard), label));
                 PropertyField1(pos, min, label);
@@ -66,22 +66,22 @@ namespace Framework.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            // µ÷ÓÃ¸¸Àà¸üĞÂ
+            // è°ƒç”¨çˆ¶ç±»æ›´æ–°
             base.GetPropertyHeight(property, label);
 
-            // ĞŞÕıÊôĞÔ¸ß¶È
+            // ä¿®æ­£å±æ€§é«˜åº¦
             AmendPropertyHeight();
 
             return totalHeight;
         }
-        /// <summary>ĞŞÕıÊôĞÔ¸ß¶È</summary>
+        /// <summary>ä¿®æ­£å±æ€§é«˜åº¦</summary>
         protected virtual void AmendPropertyHeight()
         {
-            // ´¦Àí Vector4 ÄÚÁª²¼¾ÖµÄ¸ß¶ÈÏÔÊ¾ÎÊÌâ
+            // å¤„ç† Vector4 å†…è”å¸ƒå±€çš„é«˜åº¦æ˜¾ç¤ºé—®é¢˜
             if (IsUnilineSerializedPropertyType(SerializedPropertyType.Vector4)
                 && minMaxTType == SerializedPropertyType.Vector4)
             {
-                // ³ı·Ç Unity ÔÚºóĞø°æ±¾ÖĞ×öÁËĞŞ¸Ä£¬·ñÔòÕâÀïµÄÊıÖµÊÇ¹Ì¶¨µÄ
+                // é™¤é Unity åœ¨åç»­ç‰ˆæœ¬ä¸­åšäº†ä¿®æ”¹ï¼Œå¦åˆ™è¿™é‡Œçš„æ•°å€¼æ˜¯å›ºå®šçš„
                 if ((int)propertyHeight == 58) propertyHeight = 18;
                 else if ((int)propertyHeight == 138 || (int)propertyHeight == 218) propertyHeight = 100;
             }
@@ -89,7 +89,7 @@ namespace Framework.Editor
         }
 
         /// <summary>
-        /// ´¦ÀíÌØĞÔ£¬×îÖÕ½øĞĞ
+        /// å¤„ç†ç‰¹æ€§ï¼Œæœ€ç»ˆè¿›è¡Œ
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="property"></param>
@@ -100,7 +100,7 @@ namespace Framework.Editor
         }
 
         /// <summary>
-        /// Ó¦ÓÃÌØĞÔÊ±µÄÌáÊ¾ĞÅÏ¢£¬Ö»ÄÜÓÃÓÚ×Ô¶¨Òå¿ØÖÆµÄĞĞ
+        /// åº”ç”¨ç‰¹æ€§æ—¶çš„æç¤ºä¿¡æ¯ï¼Œåªèƒ½ç”¨äºè‡ªå®šä¹‰æ§åˆ¶çš„è¡Œ
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="property"></param>
@@ -123,25 +123,25 @@ namespace Framework.Editor
                 //GUI.color = old_color;
                 GUI.backgroundColor = old_backgroundColor;
                 GUI.contentColor = old_contentColor;
-                //EditorGUI.HelpBox(new Rect(pos.x, pos.y + currentLineCountHeight, pos.width, singleLineHeight), "ĞÂĞĞ", MessageType.Warning);
+                //EditorGUI.HelpBox(new Rect(pos.x, pos.y + currentLineCountHeight, pos.width, singleLineHeight), "æ–°è¡Œ", MessageType.Warning);
                 //lineCount += 1;
             }
         }
-        /// <summary>Ó¦ÓÃÌØĞÔÊ±µÄÌáÊ¾ĞÅÏ¢</summary>
+        /// <summary>åº”ç”¨ç‰¹æ€§æ—¶çš„æç¤ºä¿¡æ¯</summary>
         protected virtual bool OnAttributeHint(SerializedProperty property, out string msg, out MessageType type)
         {
             msg = null;
             type = MessageType.None;
             return false;
         }
-        /// <summary>Ó¦ÓÃÌØĞÔÊ±µÄÌáÊ¾ĞÅÏ¢¾ØĞÎ¶¨Òå</summary>
+        /// <summary>åº”ç”¨ç‰¹æ€§æ—¶çš„æç¤ºä¿¡æ¯çŸ©å½¢å®šä¹‰</summary>
         protected virtual Rect GetAttributeHintRect(Rect pos, string msg)
         {
             var br = pos;
             br.x = originalPos.x;
             br.width = originalPos.width;
 
-            float msgLine = TextLine(msg, pos.width);// ¼ÆËãÏûÏ¢ËùÕ¼µÄĞĞÊı
+            float msgLine = TextLine(msg, pos.width);// è®¡ç®—æ¶ˆæ¯æ‰€å çš„è¡Œæ•°
             msgLine = msgLine < 2 ? 1.5f : msgLine;
             br.height = GetAttributeHintH(msgLine);
 
@@ -150,12 +150,12 @@ namespace Framework.Editor
 
             return br;
         }
-        /// <summary>Ó¦ÓÃÌØĞÔÊ±µÄÌáÊ¾ĞÅÏ¢¾ØĞÎ¶¨Òå y ÖáÎ»ÖÃ</summary>
+        /// <summary>åº”ç”¨ç‰¹æ€§æ—¶çš„æç¤ºä¿¡æ¯çŸ©å½¢å®šä¹‰ y è½´ä½ç½®</summary>
         protected virtual float GetAttributeHintY()
         {
-            return propertyHeight;// Ê¼ÖÕ±£³ÖÔÚ gui ×îºó
+            return propertyHeight;// å§‹ç»ˆä¿æŒåœ¨ gui æœ€å
         }
-        /// <summary>Ó¦ÓÃÌØĞÔÊ±µÄÌáÊ¾ĞÅÏ¢¾ØĞÎ¶¨Òå¸ß¶È</summary>
+        /// <summary>åº”ç”¨ç‰¹æ€§æ—¶çš„æç¤ºä¿¡æ¯çŸ©å½¢å®šä¹‰é«˜åº¦</summary>
         protected virtual float GetAttributeHintH(float msgLine)
         {
             lineCount += msgLine;
@@ -164,7 +164,7 @@ namespace Framework.Editor
             return height;
         }
 
-        /// <summary>Ä¬ÈÏ»æÖÆ</summary>
+        /// <summary>é»˜è®¤ç»˜åˆ¶</summary>
         protected virtual void OnDefault(Rect pos, SerializedProperty property, GUIContent label)
         {
             //EditorGUI.indentLevel++;
@@ -172,7 +172,7 @@ namespace Framework.Editor
             //EditorGUI.indentLevel--;
         }
         /// <summary>
-        /// Ö´ĞĞµ¥ĞĞ»æÖÆ
+        /// æ‰§è¡Œå•è¡Œç»˜åˆ¶
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="property"></param>
@@ -184,11 +184,11 @@ namespace Framework.Editor
             EditorGUI.indentLevel = 0;
 
             float unit = 4;
-            float nameWidth = 30;// Ãû×Ö¿í¶È
-            float vWidth = pos.width * 0.495f;// Öµ¿í¶È
-            float vOffsetX = (vWidth + unit) * level;// Öµ x Æ«ÒÆ
+            float nameWidth = 30;// åå­—å®½åº¦
+            float vWidth = pos.width * 0.495f;// å€¼å®½åº¦
+            float vOffsetX = (vWidth + unit) * level;// å€¼ x åç§»
 
-            // Ê¹ÓÃÊÊÓ¦ĞÔµÄ¿í¶È
+            // ä½¿ç”¨é€‚åº”æ€§çš„å®½åº¦
             var vRect = new Rect(pos.x + vOffsetX, pos.y, vWidth, pos.height);
 
             EditorGUIUtilityExtend.SetLabelWidth(nameWidth,
@@ -207,12 +207,12 @@ namespace Framework.Editor
                 EditorGUI.indentLevel = 0;
 
                 float unit = 4;
-                float nameWidth = 30;// Ãû×Ö¿í¶È
-                float vWidth = pos.width * 0.375f;// Öµ¿í¶È
-                float nameOffsetX = (nameWidth + vWidth + unit * 3) * level;// Ãû×Ö x Æ«ÒÆ
-                float vOffsetX = (nameOffsetX) * level + nameWidth;// Öµ x Æ«ÒÆ
+                float nameWidth = 30;// åå­—å®½åº¦
+                float vWidth = pos.width * 0.375f;// å€¼å®½åº¦
+                float nameOffsetX = (nameWidth + vWidth + unit * 3) * level;// åå­— x åç§»
+                float vOffsetX = (nameOffsetX) * level + nameWidth;// å€¼ x åç§»
 
-                // Ê¹ÓÃÊÊÓ¦ĞÔµÄ¿í¶È
+                // ä½¿ç”¨é€‚åº”æ€§çš„å®½åº¦
                 var nameRect = new Rect(pos.x + nameOffsetX, pos.y, nameWidth, pos.height);
                 var vRect = new Rect(pos.x + vOffsetX, pos.y, vWidth, pos.height);
                 //EditorGUI.LabelField(new Rect(pos.x + nameOffsetX, pos.y, nameWidth, pos.height), displayName);
@@ -237,12 +237,12 @@ namespace Framework.Editor
             }
             else
             {
-                // Èç¹û²»Âú×ãµ¥ĞĞ»æÖÆÌõ¼ş£¬ÔòÊ¹ÓÃÄ¬ÈÏ»æÖÆ
+                // å¦‚æœä¸æ»¡è¶³å•è¡Œç»˜åˆ¶æ¡ä»¶ï¼Œåˆ™ä½¿ç”¨é»˜è®¤ç»˜åˆ¶
                 OnDefault(pos, property, displayName);
             }
         }
 
-        /// <summary>ÊÇ·ñÔÚÒ»ĞĞÖĞÏÔÊ¾</summary>
+        /// <summary>æ˜¯å¦åœ¨ä¸€è¡Œä¸­æ˜¾ç¤º</summary>
         protected bool IsUniline(SerializedPropertyType type)
         {
             //return false;
@@ -250,7 +250,7 @@ namespace Framework.Editor
                 //|| !isMinMaxT
                 ;
         }
-        /// <summary>Ö¸¶¨µÄ <see cref="SerializedPropertyType"/> ÊÇ·ñÔÚÒ»ĞĞÖĞÏÔÊ¾</summary>
+        /// <summary>æŒ‡å®šçš„ <see cref="SerializedPropertyType"/> æ˜¯å¦åœ¨ä¸€è¡Œä¸­æ˜¾ç¤º</summary>
         protected bool IsUnilineSerializedPropertyType(SerializedPropertyType type)
         {
             //return false;

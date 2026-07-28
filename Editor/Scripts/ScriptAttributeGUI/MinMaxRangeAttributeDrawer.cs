@@ -29,10 +29,10 @@ namespace Framework.Editor
         }
         protected override bool OnAttributeHint(SerializedProperty property, out string msg, out MessageType type)
         {
-            msg = $"MinMaxRangeAttribute ²»Ö§³ÖµÄÀàĞÍ \"MinMax<{property.type}>\"£¬½öÖ§³ÖÉè¶¨ MinMax<T> T Îª \"float ¡¢int\" µÈÊıÖµÀàĞÍ";
+            msg = $"MinMaxRangeAttribute ä¸æ”¯æŒçš„ç±»å‹ \"MinMax<{property.type}>\"ï¼Œä»…æ”¯æŒè®¾å®š MinMax<T> T ä¸º \"float ã€int\" ç­‰æ•°å€¼ç±»å‹";
             if (!isMinMaxT)
             {
-                msg = $"MinMaxRangeAttribute ²»Ö§³ÖµÄÀàĞÍ \"{property.type}\"£¬½öÖ§³ÖÉè¶¨ \"float ¡¢int\" µÈÊıÖµÀàĞÍ";
+                msg = $"MinMaxRangeAttribute ä¸æ”¯æŒçš„ç±»å‹ \"{property.type}\"ï¼Œä»…æ”¯æŒè®¾å®š \"float ã€int\" ç­‰æ•°å€¼ç±»å‹";
             }
             //msg += "\r\n1...........................................1\r\n2...........................................2\r\n3...........................................3";
             type = MessageType.Error;
@@ -52,12 +52,12 @@ namespace Framework.Editor
             if(useDefault) return base.GetAttributeHintH(msgLine);
 
             float h = singleLineHeight * msgLine;
-            float phOnLabel = propertyHeight - singleLineHeight;// È¥µô±êÌâºóµÄÊôĞÔĞĞ¸ß
-            // ¶àĞĞÔò¸²¸Ç£¬µ¥ĞĞÔòËæºó
-            if ((int)phOnLabel > 0)// ¶àĞĞ
+            float phOnLabel = propertyHeight - singleLineHeight;// å»æ‰æ ‡é¢˜åçš„å±æ€§è¡Œé«˜
+            // å¤šè¡Œåˆ™è¦†ç›–ï¼Œå•è¡Œåˆ™éšå
+            if ((int)phOnLabel > 0)// å¤šè¡Œ
             {
-                float b = phOnLabel / singleLineHeight;// È¥±êĞĞ¸ßËùÕ¼ĞĞÊı
-                // È¡ÏûÏ¢ĞĞ¶àÓàµÄ²¿·Öµş¼Ó
+                float b = phOnLabel / singleLineHeight;// å»æ ‡è¡Œé«˜æ‰€å è¡Œæ•°
+                // å–æ¶ˆæ¯è¡Œå¤šä½™çš„éƒ¨åˆ†å åŠ 
                 //if (b < msgLine)
                 //{
                 //    lineCount += msgLine - b;

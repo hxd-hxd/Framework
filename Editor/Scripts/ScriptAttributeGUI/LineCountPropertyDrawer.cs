@@ -7,8 +7,8 @@ using UnityEngine;
 namespace Framework.Editor
 {
     /// <summary>
-    /// ĞĞÊıÊôĞÔ»æÖÆÆ÷
-    /// <para>Àı
+    /// è¡Œæ•°å±æ€§ç»˜åˆ¶å™¨
+    /// <para>ä¾‹
     /// <code>
     /// public override void OnGUI(Rect pos, SerializedProperty property, GUIContent label)
     /// {
@@ -21,34 +21,34 @@ namespace Framework.Editor
     public abstract class LineCountPropertyDrawer : PropertyDrawer
     {
         /// <summary>
-        /// ĞĞÊı£¬Ã¿Ìí¼ÓĞÂĞĞÖ®ºó£¬¶¼ÒªÏàÓ¦Ôö¼Ó´ËÊı
-        /// <para></para>×¢Òâ£ºÊÇÖ®ºó
+        /// è¡Œæ•°ï¼Œæ¯æ·»åŠ æ–°è¡Œä¹‹åï¼Œéƒ½è¦ç›¸åº”å¢åŠ æ­¤æ•°
+        /// <para></para>æ³¨æ„ï¼šæ˜¯ä¹‹å
         /// </summary>
         protected float lineCount = 0;
         protected float _singleLineHeight = EditorGUIUtility.singleLineHeight;
         protected float _propertyHeight = 0;
         protected Rect _originalPos;
 
-        /// <summary>µ¥×Ö·û¿í¶È</summary>
-        /// <remarks>¿ÉÓÃÓÚÉèÖÃ <see cref="TextLine(string, float)"/> ÄÚ²¿×Ö·û¼ÆËã</remarks>
+        /// <summary>å•å­—ç¬¦å®½åº¦</summary>
+        /// <remarks>å¯ç”¨äºè®¾ç½® <see cref="TextLine(string, float)"/> å†…éƒ¨å­—ç¬¦è®¡ç®—</remarks>
         public int singleCharWidth = 8;
 
         /// <summary>
-        /// µ¥ĞĞĞĞ¸ß£¨Ä¬ÈÏ 18£©
+        /// å•è¡Œè¡Œé«˜ï¼ˆé»˜è®¤ 18ï¼‰
         /// </summary>
         protected float singleLineHeight { get => _singleLineHeight; set => _singleLineHeight = value; }
-        /// <summary>Ä¬ÈÏÊôĞÔ¸ß¶È</summary>
+        /// <summary>é»˜è®¤å±æ€§é«˜åº¦</summary>
         protected float propertyHeight { get => _propertyHeight;  set => _propertyHeight = value; }
         /// <summary>
-        /// µ±Ç°ĞĞÊı¶ÔÓ¦µÄ¸ß¶È£¬¿ÉÓÃÓÚ¶¨Î»×îĞÂĞĞ y µÄÎ»ÖÃ
+        /// å½“å‰è¡Œæ•°å¯¹åº”çš„é«˜åº¦ï¼Œå¯ç”¨äºå®šä½æœ€æ–°è¡Œ y çš„ä½ç½®
         /// <para></para><see cref="lineCount"/> * <see cref="singleLineHeight"/>
-        /// <para>Àı£ºpos.y + currentLineCountHeight ¾Í±íÊ¾×îĞÂĞĞÎ»ÖÃ</para>
+        /// <para>ä¾‹ï¼špos.y + currentLineCountHeight å°±è¡¨ç¤ºæœ€æ–°è¡Œä½ç½®</para>
         /// </summary>
         protected float currentLineCountHeight => lineCount * singleLineHeight;
-        /// <summary>×Ü¸ß¶È£¬×Ô¶¨Òå + Ä¬ÈÏÊôĞÔ</summary>
+        /// <summary>æ€»é«˜åº¦ï¼Œè‡ªå®šä¹‰ + é»˜è®¤å±æ€§</summary>
         /// <remarks><see cref="currentLineCountHeight"/> + <see cref="propertyHeight"/></remarks>
         protected float totalHeight => currentLineCountHeight + propertyHeight;
-        /// <summary>Ô­Ê¼¾ØĞÎÎ»ÖÃ</summary>
+        /// <summary>åŸå§‹çŸ©å½¢ä½ç½®</summary>
         protected Rect originalPos => _originalPos;
 
         public override void OnGUI(Rect pos, SerializedProperty property, GUIContent label)
@@ -60,13 +60,13 @@ namespace Framework.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
-            //Debug.Log($"{property.displayName}\tph£º{propertyHeight}£¬\totalHeight£º{totalHeight}");
+            //Debug.Log($"{property.displayName}\tphï¼š{propertyHeight}ï¼Œ\totalHeightï¼š{totalHeight}");
             return totalHeight;
         }
 
         /// <summary>
-        /// ¸ù¾İÌá¹©µÄÎÄ±¾ºÍ¿í¶È¼ÆËãËùÕ¼ĞĞÊı
-        /// £¨²»Ö§³Ö¸»ÎÄ±¾£¬Ê¹ÓÃ <see cref="singleCharWidth"/> ĞŞ¸Ä¼ÆËãÊ±µÄµ¥¸ö¿í¶È£¬Ò²²»ÄÜ´¦Àí²»Í¬×Ö·ûÔÚ gui ÏÔÊ¾ÉÏµÄ¿í¶È²»Í¬µÄÎÊÌâ ÀıÈç£ºl ºÍ L£©
+        /// æ ¹æ®æä¾›çš„æ–‡æœ¬å’Œå®½åº¦è®¡ç®—æ‰€å è¡Œæ•°
+        /// ï¼ˆä¸æ”¯æŒå¯Œæ–‡æœ¬ï¼Œä½¿ç”¨ <see cref="singleCharWidth"/> ä¿®æ”¹è®¡ç®—æ—¶çš„å•ä¸ªå®½åº¦ï¼Œä¹Ÿä¸èƒ½å¤„ç†ä¸åŒå­—ç¬¦åœ¨ gui æ˜¾ç¤ºä¸Šçš„å®½åº¦ä¸åŒçš„é—®é¢˜ ä¾‹å¦‚ï¼šl å’Œ Lï¼‰
         /// </summary>
         /// <returns></returns>
         public virtual int TextLine(string msg, float width)
@@ -81,8 +81,8 @@ namespace Framework.Editor
             return result;
         }
         /// <summary>
-        /// ¸ù¾İÌá¹©µÄÎÄ±¾ºÍ¿í¶È¼ÆËãºöÂÔ»»ĞĞ·ûËùÕ¼ĞĞÊı
-        /// £¨²»Ö§³Ö¸»ÎÄ±¾£¬Ê¹ÓÃ <see cref="singleCharWidth"/> ĞŞ¸Ä¼ÆËãÊ±µÄµ¥¸ö¿í¶È£¬Ò²²»ÄÜ´¦Àí²»Í¬×Ö·ûÔÚ gui ÏÔÊ¾ÉÏµÄ¿í¶È²»Í¬µÄÎÊÌâ ÀıÈç£ºl ºÍ L£©
+        /// æ ¹æ®æä¾›çš„æ–‡æœ¬å’Œå®½åº¦è®¡ç®—å¿½ç•¥æ¢è¡Œç¬¦æ‰€å è¡Œæ•°
+        /// ï¼ˆä¸æ”¯æŒå¯Œæ–‡æœ¬ï¼Œä½¿ç”¨ <see cref="singleCharWidth"/> ä¿®æ”¹è®¡ç®—æ—¶çš„å•ä¸ªå®½åº¦ï¼Œä¹Ÿä¸èƒ½å¤„ç†ä¸åŒå­—ç¬¦åœ¨ gui æ˜¾ç¤ºä¸Šçš„å®½åº¦ä¸åŒçš„é—®é¢˜ ä¾‹å¦‚ï¼šl å’Œ Lï¼‰
         /// </summary>
         /// <returns></returns>
         public int TextLineIgnoreNewlines(string msg, float width)
@@ -90,7 +90,7 @@ namespace Framework.Editor
             int result = 1;
             if (msg != null)
             {
-                int wCharNum = DivSur((int)width, singleCharWidth);// ¼ÆËã¿ÉÈİÄÉµÄ×Ö·ûÊı
+                int wCharNum = DivSur((int)width, singleCharWidth);// è®¡ç®—å¯å®¹çº³çš„å­—ç¬¦æ•°
                 int line = DivSur(msg.Length, wCharNum);
                 if (line > 0) result = line;
             }
@@ -98,8 +98,8 @@ namespace Framework.Editor
         }
 
         /// <summary>
-        /// ÓĞÓàÊıµÄÉÌ
-        /// <para>Àı£»10 / 4 = 3£¬DivSur(10, 4) return 3</para>
+        /// æœ‰ä½™æ•°çš„å•†
+        /// <para>ä¾‹ï¼›10 / 4 = 3ï¼ŒDivSur(10, 4) return 3</para>
         /// </summary>
         /// <returns></returns>
         public int DivSur(int a, int b)

@@ -332,7 +332,7 @@ namespace Framework.Fsm
             }
 
             bool has = m_States.ContainsKey(stateType);
-            if (IsStateSupportSerive)
+            if (m_IsStateSupportSerive)
             {
                 if (!has)
                 {
@@ -392,7 +392,7 @@ namespace Framework.Fsm
             }
             else
             {
-                if (IsStateSupportSerive)
+                if (m_IsStateSupportSerive)
                 {
                     // 支持继承关系，已存在的类型是从要获取的类型继承的，这样就可以使用接口和抽象类了，更加灵活，但也更加消耗性能
                     foreach (var item in m_States)

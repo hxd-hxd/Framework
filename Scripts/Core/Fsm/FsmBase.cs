@@ -75,9 +75,6 @@ namespace Framework.Fsm
             get;
         }
 
-        /// <summary>是否支持派生关系</summary>
-        public abstract bool IsSupportSerive { get; set; }
-
         /// <summary>
         /// 获取当前有限状态机状态名称。
         /// </summary>

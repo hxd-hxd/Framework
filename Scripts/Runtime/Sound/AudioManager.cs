@@ -295,7 +295,7 @@ namespace Framework
 
         public AudioClip GetClipByName(string name)
         {
-            if (!Instance) return null;
+            //if (!Instance) return null;
             var c = _clips.Find(x => x.name == name);
             return c;
         }
@@ -306,7 +306,7 @@ namespace Framework
         /// <param name="clip"></param>
         public void PlayAudioByName(string name)
         {
-            if (!Instance) return;
+            //if (!Instance) return;
             if (!soundSwitch) return;
 
             PlayAudio(GetClipByName(name));
@@ -318,7 +318,7 @@ namespace Framework
         /// <param name="clip"></param>
         public void PlayAudioByName(GameObject source, string name)
         {
-            if (!Instance) return;
+            //if (!Instance) return;
             if (!soundSwitch) return;
 
             PlayAudio(source, GetClipByName(name));
@@ -328,15 +328,28 @@ namespace Framework
         /// 使用通用音源播放音效
         /// </summary>
         /// <param name="clip"></param>
+        public void PlayAudio(int index)
+        {
+            //if (!Instance) return;
+            if (!soundSwitch) return;
+
+            var clip = _clips[index];
+            PlayAudio(clip);
+        }
+
+        /// <summary>
+        /// 使用通用音源播放音效
+        /// </summary>
+        /// <param name="clip"></param>
         public void PlayAudio(AudioClip clip)
         {
-            if (!Instance) return;
+            //if (!Instance) return;
             if (!soundSwitch) return;
 
             var source = _audioSourcePool.Play(clip);
             source.volume = soundVolume;
         }
-
+        
         /// <summary>
         /// 指定物体播放 3d 音效
         /// <para></para>2d、全局音效用 <see cref="PlayAudio(AudioClip)"/>
@@ -373,7 +386,7 @@ namespace Framework
 
         public void PlayBGM(int index)
         {
-            if (!Instance) return;
+            //if (!Instance) return;
 
             if (!_bgmClips.TryIndex(index, out var a))
             {
@@ -389,7 +402,7 @@ namespace Framework
         /// <param name="clip"></param>
         public void PlayBGM(AudioClip clip)
         {
-            if (!Instance) return;
+            //if (!Instance) return;
             if (!bgmSwitch) return;
 
             audioSourceBGM.volume = bgmVolume;

@@ -95,13 +95,13 @@ namespace Framework
 
         protected virtual void Awake()
         {
-            if (isSoloInstance && instance && instance.GetType() == typeof(T))
+            if (isSoloInstance && instance && instance != this && instance.GetType() == typeof(T))
             {
                 //isSoloInstance = false;
 
                 Destroy(gameObject);
 
-                //Log.Yellow($"为  {instance.name}  销毁多余实例");
+                Log.Yellow($"为  {instance.name}  销毁多余实例");
 
                 return;
             }
@@ -109,6 +109,14 @@ namespace Framework
             instance = this as T;
 
             DontDestroyOnLoadVirtual();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (instance != this)
+            {
+                instance = null;
+            }
         }
 
         protected virtual void DontDestroyOnLoadVirtual()

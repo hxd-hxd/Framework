@@ -1,4 +1,4 @@
-﻿namespace Framework.Localization
+namespace Framework.Localization
 {
     /// <summary>
     /// 本地化语言。
@@ -46,12 +46,12 @@
         Catalan,
 
         /// <summary>
-        /// 简体中文。
+        /// 汉语。
         /// </summary>
         ChineseSimplified,
 
         /// <summary>
-        /// 繁体中文。
+        /// 汉语（繁体）。
         /// </summary>
         ChineseTraditional,
 

@@ -33,7 +33,20 @@ namespace Framework
 
         void Start()
         {
-        
+            _selecter.Init();
+
+            // 检查是否选中的
+            if(_selecter.curItem == null)
+            {
+                for (int i = 0; i < _selecter.Count; i++)
+                {
+                    if (_selecter[i].isSelect)
+                    {
+                        _selecter.curItem = _selecter[i];
+                        break;
+                    }
+                }
+            }
         }
 
     }

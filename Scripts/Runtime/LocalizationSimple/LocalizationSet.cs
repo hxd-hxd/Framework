@@ -518,7 +518,7 @@ namespace Framework.LocalizationSimple
         public void Set()
         {
             //Set(.currentLang);
-            Set(LangType.English);
+            Set(LangType.ChineseSimplified);
         }
 
         /// <summary>设置</summary>

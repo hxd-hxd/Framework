@@ -19,7 +19,7 @@ namespace Framework.LocalizationSimple
             {
                 if (_localizations == null)
                 {
-                    _localizations = new();
+                    _localizations = new List<ILocalization>();
                 }
                 if (_localizations.Count <= 0)
                 {

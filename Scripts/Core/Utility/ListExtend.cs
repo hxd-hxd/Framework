@@ -67,7 +67,7 @@ namespace Framework.Core
                 }
                 else if (values.Count < count)
                 {
-                    values.Add(new());
+                    values.Add(new T());
                 }
             }
         }
@@ -105,7 +105,7 @@ namespace Framework.Core
                 }
                 else if (values.Count < count)
                 {
-                    T obj = new();
+                    T obj = new T();
                     values.Add(obj);
                     callback?.Invoke(obj, 1);
                 }

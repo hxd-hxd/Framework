@@ -15,7 +15,7 @@ namespace Framework.LocalizationSimple
         [SerializeField]
         private GameObject _curGO;
         [SerializeField]
-        private List<LocalizationData> _datas = new();
+        private List<LocalizationData> _datas = new List<LocalizationData>();
 
         public override List<LocalizationData> datas { get => _datas; set => _datas = value; }
 

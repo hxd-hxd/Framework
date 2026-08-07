@@ -16,7 +16,7 @@ namespace Framework
     /// <summary>
     /// UGUI 界面管理器，用于管理派生自 <see cref="UIPanelBase"/> 的界面
     /// </summary>
-    public class UIPanelManager : Singleton<UIPanelManager>
+    public class UIPanelManager : MonoSingleton<UIPanelManager>
     {
         public static string panelLoadPath = "Prefabs/UI/";
 

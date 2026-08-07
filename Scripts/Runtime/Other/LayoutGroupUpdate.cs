@@ -11,14 +11,14 @@ namespace Framework
     /// </summary>
     public class LayoutGroupUpdate : MonoBehaviour
     {
-        IEnumerator Start()
+        void Start()
         {
-            yield return UpdateLayoutGroup();
+            //yield return UpdateLayoutGroup();
         }
 
         private void OnEnable()
         {
-            //StartCoroutine(UpdateLayoutGroup());
+            StartCoroutine(UpdateLayoutGroup());
         }
 
         private void OnDisable()

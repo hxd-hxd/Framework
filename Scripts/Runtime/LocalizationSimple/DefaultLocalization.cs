@@ -20,7 +20,8 @@ namespace Framework.LocalizationSimple
 
         public override void SetLanguage(string language)
         {
-            _currentLanguage = language;
+            base.SetLanguage(language);
+
             var cur = language;
             var def = _defaultLanguage;
 
@@ -44,15 +45,11 @@ namespace Framework.LocalizationSimple
                 }
         }
 
-        public override void SetLanguage<T>(T languageProvider)
+        public override void SetLanguage(ILanguageProvider languageProvider)
         {
-            var langProvider = languageProvider as LanguageProviderComponentBase;
-            if (langProvider == null)
-            {
-                return;
-            }
-            _currentProvider = langProvider;
-            var cur = langProvider;
+            base.SetLanguage(languageProvider);
+
+            var cur = _currentProvider;
             var def = _defaultProvider;
 
             if (_itemsText != null && _itemsText.Count > 0)

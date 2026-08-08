@@ -19,6 +19,6 @@ namespace Framework.Localization
         bool IsLanguage<T>(T language);
 
         /// <summary>是否提供相同语言</summary>
-        bool IsProviderLanguage<T>(T languageProvider) where T: ILanguageProvider;
+        bool IsProviderLanguage(ILanguageProvider languageProvider);
     }
 }

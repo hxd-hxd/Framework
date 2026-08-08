@@ -26,6 +26,6 @@ namespace Framework.Localization
         /// <summary>设置为语言提供者提供的语言，当没有目标语言时会尝试使用默认语言提供者 <see cref="defaultProvider"/>
         /// <para></para><paramref name="languageProvider"/>：目标语言
         /// </summary>
-        void SetLanguage<T>(T languageProvider) where T : ILanguageProvider;
+        void SetLanguage(ILanguageProvider languageProvider);
     }
 }

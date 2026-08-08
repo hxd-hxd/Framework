@@ -7,7 +7,7 @@ using LangType = Framework.Localization.Language;
 namespace Framework.LocalizationSimple
 {
     /// <summary>设置本地化语言</summary>
-    public class LocalizationSet : MonoBehaviour
+    public class LocalizationSet : MonoBehaviour, ILocalizationSet
     {
         public LocalizationSetMode _setMode;
         public List<ILocalization> _localizations = new List<ILocalization>();

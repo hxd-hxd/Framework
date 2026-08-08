@@ -37,7 +37,7 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
-        public virtual Data GetData<T>(T languageProvider) where T : ILanguageProvider
+        public virtual Data GetData(ILanguageProvider languageProvider)
         {
             Data data = default;
             //if (!ObjectUtility.IsNull(languageProvider as object))
@@ -55,7 +55,7 @@ namespace Framework.LocalizationSimple
             return data;
         }
 
-        public virtual bool TryGetData<T>(T languageProvider, out Data data) where T : ILanguageProvider
+        public virtual bool TryGetData(ILanguageProvider languageProvider, out Data data)
         {
             bool r = false;
             data = default;
@@ -77,7 +77,7 @@ namespace Framework.LocalizationSimple
             Execute(data);
         }
 
-        public virtual void SetLanguage<T>(T languageProvider) where T : ILanguageProvider
+        public virtual void SetLanguage(ILanguageProvider languageProvider)
         {
             var data = GetData(languageProvider);
             Execute(data);

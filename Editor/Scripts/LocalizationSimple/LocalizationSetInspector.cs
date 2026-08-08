@@ -37,13 +37,27 @@ namespace Framework.Editor
             //    ApplyLanguage(null);
             //}
 
+            const int buttonsPerRow = 2;
+            // 预留 Inspector 左右边距与滚动条，保证随面板宽度自适应且各按钮等宽
+            float buttonWidth = (EditorGUIUtility.currentViewWidth - 40f) / buttonsPerRow;
+            var buttonWidthOption = GUILayout.Width(buttonWidth);
+
+            int index = 0;
             EditorGUILayout.BeginHorizontal();
             foreach (LangType lang in System.Enum.GetValues(typeof(LangType)))
             {
-                if (GUILayout.Button($"设置 {GetLangLabel(lang)}"))
+                if (index > 0 && index % buttonsPerRow == 0)
+                {
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal();
+                }
+
+                if (GUILayout.Button($"设置 {GetLangLabel(lang)}", buttonWidthOption))
                 {
                     ApplyLanguage(lang);
                 }
+
+                index++;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -111,13 +125,89 @@ namespace Framework.Editor
         {
             switch (localization)
             {
+                case LocalizationBaseReference reference:
+                    ApplyLocalizationBaseReference(reference, undoName, type, provider);
+                    break;
                 case DefaultLocalization dl:
                     ApplyDefaultLocalization(dl, undoName, type, provider);
                     break;
                 case ButtonLocalization bl:
                     ApplyButtonLocalization(bl, undoName, type, provider);
                     break;
+                case LocalizationBase lb:
+                    ApplyLocalizationBaseCurrent(lb, undoName, type, provider);
+                    break;
             }
+        }
+
+        void ApplyLocalizationBaseReference(
+            LocalizationBaseReference reference,
+            string undoName,
+            string type,
+            LanguageProviderComponentBase provider)
+        {
+            if (reference.localizations == null) return;
+
+            ApplyLocalizationBaseCurrent(reference, undoName, type, provider);
+
+            foreach (var localization in reference.localizations)
+            {
+                if (localization == null) continue;
+                SyncDefaultLanguageFromReference(reference, localization, undoName);
+                ApplyLocalization(localization, undoName, type, provider);
+            }
+        }
+
+        static void SyncDefaultLanguageFromReference(
+            LocalizationBaseReference reference,
+            LocalizationBase localization,
+            string undoName)
+        {
+            Undo.RecordObject(localization, undoName);
+            var childSo = new SerializedObject(localization);
+            childSo.Update();
+            childSo.FindProperty("_defaultLanguage").stringValue = reference._defaultLanguage;
+            childSo.FindProperty("_defaultProvider").objectReferenceValue = reference._defaultProvider;
+            childSo.ApplyModifiedPropertiesWithoutUndo();
+            RecordPrefabModifications(localization);
+        }
+
+        static SerializedObject BeginApplyLocalizationBase(
+            LocalizationBase localization,
+            string undoName,
+            string type,
+            LanguageProviderComponentBase provider)
+        {
+            Undo.RecordObject(localization, undoName);
+            var so = new SerializedObject(localization);
+            so.Update();
+
+            if (provider != null)
+            {
+                so.FindProperty("_currentProvider").objectReferenceValue = provider;
+            }
+            else
+            {
+                so.FindProperty("_currentLanguage").stringValue = type;
+            }
+
+            return so;
+        }
+
+        static void EndApplyLocalizationBase(LocalizationBase localization, SerializedObject so)
+        {
+            so.ApplyModifiedPropertiesWithoutUndo();
+            RecordPrefabModifications(localization);
+        }
+
+        static void ApplyLocalizationBaseCurrent(
+            LocalizationBase localization,
+            string undoName,
+            string type,
+            LanguageProviderComponentBase provider)
+        {
+            var so = BeginApplyLocalizationBase(localization, undoName, type, provider);
+            EndApplyLocalizationBase(localization, so);
         }
 
         void ApplyDefaultLocalization(
@@ -126,25 +216,13 @@ namespace Framework.Editor
             string type,
             LanguageProviderComponentBase provider)
         {
-            Undo.RecordObject(dl, undoName);
-            var dlSo = new SerializedObject(dl);
-            dlSo.Update();
+            var dlSo = BeginApplyLocalizationBase(dl, undoName, type, provider);
 
-            if (provider != null)
-            {
-                dlSo.FindProperty("_currentProvider").objectReferenceValue = provider;
-            }
-            else
-            {
-                dlSo.FindProperty("_currentLanguage").stringValue = type;
-            }
+            ApplyItemsText(dl._itemsText, type, provider, dl._defaultLanguage, dl._defaultProvider, undoName);
+            ApplyItemsImage(dl._itemsImage, type, provider, dl._defaultLanguage, dl._defaultProvider, undoName);
+            ApplyItemsGameObject(dl, dlSo, type, provider, dl._defaultLanguage, dl._defaultProvider, undoName);
 
-            ApplyItemsText(dl._itemsText, type, provider, undoName);
-            ApplyItemsImage(dl._itemsImage, type, provider, undoName);
-            ApplyItemsGameObject(dl, dlSo, type, provider, undoName);
-
-            dlSo.ApplyModifiedPropertiesWithoutUndo();
-            RecordPrefabModifications(dl);
+            EndApplyLocalizationBase(dl, dlSo);
         }
 
         void ApplyButtonLocalization(
@@ -153,29 +231,19 @@ namespace Framework.Editor
             string type,
             LanguageProviderComponentBase provider)
         {
-            Undo.RecordObject(bl, undoName);
-            var blSo = new SerializedObject(bl);
-            blSo.Update();
+            var blSo = BeginApplyLocalizationBase(bl, undoName, type, provider);
 
-            if (provider != null)
-            {
-                blSo.FindProperty("_currentProvider").objectReferenceValue = provider;
-            }
-            else
-            {
-                blSo.FindProperty("_currentLanguage").stringValue = type;
-            }
+            ApplyItemsButton(bl._itemsButton, type, provider, bl._defaultLanguage, bl._defaultProvider, undoName);
 
-            ApplyItemsButton(bl._itemsButton, type, provider, undoName);
-
-            blSo.ApplyModifiedPropertiesWithoutUndo();
-            RecordPrefabModifications(bl);
+            EndApplyLocalizationBase(bl, blSo);
         }
 
         static void ApplyItemsText(
             List<LocalizationItemText> items,
             string type,
             LanguageProviderComponentBase provider,
+            string defaultType,
+            LanguageProviderComponentBase defaultProvider,
             string undoName)
         {
             if (items == null) return;
@@ -183,7 +251,7 @@ namespace Framework.Editor
             foreach (var item in items)
             {
                 if (item?.datas == null) continue;
-                var data = FindData(item.datas, type, provider);
+                var data = FindDataWithFallback(item.datas, type, provider, defaultType, defaultProvider);
                 if (data != null && data._text != null)
                 {
                     ApplyText(item._item, data._text, undoName);
@@ -195,6 +263,8 @@ namespace Framework.Editor
             List<LocalizationItemImage> items,
             string type,
             LanguageProviderComponentBase provider,
+            string defaultType,
+            LanguageProviderComponentBase defaultProvider,
             string undoName)
         {
             if (items == null) return;
@@ -202,7 +272,7 @@ namespace Framework.Editor
             foreach (var item in items)
             {
                 if (item?.datas == null) continue;
-                var data = FindData(item.datas, type, provider);
+                var data = FindDataWithFallback(item.datas, type, provider, defaultType, defaultProvider);
                 if (data != null && data._sprite != null)
                 {
                     ApplyImage(item._item, data._sprite, undoName);
@@ -214,6 +284,8 @@ namespace Framework.Editor
             List<LocalizationItemButton> items,
             string type,
             LanguageProviderComponentBase provider,
+            string defaultType,
+            LanguageProviderComponentBase defaultProvider,
             string undoName)
         {
             if (items == null) return;
@@ -221,7 +293,7 @@ namespace Framework.Editor
             foreach (var item in items)
             {
                 if (item?.datas == null || !item._item) continue;
-                var data = FindData(item.datas, type, provider);
+                var data = FindDataWithFallback(item.datas, type, provider, defaultType, defaultProvider);
                 if (data?._spriteSwapData != null)
                 {
                     ApplyButton(item._item, data._spriteSwapData, undoName);
@@ -234,6 +306,8 @@ namespace Framework.Editor
             SerializedObject dlSo,
             string type,
             LanguageProviderComponentBase provider,
+            string defaultType,
+            LanguageProviderComponentBase defaultProvider,
             string undoName)
         {
             var items = dl._itemsGameObject;
@@ -245,7 +319,7 @@ namespace Framework.Editor
                 var item = items[i];
                 if (item?.datas == null) continue;
 
-                var data = FindData(item.datas, type, provider);
+                var data = FindDataWithFallback(item.datas, type, provider, defaultType, defaultProvider);
                 if (data == null || data._gameObject == null) continue;
 
                 var targetGO = data._gameObject;
@@ -267,6 +341,26 @@ namespace Framework.Editor
                 curGOProp.objectReferenceValue = targetGO;
                 RecordPrefabModifications(targetGO);
             }
+        }
+
+        static T FindDataWithFallback<T>(
+            List<T> datas,
+            string type,
+            LanguageProviderComponentBase provider,
+            string defaultType,
+            LanguageProviderComponentBase defaultProvider) where T : LocalizationDataBase
+        {
+            var data = FindData(datas, type, provider);
+            if (data != null) return data;
+
+            if (provider != null)
+            {
+                if (defaultProvider == null || provider.IsProviderLanguage(defaultProvider)) return null;
+                return FindData(datas, null, defaultProvider);
+            }
+
+            if (string.IsNullOrEmpty(defaultType) || type == defaultType) return null;
+            return FindData(datas, defaultType, null);
         }
 
         static T FindData<T>(
@@ -380,17 +474,13 @@ namespace Framework.Editor
 
             foreach (var localization in CollectLocalizations())
             {
-                switch (localization)
+                if (localization is LocalizationBase lb)
                 {
-                    case DefaultLocalization dl:
-                        RefreshDefaultLocalization(dl);
-                        break;
-                    case ButtonLocalization bl:
-                        RefreshButtonLocalization(bl);
-                        break;
-                    case Component comp:
-                        EditorUtility.SetDirty(comp);
-                        break;
+                    RefreshLocalizationBase(lb);
+                }
+                else if (localization is Component comp)
+                {
+                    EditorUtility.SetDirty(comp);
                 }
             }
 
@@ -405,6 +495,39 @@ namespace Framework.Editor
             if (!graphic) return;
             graphic.SetAllDirty();
             EditorUtility.SetDirty(graphic);
+        }
+
+        static void RefreshLocalizationBaseReference(LocalizationBaseReference reference)
+        {
+            if (reference.localizations == null) return;
+
+            foreach (var localization in reference.localizations)
+            {
+                RefreshLocalizationBase(localization);
+            }
+
+            EditorUtility.SetDirty(reference);
+        }
+
+        static void RefreshLocalizationBase(LocalizationBase localization)
+        {
+            if (!localization) return;
+
+            switch (localization)
+            {
+                case LocalizationBaseReference reference:
+                    RefreshLocalizationBaseReference(reference);
+                    break;
+                case DefaultLocalization dl:
+                    RefreshDefaultLocalization(dl);
+                    break;
+                case ButtonLocalization bl:
+                    RefreshButtonLocalization(bl);
+                    break;
+                default:
+                    EditorUtility.SetDirty(localization);
+                    break;
+            }
         }
 
         static void RefreshDefaultLocalization(DefaultLocalization dl)

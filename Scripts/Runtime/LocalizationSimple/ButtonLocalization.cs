@@ -14,37 +14,14 @@ namespace Framework.LocalizationSimple
 
         public override void SetLanguage(string language)
         {
-            _currentLanguage = language;
-
-            //var cur = language;
-            //var def = _defaultLanguage;
-
-            //if (_itemsButton != null && _itemsButton.Count > 0)
-            //    foreach (var item in _itemsButton)
-            //    {
-            //        SetItemLanguage(item, cur, def);
-            //    }
+            base.SetLanguage(language);
 
             SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, language);
         }
 
-        public override void SetLanguage<T>(T languageProvider)
+        public override void SetLanguage(ILanguageProvider languageProvider)
         {
-            var langProvider = languageProvider as LanguageProviderComponentBase;
-            if(langProvider == null)
-            {
-                return;
-            }
-            _currentProvider = langProvider;
-
-            //var cur = langProvider;
-            //var def = _defaultProvider;
-
-            //if (_itemsButton != null && _itemsButton.Count > 0)
-            //    foreach (var item in _itemsButton)
-            //    {
-            //        SetItemLanguage(item, cur, def);
-            //    }
+            base.SetLanguage(languageProvider);
 
             SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, languageProvider);
         }

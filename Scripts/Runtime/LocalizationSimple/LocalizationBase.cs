@@ -18,7 +18,6 @@ namespace Framework.LocalizationSimple
         public LanguageProviderComponentBase _defaultProvider;
 
         string ILocalization.currentLanguage => _currentLanguage;
-        //public abstract string currentLanguage { get; }
 
         ILanguageProvider ILocalization.currentProvider => _currentProvider;
 
@@ -28,12 +27,18 @@ namespace Framework.LocalizationSimple
 
         protected virtual void Start()
         {
-            //SetLanguage(_language);
+            
         }
 
-        public abstract void SetLanguage(string language);
+        public virtual void SetLanguage(string language)
+        {
+            _currentLanguage = language;
+        }
 
-        public abstract void SetLanguage<T>(T languageProvider) where T : ILanguageProvider;
+        public virtual void SetLanguage(ILanguageProvider languageProvider)
+        {
+            _currentProvider = languageProvider as LanguageProviderComponentBase;
+        }
 
         protected void SetItemLanguage<Data>(LocalizationItemBase<Data> item, string cur, string def) where Data : LocalizationDataBase
         {
@@ -47,29 +52,20 @@ namespace Framework.LocalizationSimple
 
         protected void SetLanguageInternal<T, Data>(List<T> items, string cur) where T : LocalizationItemBase<Data> where Data : LocalizationDataBase
         {
-            //_currentLanguage = cur;
             var def = _defaultLanguage;
             if (items != null && items.Count > 0)
                 foreach (var item in items)
                 {
-                    //item.SetLanguage(language);
                     SetItemLanguage(item, cur, def);
                 }
         }
 
         protected void SetLanguageInternal<T, Data>(List<T> items, ILanguageProvider cur) where T : LocalizationItemBase<Data> where Data : LocalizationDataBase
         {
-            //var langProvider = cur as LanguageProviderComponentBase;
-            //if (langProvider == null)
-            //{
-            //    return;
-            //}
-            //_currentProvider = langProvider;
             var def = _defaultProvider;
             if (items != null && items.Count > 0)
                 foreach (var item in items)
                 {
-                    //item.SetLanguage(language);
                     SetItemLanguage(item, cur, def);
                 }
         }

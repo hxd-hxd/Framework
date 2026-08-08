@@ -16,6 +16,6 @@ namespace Framework.LocalizationSimple
 
         public abstract bool IsLanguage<T>(T language);
 
-        public abstract bool IsProviderLanguage<T>(T languageProvider) where T : ILanguageProvider;
+        public abstract bool IsProviderLanguage(ILanguageProvider languageProvider);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Framework.Localization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,7 +36,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        public override void SetLanguage<T>(T languageProvider)
+        public override void SetLanguage(ILanguageProvider languageProvider)
         {
             if (_item)
             {

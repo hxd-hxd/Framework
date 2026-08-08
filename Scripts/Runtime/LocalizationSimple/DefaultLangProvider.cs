@@ -1,17 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using Framework.Localization;
-using Framework.LocalizationSimple;
 using LangType = Framework.Localization.Language;
 
 namespace Framework.LocalizationSimple
 {
     /// <summary>本地化语言提供者组件</summary>
-    public class DefaultLangProviderComp : LanguageProviderComponentBase
+    [Serializable]
+    public class DefaultLangProvider : ILanguageProvider
     {
         public LangType _lang;
 
-        public override void SetLanguage<T>(T language)
+        public void SetLanguage<T>(T language)
         {
             if (language != null && language.GetType() == typeof(LangType))
             {
@@ -19,7 +18,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        public override T GetLanguage<T>()
+        public T GetLanguage<T>()
         {
             if (typeof(T) == typeof(LangType))
             {
@@ -32,7 +31,7 @@ namespace Framework.LocalizationSimple
             //return default;
         }
 
-        public override bool TryGetLanguage<T>(out T language)
+        public bool TryGetLanguage<T>(out T language)
         {
             language = default;
 
@@ -46,7 +45,7 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
-        public override bool IsLanguage<T>(T language)
+        public bool IsLanguage<T>(T language)
         {
             bool r = false;
             if (typeof(T) == typeof(LangType))
@@ -58,7 +57,7 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
-        public override bool IsProviderLanguage(ILanguageProvider languageProvider)
+        public bool IsProviderLanguage(ILanguageProvider languageProvider)
         {
             if (languageProvider == null) return false;
 

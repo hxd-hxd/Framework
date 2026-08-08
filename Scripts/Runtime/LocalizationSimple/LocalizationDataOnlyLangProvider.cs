@@ -7,18 +7,22 @@ namespace Framework.LocalizationSimple
 {
     /// <summary>本地化数据提供者，只提供对应语言的</summary>
     [Serializable]
-    public class LocalizationDataOnlyLangProvider<D> : LocalizationDataProviderBase where D : LocalizationDataBase
+    public class LocalizationDataOnlyLangProvider<D> : LocalizationDataProviderBase where D : ILocalizationData
     {
-        public string _language;
-        public LanguageProviderComponentBase _langProvider;
+        public string _id;
+        //public string _language;
+        //public LanguageProviderComponentBase _langProvider;
         public List<D> _datas;
         private Dictionary<string, D> _langDic;// 按语言存的
 
         /// <summary>语言</summary>
-        public string language { get => _language; set => _language = value; }
+        public string id { get => _id; set => _id = value; }
 
-        /// <summary>语言提供者</summary>
-        public LanguageProviderComponentBase langProvider { get => _langProvider; set => _langProvider = value; }
+        ///// <summary>语言</summary>
+        //public string language { get => _language; set => _language = value; }
+
+        ///// <summary>语言提供者</summary>
+        //public LanguageProviderComponentBase langProvider { get => _langProvider; set => _langProvider = value; }
 
         /// <summary>数据</summary>
         public List<D> datas { get => _datas; set => _datas = value; }
@@ -33,7 +37,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        /// <summary>所有数据</summary>
+        /// <summary>获取所有数据</summary>
         public override List<Data> GetDatasById<Data>(string id)
         {
             List<Data> rs = null;
@@ -41,7 +45,7 @@ namespace Framework.LocalizationSimple
             return rs;
         }
 
-        /// <summary>所有数据</summary>
+        /// <summary>获取所有数据</summary>
         public override bool TryGetDatasById<Data>(string id, ref List<Data> rs)
         {
             if (_datas == null || _datas.Count <= 0) return false;
@@ -117,7 +121,7 @@ namespace Framework.LocalizationSimple
             data = default;
             if (datas != null && datas.Count > 0)
             {
-                data = (Data)(object)datas.Find(d => d._language == language);
+                data = (Data)(object)datas.Find(d => d.language == language);
                 r = data != null;
             }
             return r;
@@ -139,7 +143,7 @@ namespace Framework.LocalizationSimple
             {
                 data = (Data)(object)datas.Find(d =>
                 {
-                    return !ObjectUtility.IsNull(d._langProvider) && d._langProvider.IsProviderLanguage(languageProvider);
+                    return !ObjectUtility.IsNull(d.langProvider) && d.langProvider.IsProviderLanguage(languageProvider);
                 });
                 r = data != null;
             }

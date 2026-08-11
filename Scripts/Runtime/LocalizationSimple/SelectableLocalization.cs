@@ -6,24 +6,24 @@ using UnityEngine;
 
 namespace Framework.LocalizationSimple
 {
-    /// <summary>按钮本地化</summary>
-    public class ButtonLocalization : LocalizationBase
+    /// <summary>选择本地化</summary>
+    public class SelectableLocalization : LocalizationCompBase
     {
-        [Header("按钮")]
-        public List<LocalizationItemButton> _itemsButton;
+        [Header("选择")]
+        public List<LocalizationItemSelectable> _itemsButton;
 
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);
 
-            SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, language);
+            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsButton, language);
         }
 
         public override void SetLanguage(ILanguageProvider languageProvider)
         {
             base.SetLanguage(languageProvider);
 
-            SetLanguageInternal<LocalizationItemButton, LocalizationDataButtonSprite>(_itemsButton, languageProvider);
+            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsButton, languageProvider);
         }
     }
 }

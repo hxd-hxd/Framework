@@ -9,7 +9,7 @@ namespace Framework.LocalizationSimple
 {
     using LocalizationData = LocalizationDataString;
 
-    /// <summary>本地化项</summary>
+    /// <summary>文本本地化项，逻辑功能导向的</summary>
     [Serializable]
     public class LocalizationItemText : LocalizationItemBase<LocalizationData>
     {

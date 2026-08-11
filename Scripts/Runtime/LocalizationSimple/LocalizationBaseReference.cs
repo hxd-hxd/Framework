@@ -7,13 +7,13 @@ using UnityEngine;
 namespace Framework.LocalizationSimple
 {
     /// <summary>本地化引用</summary>
-    public class LocalizationBaseReference : LocalizationBase
+    public class LocalizationBaseReference : LocalizationCompBase
     {
         [Header("本地化列表")]
         [SerializeField]
-        private List<LocalizationBase> _localizations;
+        private List<LocalizationCompBase> _localizations;
 
-        public List<LocalizationBase> localizations { get => _localizations; }
+        public List<LocalizationCompBase> localizations { get => _localizations; }
 
         public override void SetLanguage(string language)
         {
@@ -21,11 +21,9 @@ namespace Framework.LocalizationSimple
 
             foreach (var l in _localizations)
             {
-                if (l != null)
-                {
-                    l._defaultLanguage = _defaultLanguage;
-                    l.SetLanguage(language);
-                }
+                if (ObjectUtility.IsNull(l)) continue;
+                l._defaultLanguage = _defaultLanguage;
+                l.SetLanguage(language);
             }
         }
 
@@ -35,8 +33,9 @@ namespace Framework.LocalizationSimple
 
             foreach (var l in _localizations)
             {
+                if (ObjectUtility.IsNull(l)) continue;
                 l._defaultProvider = _defaultProvider;
-                if (l != null) l.SetLanguage(languageProvider);
+                l.SetLanguage(languageProvider);
             }
         }
 

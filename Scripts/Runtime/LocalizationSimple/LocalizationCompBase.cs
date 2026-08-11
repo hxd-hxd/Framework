@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Framework.LocalizationSimple
 {
     /// <summary>本地化基类</summary>
-    public abstract class LocalizationBase : MonoBehaviour, ILocalization
+    public abstract class LocalizationCompBase : MonoBehaviour, ILocalization
     {
         [Header("语言类型")]
         public string _currentLanguage = "0";

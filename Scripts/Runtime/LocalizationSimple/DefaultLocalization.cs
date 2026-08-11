@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Framework.LocalizationSimple
 {
     /// <summary>默认本地化</summary>
-    public class DefaultLocalization : LocalizationBase
+    public class DefaultLocalization : LocalizationCompBase
     {
         [Header("文本")]
         public List<LocalizationItemText> _itemsText;

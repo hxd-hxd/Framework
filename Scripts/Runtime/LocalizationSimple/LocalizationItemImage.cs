@@ -9,7 +9,7 @@ namespace Framework.LocalizationSimple
 {
     using LocalizationData = LocalizationDataSprite;
 
-    /// <summary>本地化项</summary>
+    /// <summary>图片本地化项，逻辑功能导向的</summary>
     [Serializable]
     public class LocalizationItemImage : LocalizationItemBase<LocalizationData>
     {

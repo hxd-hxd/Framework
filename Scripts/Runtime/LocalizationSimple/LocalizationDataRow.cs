@@ -5,9 +5,9 @@ using Framework.Localization;
 
 namespace Framework.LocalizationSimple
 {
-    /// <summary>本地化数据提供者，只提供对应语言的</summary>
+    /// <summary>本地化数据行，所有数据 id 都一样</summary>
     [Serializable]
-    public class LocalizationDataOnlyLangProvider<D> : LocalizationDataProviderBase where D : ILocalizationData
+    public class LocalizationDataRow<D> : LocalizationDataRowBase where D : ILocalizationData
     {
         public string _id;
         //public string _language;
@@ -16,7 +16,7 @@ namespace Framework.LocalizationSimple
         private Dictionary<string, D> _langDic;// 按语言存的
 
         /// <summary>语言</summary>
-        public string id { get => _id; set => _id = value; }
+        public override string id { get => _id; set => _id = value; }
 
         ///// <summary>语言</summary>
         //public string language { get => _language; set => _language = value; }
@@ -26,6 +26,8 @@ namespace Framework.LocalizationSimple
 
         /// <summary>数据</summary>
         public List<D> datas { get => _datas; set => _datas = value; }
+
+        public override Type dataType => typeof(D);
 
         public void Init()
         {
@@ -37,7 +39,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        /// <summary>获取所有数据</summary>
+        /// <summary>获取所有数据，忽略 <paramref name="id"/></summary>
         public override List<Data> GetDatasById<Data>(string id)
         {
             List<Data> rs = null;
@@ -45,17 +47,17 @@ namespace Framework.LocalizationSimple
             return rs;
         }
 
-        /// <summary>获取所有数据</summary>
+        /// <summary>获取所有数据，忽略 <paramref name="id"/></summary>
         public override bool TryGetDatasById<Data>(string id, ref List<Data> rs)
         {
             if (_datas == null || _datas.Count <= 0) return false;
 
             rs ??= TypePool.root.GetList<Data>();
-            rs.Capacity = _datas.Count;
             foreach (var d in _datas)
             {
                 if (d is Data data)
                 {
+                    data.id = this.id;
                     rs.Add(data);
                 }
             }
@@ -74,40 +76,43 @@ namespace Framework.LocalizationSimple
             if (_datas == null || _datas.Count <= 0) return false;
 
             rs ??= TypePool.root.GetList<Data>();
-            rs.Capacity = _datas.Count;
             foreach (var d in _datas)
             {
                 if (d is Data data && d.language == language)
                 {
+                    data.id = this.id;
                     rs.Add(data);
                 }
             }
             return true;
         }
 
-        public override List<Data> GetDatasByProvider<Data>(ILanguageProvider languageProvider)
+        public override List<Data> GetDatasByLang<Data>(ILanguageProvider languageProvider)
         {
             List<Data> rs = null;
-            TryGetDatasByProvider(languageProvider, ref rs);
+            TryGetDatasByLang(languageProvider, ref rs);
             return rs;
         }
 
-        public override bool TryGetDatasByProvider<Data>(ILanguageProvider languageProvider, ref List<Data> rs)
+        public override bool TryGetDatasByLang<Data>(ILanguageProvider languageProvider, ref List<Data> rs)
         {
             if (_datas == null || _datas.Count <= 0) return false;
 
             rs ??= TypePool.root.GetList<Data>();
-            rs.Capacity = _datas.Count;
             foreach (var d in _datas)
             {
-                if (d is Data data && d.langProvider.IsProviderLanguage(languageProvider))
+                if (d is Data data
+                    && !ObjectUtility.IsNull(d.langProvider)
+                    && d.langProvider.IsProviderLanguage(languageProvider))
                 {
+                    data.id = this.id;
                     rs.Add(data);
                 }
             }
             return true;
         }
 
+        /// <summary>获取对应语言的数据，忽略 <paramref name="id"/></summary>
         public override Data GetData<Data>(string id, string language)
         {
             Data data = default;
@@ -115,6 +120,7 @@ namespace Framework.LocalizationSimple
             return data;
         }
 
+        /// <summary>尝试获取对应语言的数据，忽略 <paramref name="id"/></summary>
         public override bool TryGetData<Data>(string id, string language, out Data data)
         {
             bool r = false;
@@ -122,11 +128,13 @@ namespace Framework.LocalizationSimple
             if (datas != null && datas.Count > 0)
             {
                 data = (Data)(object)datas.Find(d => d.language == language);
+                if (data != null) data.id = this.id;
                 r = data != null;
             }
             return r;
         }
 
+        /// <summary>获取对应语言提供者的数据，忽略 <paramref name="id"/></summary>
         public override Data GetData<Data>(string id, ILanguageProvider languageProvider)
         {
             Data data = default;
@@ -134,6 +142,7 @@ namespace Framework.LocalizationSimple
             return data;
         }
 
+        /// <summary>尝试获取对应语言提供者的数据，忽略 <paramref name="id"/></summary>
         public override bool TryGetData<Data>(string id, ILanguageProvider languageProvider, out Data data)
         {
             bool r = false;
@@ -145,11 +154,13 @@ namespace Framework.LocalizationSimple
                 {
                     return !ObjectUtility.IsNull(d.langProvider) && d.langProvider.IsProviderLanguage(languageProvider);
                 });
+                if (data != null) data.id = this.id;
                 r = data != null;
             }
             return r;
         }
 
+        // 忽略 id 的方法
         /// <summary>获取对应语言的数据</summary>
         public Data GetData<Data>(string language) where Data : ILocalizationData
         {

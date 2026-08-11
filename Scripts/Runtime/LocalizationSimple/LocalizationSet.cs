@@ -13,7 +13,7 @@ namespace Framework.LocalizationSimple
         public List<ILocalization> _localizations = new List<ILocalization>();
         public List<LanguageProviderComponentBase> _langProviders;
 
-        private List<ILocalization> localizations
+        protected virtual List<ILocalization> localizations
         {
             get
             {
@@ -23,33 +23,30 @@ namespace Framework.LocalizationSimple
                 }
                 if (_localizations.Count <= 0)
                 {
-                    //GetComponents(_localizations);
                     GetComponentsInChildren(_localizations);
                 }
                 return _localizations;
             }
         }
 
-        void Awake()
+        protected virtual void Awake()
         {
-            //GetComponents(_localizations);
             GetComponentsInChildren(_localizations);
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             Set();
         }
 
         /// <summary>设置</summary>
-        public void Set()
+        public virtual void Set()
         {
-            //Set(.currentLang);
-            Set(LangType.ChineseSimplified);
+            Set(LocalizationCurLanguage.Instance.curLanguage);
         }
 
         /// <summary>设置</summary>
-        public void Set(LangType lang)
+        public virtual void Set(LangType lang)
         {
             switch (_setMode)
             {
@@ -76,11 +73,12 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        public string LangTypeToString(LangType lang)
+        public virtual string LangTypeToString(LangType lang)
         {
             return lang switch
             {
-                LangType.ChineseSimplified => "中文",
+                LangType.ChineseSimplified => "汉语",
+                LangType.ChineseTraditional => "汉语-繁体",
                 LangType.English => "英文",
                 _ => lang.ToString()
             };

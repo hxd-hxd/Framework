@@ -11,5 +11,15 @@ namespace Framework.LocalizationSimple
     {
         /// <summary>精灵</summary>
         public Sprite _sprite;
+
+        public override T GetData<T>()
+        {
+            return (T)(object)_sprite;
+        }
+
+        public override void SetData<T>(T data)
+        {
+            _sprite = (Sprite)(object)data;
+        }
     }
 }

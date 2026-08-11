@@ -10,8 +10,8 @@ namespace Framework.LocalizationSimple
 #if UNITY_EDITOR
     using UnityEditor;
 
-    /// <summary><see cref="LocalizationDataButtonSprite.SpriteData"/> 属性绘制</summary>
-    [CustomPropertyDrawer(typeof(LocalizationDataButtonSprite.SpriteData))]
+    /// <summary><see cref="LocalizationDataSelectableSprite.SpriteData"/> 属性绘制</summary>
+    [CustomPropertyDrawer(typeof(LocalizationDataSelectableSprite.SpriteData))]
     public class LocalizationDataButtonSpriteSpriteDataDrawer : PropertyDrawer
     {
         const float ToggleWidth = 18f;
@@ -57,9 +57,19 @@ namespace Framework.LocalizationSimple
 
     /// <summary>本地化数据</summary>
     [Serializable]
-    public class LocalizationDataButtonSprite : LocalizationDataBase
+    public class LocalizationDataSelectableSprite : LocalizationDataBase
     {
         public SpriteSwapData _spriteSwapData;
+
+        public override T GetData<T>()
+        {
+            return (T)(object)_spriteSwapData;
+        }
+
+        public override void SetData<T>(T data)
+        {
+            _spriteSwapData = (SpriteSwapData)(object)data;
+        }
 
         [Serializable]
         public class SpriteSwapData

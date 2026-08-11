@@ -9,7 +9,7 @@ namespace Framework.LocalizationSimple
     [Serializable]
     public abstract class LocalizationDataBase : ILocalizationData
     {
-        public string _id;
+        private string _id;
 
         public string _language;
 
@@ -21,14 +21,13 @@ namespace Framework.LocalizationSimple
 
         public virtual ILanguageProvider langProvider { get => _langProvider; set => _langProvider = value as LanguageProviderComponentBase; }
 
-        public virtual T GetData<T>()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract T GetData<T>();
 
-        public virtual void SetData<T>(T data)
+        public abstract void SetData<T>(T data);
+
+        public override string ToString()
         {
-            throw new NotImplementedException();
+            return string.Format("id：{0}, language：{1}, langProvider：{2}", id, language, langProvider.GetLanguage<object>());
         }
     }
 }

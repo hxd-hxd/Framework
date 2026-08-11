@@ -20,9 +20,18 @@ namespace Framework.LocalizationSimple
 
         public T GetLanguage<T>()
         {
-            if (typeof(T) == typeof(LangType))
+            //if (typeof(T) == typeof(LangType))
+            //{
+            //    return (T)(object)_lang;
+            //}
+            //else
+            //{
+            //    throw new System.InvalidCastException($"无法将 {typeof(LangType)} 转换为 {typeof(T)}");
+            //}
+            var obj = (object)_lang;
+            if (obj is T t)
             {
-                return (T)(object)_lang;
+                return t;
             }
             else
             {
@@ -36,9 +45,15 @@ namespace Framework.LocalizationSimple
             language = default;
 
             bool r = false;
-            if (language != null && language.GetType() == typeof(LangType))
+            //if (typeof(T) == typeof(LangType))
+            //{
+            //    language = (T)(object)_lang;
+            //    r = true;
+            //}
+            var obj = (object)_lang;
+            if (obj is T t)
             {
-                language = (T)(object)_lang;
+                language = t;
                 r = true;
             }
 

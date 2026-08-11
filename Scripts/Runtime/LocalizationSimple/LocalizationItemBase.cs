@@ -9,6 +9,17 @@ namespace Framework.LocalizationSimple
     [Serializable]
     public abstract class LocalizationItemBase<Data> where Data : LocalizationDataBase
     {
+        public LocalizationDataGetMode _dataMode;
+
+        public string _id;
+
+        public LocalizationDataProviderCompBase _dataProvider;
+
+        public virtual string id { get => _id; set => _id = value; }
+
+        /// <summary>数据获取方式</summary>
+        public virtual LocalizationDataGetMode dataMode { get => _dataMode; set => _dataMode = value; }
+
         /// <summary>数据</summary>
         public abstract List<Data> datas { get; set; }
 
@@ -18,10 +29,7 @@ namespace Framework.LocalizationSimple
         public virtual Data GetData(string language)
         {
             Data data = default;
-            if (datas != null && datas.Count > 0)
-            {
-                data = datas.Find(d => d._language == language);
-            }
+            TryGetData(language, out data);
             return data;
         }
 
@@ -29,7 +37,12 @@ namespace Framework.LocalizationSimple
         {
             bool r = false;
             data = default;
-            if (datas != null && datas.Count > 0)
+            if (_dataMode == LocalizationDataGetMode.Provider)
+            {
+                if (!ObjectUtility.IsNull(_dataProvider))
+                    r = _dataProvider.TryGetData(_id, language, out data);
+            }
+            else if (datas != null && datas.Count > 0)
             {
                 data = datas.Find(d => d._language == language);
                 r = data != null;
@@ -40,18 +53,7 @@ namespace Framework.LocalizationSimple
         public virtual Data GetData(ILanguageProvider languageProvider)
         {
             Data data = default;
-            //if (!ObjectUtility.IsNull(languageProvider as object))
-            if (languageProvider == null)
-            {
-                if (datas != null && datas.Count > 0)
-                {
-                    data = datas.Find(d =>
-                    {
-                        //return !ObjectUtility.IsNull(d._langProvider) && d._langProvider.IsProviderLanguage(languageProvider);
-                        return d._langProvider != null && d._langProvider.IsProviderLanguage(languageProvider);
-                    });
-                }
-            }
+            TryGetData(languageProvider, out data);
             return data;
         }
 
@@ -59,16 +61,35 @@ namespace Framework.LocalizationSimple
         {
             bool r = false;
             data = default;
-            if (languageProvider == null) return r;
-            if (datas != null && datas.Count > 0)
+            if (ObjectUtility.IsNull(languageProvider))
+                return false;
+
+            if (_dataMode == LocalizationDataGetMode.Provider)
+            {
+                if (!ObjectUtility.IsNull(_dataProvider))
+                    r = _dataProvider.TryGetData(_id, languageProvider, out data);
+            }
+            else if (datas != null && datas.Count > 0)
             {
                 data = datas.Find(d =>
-                {
-                    return d._langProvider != null && d._langProvider.IsProviderLanguage(languageProvider);
-                });
+                    !ObjectUtility.IsNull(d._langProvider) && d._langProvider.IsProviderLanguage(languageProvider));
                 r = data != null;
             }
             return r;
+        }
+
+        /// <summary>按当前数据获取方式取出该 id 下的全部数据</summary>
+        public virtual bool TryGetAllDatas(out List<Data> result)
+        {
+            result = null;
+            if (_dataMode == LocalizationDataGetMode.Provider)
+            {
+                if (ObjectUtility.IsNull(_dataProvider)) return false;
+                return _dataProvider.TryGetDatasById(_id, ref result);
+            }
+
+            result = datas;
+            return result != null && result.Count > 0;
         }
 
         public virtual void SetLanguage(string language)

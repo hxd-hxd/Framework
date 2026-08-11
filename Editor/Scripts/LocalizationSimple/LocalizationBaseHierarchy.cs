@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Framework.Editor
 {
     /// <summary>
-    /// Hierarchy 中为挂载了 <see cref="LocalizationBase"/> 子类的对象显示多语言图标。
+    /// Hierarchy 中为挂载了 <see cref="LocalizationCompBase"/> 子类的对象显示多语言图标。
     /// </summary>
     [InitializeOnLoad]
     static class LocalizationBaseHierarchy
@@ -44,7 +44,7 @@ namespace Framework.Editor
             if (go == null)
                 return;
 
-            if (go.GetComponent<LocalizationBase>() == null)
+            if (go.GetComponent<LocalizationCompBase>() == null)
                 return;
 
             var iconRect = new Rect(

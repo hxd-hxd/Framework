@@ -33,7 +33,7 @@ namespace Framework.LocalizationSimple
             {
                 LangType.ChineseSimplified => "汉语",
                 LangType.ChineseTraditional => "汉语-繁体",
-                LangType.English => "英文",
+                LangType.English => "英语",
                 LangType.Unspecified => null,
                 _ => lang.ToString()
             };

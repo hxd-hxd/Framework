@@ -276,7 +276,7 @@ namespace Framework.Editor
         {
             var blSo = BeginApplyLocalizationBase(bl, undoName, type, provider);
 
-            ApplyItemsSelectable(bl._itemsButton, type, provider, bl._defaultLanguage, bl._defaultProvider, undoName);
+            ApplyItemsSelectable(bl._itemsSelectable, type, provider, bl._defaultLanguage, bl._defaultProvider, undoName);
 
             EndApplyLocalizationBase(bl, blSo);
         }
@@ -747,9 +747,9 @@ namespace Framework.Editor
 
         static void RefreshSelectableLocalization(SelectableLocalization bl)
         {
-            if (bl._itemsButton != null)
+            if (bl._itemsSelectable != null)
             {
-                foreach (var item in bl._itemsButton)
+                foreach (var item in bl._itemsSelectable)
                 {
                     RefreshSelectableItem(item);
                 }

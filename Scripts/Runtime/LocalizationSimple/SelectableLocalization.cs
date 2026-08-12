@@ -10,20 +10,21 @@ namespace Framework.LocalizationSimple
     public class SelectableLocalization : LocalizationCompBase
     {
         [Header("选择")]
-        public List<LocalizationItemSelectable> _itemsButton;
+        [UnityEngine.Serialization.FormerlySerializedAs("_itemsButton")]
+        public List<LocalizationItemSelectable> _itemsSelectable;
 
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);
 
-            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsButton, language);
+            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsSelectable, language);
         }
 
         public override void SetLanguage(ILanguageProvider languageProvider)
         {
             base.SetLanguage(languageProvider);
 
-            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsButton, languageProvider);
+            SetLanguageInternal<LocalizationItemSelectable, LocalizationDataSelectableSprite>(_itemsSelectable, languageProvider);
         }
     }
 }

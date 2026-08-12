@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,20 +11,30 @@ using Object = UnityEngine.Object;
 namespace Framework.Editor
 {
     /// <summary>
-    /// <see cref="LocalizationSet"/> 检视面板基类。
-    /// 语言枚举与当前语言来源由子类注入，Apply / Refresh 逻辑共用。
+    /// <see cref="LocalizationSetBase"/> 检视面板基类。
+    /// 语言列表与标签走运行时基类 API，当前语言来源由子类注入；Apply / Refresh 逻辑共用。
     /// </summary>
-    public abstract class LocalizationSetInspectorBase<TLang> : UnityEditor.Editor
-        where TLang : struct, Enum
+    public abstract class LocalizationSetInspectorBase : UnityEditor.Editor
     {
-        protected abstract Component SetTarget { get; }
-        protected abstract LocalizationSetMode SetMode { get; }
-        protected abstract List<ILocalization> ConfiguredLocalizations { get; }
-        protected abstract List<LanguageProviderComponentBase> LangProviders { get; }
-        protected abstract string GetLangLabel(TLang lang);
-        protected abstract TLang GetCurrentLanguage();
-        protected abstract void DrawCurrentLanguageButton();
-        protected virtual bool IsLanguageVisible(TLang lang) => true;
+        protected LocalizationSetBase Set => (LocalizationSetBase)target;
+        protected Component SetTarget => Set;
+        protected LocalizationSetMode SetMode => Set._setMode;
+        protected List<ILocalization> ConfiguredLocalizations => Set._localizations;
+        protected List<LanguageProviderComponentBase> LangProviders => Set._langProviders;
+
+        protected string GetLangLabel(object lang) => Set.LangTypeToString(lang);
+
+        /// <summary>当前语言（与运行时 <see cref="LocalizationSetBase.Set()"/> 所用来源一致）。</summary>
+        protected abstract object GetCurrentLanguage();
+
+        protected virtual bool IsLanguageVisible(object lang) => true;
+
+        protected virtual void DrawCurrentLanguageButton()
+        {
+            var curLang = GetCurrentLanguage();
+            if (GUILayout.Button($"设置当前语言（{GetLangLabel(curLang)}）"))
+                ApplyLanguage(curLang);
+        }
 
         protected virtual void OnEnable()
         {
@@ -38,26 +46,126 @@ namespace Framework.Editor
             Undo.undoRedoPerformed -= OnUndoRedo;
         }
 
-        public override void OnInspectorGUI()
+        /// <summary>
+        /// 子类优先处理自定义本地化应用。返回 true 表示已处理，基类不再分发。
+        /// </summary>
+        protected virtual bool TryApplyLocalization(
+            ILocalization localization,
+            string undoName,
+            string type,
+            LanguageProviderComponentBase provider) => false;
+
+        /// <summary>
+        /// 子类优先处理自定义本地化刷新。返回 true 表示已处理，基类不再分发。
+        /// </summary>
+        protected virtual bool TryRefreshLocalization(ILocalization localization) => false;
+
+        /// <summary>未知类型回退：直接调用运行时 SetLanguage。</summary>
+        protected static void ApplyILocalizationRuntime(
+            ILocalization localization,
+            string type,
+            LanguageProviderComponentBase provider)
         {
-            DrawDefaultInspector();
+            if (localization == null) return;
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("语言设置", EditorStyles.boldLabel);
-
-            DrawCurrentLanguageButton();
-            DrawLanguageButtons();
+            if (provider != null)
+                localization.SetLanguage(provider);
+            else if (!string.IsNullOrEmpty(type))
+                localization.SetLanguage(type);
         }
 
-        protected void DrawLanguageButtons()
+        public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+            DrawSetFields();
+            serializedObject.ApplyModifiedProperties();
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField($"语言设置（{GetSetModeLabel(SetMode)}）", EditorStyles.boldLabel);
+
             var langs = GetLanguagesToShow();
             if (langs.Count == 0)
             {
-                if (SetMode == LocalizationSetMode.Provider)
-                    EditorGUILayout.HelpBox("语言提供者列表中没有可匹配的语言", MessageType.Info);
+                DrawEmptyLanguagesHelp();
                 return;
             }
+
+            DrawSupportedLanguagesLabel(langs);
+            DrawCurrentLanguageButton();
+            DrawLanguageButtons(langs);
+        }
+
+        /// <summary>绘制可设置语言列表（自动换行，支持选中复制）。</summary>
+        protected void DrawSupportedLanguagesLabel(List<object> langs)
+        {
+            var text = $"可设置语言：{FormatLanguageList(langs)}";
+            var style = EditorStyles.wordWrappedLabel;
+            float width = EditorGUIUtility.currentViewWidth - 40f;
+            float height = style.CalcHeight(new GUIContent(text), width);
+            EditorGUILayout.SelectableLabel(text, style, GUILayout.Height(height));
+        }
+
+        /// <summary>按 SetMode 绘制字段：Provider 模式才显示语言提供者列表。</summary>
+        protected virtual void DrawSetFields()
+        {
+            var iterator = serializedObject.GetIterator();
+            bool enterChildren = true;
+            while (iterator.NextVisible(enterChildren))
+            {
+                enterChildren = false;
+
+                if (iterator.name == "_langProviders")
+                {
+                    var setModeProp = serializedObject.FindProperty("_setMode");
+                    if (setModeProp == null ||
+                        setModeProp.enumValueIndex != (int)LocalizationSetMode.Provider)
+                        continue;
+                }
+
+                using (new EditorGUI.DisabledScope(iterator.propertyPath == "m_Script"))
+                    EditorGUILayout.PropertyField(iterator, true);
+            }
+        }
+
+        protected static string GetSetModeLabel(LocalizationSetMode mode) => mode switch
+        {
+            LocalizationSetMode.Type => "Type（按语言类型）",
+            LocalizationSetMode.Provider => "Provider（按语言提供者）",
+            _ => mode.ToString()
+        };
+
+        protected string FormatLanguageList(List<object> langs)
+        {
+            if (langs == null || langs.Count == 0) return "无";
+
+            var labels = new List<string>(langs.Count);
+            foreach (var lang in langs)
+            {
+                var label = GetLangLabel(lang);
+                labels.Add(string.IsNullOrEmpty(label) ? lang?.ToString() : label);
+            }
+            return string.Join("、", labels);
+        }
+
+        protected void DrawEmptyLanguagesHelp()
+        {
+            switch (SetMode)
+            {
+                case LocalizationSetMode.Type:
+                    EditorGUILayout.HelpBox("当前没有可设置的语言类型", MessageType.Info);
+                    break;
+                case LocalizationSetMode.Provider:
+                    EditorGUILayout.HelpBox("语言提供者列表中没有可匹配的语言", MessageType.Info);
+                    break;
+                default:
+                    EditorGUILayout.HelpBox("当前设置方式下没有可设置的语言", MessageType.Info);
+                    break;
+            }
+        }
+
+        protected void DrawLanguageButtons(List<object> langs)
+        {
+            if (langs == null || langs.Count == 0) return;
 
             const int buttonsPerRow = 2;
             // 预留 Inspector 左右边距与滚动条，保证随面板宽度自适应且各按钮等宽
@@ -78,25 +186,52 @@ namespace Framework.Editor
             }
         }
 
-        protected List<TLang> GetLanguagesToShow()
+        /// <summary>
+        /// 当前 SetMode 下可设置的语言：
+        /// Type → <see cref="LocalizationSetBase.GetAllLangType"/>；
+        /// Provider → 与 <see cref="LocalizationSetBase._langProviders"/> 匹配的语言。
+        /// </summary>
+        protected List<object> GetLanguagesToShow()
         {
-            var result = new List<TLang>();
-            foreach (TLang lang in Enum.GetValues(typeof(TLang)))
+            var result = new List<object>();
+            switch (SetMode)
             {
-                if (!IsLanguageVisible(lang))
-                    continue;
-
-                if (SetMode == LocalizationSetMode.Provider)
-                {
-                    var providers = LangProviders;
-                    if (providers == null ||
-                        !providers.Exists(d => d != null && d.IsLanguage(lang)))
-                        continue;
-                }
-
-                result.Add(lang);
+                case LocalizationSetMode.Type:
+                    CollectTypeLanguages(result);
+                    break;
+                case LocalizationSetMode.Provider:
+                    CollectProviderLanguages(result);
+                    break;
             }
             return result;
+        }
+
+        void CollectTypeLanguages(List<object> result)
+        {
+            var all = new List<object>();
+            Set.GetAllLangType(ref all);
+            foreach (var lang in all)
+            {
+                if (lang != null && IsLanguageVisible(lang))
+                    result.Add(lang);
+            }
+        }
+
+        void CollectProviderLanguages(List<object> result)
+        {
+            var providers = LangProviders;
+            if (providers == null || providers.Count == 0) return;
+
+            var all = new List<object>();
+            Set.GetAllLangType(ref all);
+            foreach (var lang in all)
+            {
+                if (lang == null || !IsLanguageVisible(lang))
+                    continue;
+                if (!providers.Exists(d => d != null && d.IsLanguage(lang)))
+                    continue;
+                result.Add(lang);
+            }
         }
 
         void OnUndoRedo()
@@ -104,10 +239,11 @@ namespace Framework.Editor
             RefreshViews();
         }
 
-        protected void ApplyLanguage(TLang? lang)
+        /// <param name="lang">目标语言；为 null 时使用 <see cref="GetCurrentLanguage"/>。</param>
+        protected void ApplyLanguage(object lang)
         {
             var targetLang = lang ?? GetCurrentLanguage();
-            string undoName = lang.HasValue ? $"设置 {GetLangLabel(lang.Value)}" : "设置当前语言";
+            string undoName = lang != null ? $"设置 {GetLangLabel(targetLang)}" : "设置当前语言";
 
             Undo.IncrementCurrentGroup();
             int undoGroup = Undo.GetCurrentGroup();
@@ -127,7 +263,7 @@ namespace Framework.Editor
             RefreshViews();
         }
 
-        void ApplyTypeLanguage(TLang lang, string undoName)
+        void ApplyTypeLanguage(object lang, string undoName)
         {
             string type = GetLangLabel(lang);
 
@@ -137,7 +273,7 @@ namespace Framework.Editor
             }
         }
 
-        void ApplyProviderLanguage(TLang lang, string undoName)
+        void ApplyProviderLanguage(object lang, string undoName)
         {
             var provider = LangProviders?.Find(d => d != null && d.IsLanguage(lang));
             if (provider == null) return;
@@ -149,11 +285,15 @@ namespace Framework.Editor
         }
 
         void ApplyLocalization(
-            ILocalization localization,
-            string undoName,
-            string type,
-            LanguageProviderComponentBase provider)
+             ILocalization localization,
+             string undoName,
+             string type,
+             LanguageProviderComponentBase provider)
         {
+            if (localization == null) return;
+            if (TryApplyLocalization(localization, undoName, type, provider))
+                return;
+
             switch (localization)
             {
                 case LocalizationBaseReference reference:
@@ -179,6 +319,9 @@ namespace Framework.Editor
                     break;
                 case LocalizationCompBase lb:
                     ApplyLocalizationBaseCurrent(lb, undoName, type, provider);
+                    break;
+                default:
+                    ApplyILocalizationRuntime(localization, type, provider);
                     break;
             }
         }
@@ -647,20 +790,25 @@ namespace Framework.Editor
 
             foreach (var localization in CollectLocalizations())
             {
-                if (localization is LocalizationCompBase lb)
-                {
-                    RefreshLocalizationBase(lb);
-                }
-                else if (localization is Component comp)
-                {
-                    EditorUtility.SetDirty(comp);
-                }
+                RefreshLocalization(localization);
             }
 
             Canvas.ForceUpdateCanvases();
             SceneView.RepaintAll();
             InternalEditorUtility.RepaintAllViews();
             EditorApplication.QueuePlayerLoopUpdate();
+        }
+
+        void RefreshLocalization(ILocalization localization)
+        {
+            if (localization == null) return;
+            if (TryRefreshLocalization(localization))
+                return;
+
+            if (localization is LocalizationCompBase lb)
+                RefreshLocalizationBase(lb);
+            else if (localization is Component comp)
+                EditorUtility.SetDirty(comp);
         }
 
         static void RefreshGraphic(Graphic graphic)
@@ -670,19 +818,19 @@ namespace Framework.Editor
             EditorUtility.SetDirty(graphic);
         }
 
-        static void RefreshLocalizationBaseReference(LocalizationBaseReference reference)
+        void RefreshLocalizationBaseReference(LocalizationBaseReference reference)
         {
             if (reference.localizations == null) return;
 
             foreach (var localization in reference.localizations)
             {
-                RefreshLocalizationBase(localization);
+                RefreshLocalization(localization);
             }
 
             EditorUtility.SetDirty(reference);
         }
 
-        static void RefreshLocalizationBase(LocalizationCompBase localization)
+        void RefreshLocalizationBase(LocalizationCompBase localization)
         {
             if (!localization) return;
 

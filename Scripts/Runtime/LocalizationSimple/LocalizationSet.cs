@@ -1,46 +1,14 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 using Framework.Localization;
 using LangType = Framework.Localization.Language;
 
 namespace Framework.LocalizationSimple
 {
     /// <summary>设置本地化语言</summary>
-    public class LocalizationSet : MonoBehaviour, ILocalizationSet
+    public class LocalizationSet : LocalizationSetBase
     {
-        public LocalizationSetMode _setMode;
-        public List<ILocalization> _localizations = new List<ILocalization>();
-        public List<LanguageProviderComponentBase> _langProviders;
-
-        protected virtual List<ILocalization> localizations
-        {
-            get
-            {
-                if (_localizations == null)
-                {
-                    _localizations = new List<ILocalization>();
-                }
-                if (_localizations.Count <= 0)
-                {
-                    GetComponentsInChildren(_localizations);
-                }
-                return _localizations;
-            }
-        }
-
-        protected virtual void Awake()
-        {
-            GetComponentsInChildren(_localizations);
-        }
-
-        protected virtual void OnEnable()
-        {
-            Set();
-        }
-
-        /// <summary>设置</summary>
-        public virtual void Set()
+        public override void Set()
         {
             Set(LocalizationCurLanguage.Instance.curLanguage);
         }
@@ -48,29 +16,15 @@ namespace Framework.LocalizationSimple
         /// <summary>设置</summary>
         public virtual void Set(LangType lang)
         {
-            switch (_setMode)
-            {
-                case LocalizationSetMode.Type:
-                    string type = LangTypeToString(lang);
-                    foreach (var localization in localizations)
-                    {
-                        localization.SetLanguage(type);
-                    }
-                    break;
-                case LocalizationSetMode.Provider:
-                    var provider = _langProviders.Find(d =>
-                    {
-                        return d != null && d.IsLanguage(lang);
-                    });
-                    foreach (var localization in localizations)
-                    {
-                        localization.SetLanguage(provider);
-                        //provider.SetLanguage(localization);
-                    }
-                    break;
-                default:
-                    break;
-            }
+            base.Set(lang);
+        }
+
+        public override string LangTypeToString(object lang)
+        {
+            string langStr = default;
+            if (lang is LangType langType)
+                langStr = LangTypeToString(langType);
+            return langStr;
         }
 
         public virtual string LangTypeToString(LangType lang)
@@ -80,8 +34,18 @@ namespace Framework.LocalizationSimple
                 LangType.ChineseSimplified => "汉语",
                 LangType.ChineseTraditional => "汉语-繁体",
                 LangType.English => "英文",
+                LangType.Unspecified => null,
                 _ => lang.ToString()
             };
+        }
+
+        public override void GetAllLangType(ref List<object> list)
+        {
+            list ??= TypePool.root.GetList<object>();
+            foreach (var item in Enum.GetValues(typeof(LangType)))
+            {
+                list.Add(item);
+            }
         }
     }
 }

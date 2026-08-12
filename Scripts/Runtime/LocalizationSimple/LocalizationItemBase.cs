@@ -11,11 +11,12 @@ namespace Framework.LocalizationSimple
     {
         public LocalizationDataGetMode _dataMode;
 
-        public string _id;
+        [UnityEngine.Serialization.FormerlySerializedAs("_id")]
+        public string _dataId;
 
         public LocalizationDataProviderCompBase _dataProvider;
 
-        public virtual string id { get => _id; set => _id = value; }
+        public virtual string dataId { get => _dataId; set => _dataId = value; }
 
         /// <summary>数据获取方式</summary>
         public virtual LocalizationDataGetMode dataMode { get => _dataMode; set => _dataMode = value; }
@@ -40,7 +41,7 @@ namespace Framework.LocalizationSimple
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
                 if (!ObjectUtility.IsNull(_dataProvider))
-                    r = _dataProvider.TryGetData(_id, language, out data);
+                    r = _dataProvider.TryGetData(_dataId, language, out data);
             }
             else if (datas != null && datas.Count > 0)
             {
@@ -67,7 +68,7 @@ namespace Framework.LocalizationSimple
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
                 if (!ObjectUtility.IsNull(_dataProvider))
-                    r = _dataProvider.TryGetData(_id, languageProvider, out data);
+                    r = _dataProvider.TryGetData(_dataId, languageProvider, out data);
             }
             else if (datas != null && datas.Count > 0)
             {
@@ -85,7 +86,7 @@ namespace Framework.LocalizationSimple
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
                 if (ObjectUtility.IsNull(_dataProvider)) return false;
-                return _dataProvider.TryGetDatasById(_id, ref result);
+                return _dataProvider.TryGetDatasById(_dataId, ref result);
             }
 
             result = datas;

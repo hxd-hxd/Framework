@@ -12,24 +12,19 @@ namespace Framework.LocalizationSimple
 
         public void SetLanguage<T>(T language)
         {
-            if (language != null && language.GetType() == typeof(LangType))
+            if (language is LangType t)
             {
-                _lang = (LangType)(object)language;
+                _lang = t;
+            }
+            else
+            {
+                throw new System.InvalidCastException($"无法将 {(language == null ? typeof(T) : language.GetType())} 转换为 {typeof(LangType)}");
             }
         }
 
         public T GetLanguage<T>()
         {
-            //if (typeof(T) == typeof(LangType))
-            //{
-            //    return (T)(object)_lang;
-            //}
-            //else
-            //{
-            //    throw new System.InvalidCastException($"无法将 {typeof(LangType)} 转换为 {typeof(T)}");
-            //}
-            var obj = (object)_lang;
-            if (obj is T t)
+            if (_lang is T t)
             {
                 return t;
             }
@@ -37,7 +32,6 @@ namespace Framework.LocalizationSimple
             {
                 throw new System.InvalidCastException($"无法将 {typeof(LangType)} 转换为 {typeof(T)}");
             }
-            //return default;
         }
 
         public bool TryGetLanguage<T>(out T language)
@@ -45,13 +39,7 @@ namespace Framework.LocalizationSimple
             language = default;
 
             bool r = false;
-            //if (typeof(T) == typeof(LangType))
-            //{
-            //    language = (T)(object)_lang;
-            //    r = true;
-            //}
-            var obj = (object)_lang;
-            if (obj is T t)
+            if (_lang is T t)
             {
                 language = t;
                 r = true;
@@ -63,10 +51,9 @@ namespace Framework.LocalizationSimple
         public bool IsLanguage<T>(T language)
         {
             bool r = false;
-            if (typeof(T) == typeof(LangType))
+            if (language is LangType t)
             {
-                var l = (LangType)(object)language;
-                r = l == _lang;
+                r = t == _lang;
             }
 
             return r;

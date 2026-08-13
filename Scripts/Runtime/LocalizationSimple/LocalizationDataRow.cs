@@ -12,6 +12,7 @@ namespace Framework.LocalizationSimple
         public string _id;
         //public string _language;
         //public LanguageProviderComponentBase _langProvider;
+        [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
         public List<D> _datas;
         private Dictionary<string, D> _langDic;// 按语言存的
 

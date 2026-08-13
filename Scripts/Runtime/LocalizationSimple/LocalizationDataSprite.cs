@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Framework.LocalizationSimple.LocalizationDataSelectableSprite;
 
 namespace Framework.LocalizationSimple
 {
@@ -12,14 +13,27 @@ namespace Framework.LocalizationSimple
         /// <summary>精灵</summary>
         public Sprite _sprite;
 
+        //public override T GetData<T>()
+        //{
+        //    return (T)(object)_sprite;
+        //}
+
+        //public override void SetData<T>(T data)
+        //{
+        //    _sprite = (Sprite)(object)data;
+        //}
+
         public override T GetData<T>()
         {
-            return (T)(object)_sprite;
+            if (_sprite is T t) return t;
+            return default;
         }
 
         public override void SetData<T>(T data)
         {
-            _sprite = (Sprite)(object)data;
+            if (data is Sprite t) _sprite = t;
+            else _sprite = default;
         }
+
     }
 }

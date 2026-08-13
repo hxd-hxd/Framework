@@ -9,17 +9,18 @@ namespace Framework.LocalizationSimple
 
     /// <summary>游戏对象本地化项，不实例化，只切换激活，逻辑功能导向的</summary>
     [Serializable]
-    public class LocalizationItemGameObject : LocalizationItemBase<LocalizationData>
+    public class LocalizationItemGameObject : LocalizationItemBase<LocalizationDataGameObject>
     {
         [Header("当前激活的游戏对象")]
         [SerializeField]
         private GameObject _curGO;
         [SerializeField]
-        private List<LocalizationData> _datas = new List<LocalizationData>();
+        [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
+        private List<LocalizationDataGameObject> _datas = new List<LocalizationDataGameObject>();
 
-        public override List<LocalizationData> datas { get => _datas; set => _datas = value; }
+        public override List<LocalizationDataGameObject> datas { get => _datas; set => _datas = value; }
 
-        protected override void Execute(LocalizationData data)
+        protected override void Execute(LocalizationDataGameObject data)
         {
             var go = data?._gameObject;
             if (data == null || go == null) return;

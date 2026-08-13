@@ -9,7 +9,7 @@ namespace Framework.LocalizationSimple
     [Serializable]
     public abstract class LocalizationDataBase : ILocalizationData
     {
-        private string _id;
+        public string _id;
 
         public string _language;
 

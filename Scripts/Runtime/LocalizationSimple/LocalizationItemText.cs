@@ -11,15 +11,16 @@ namespace Framework.LocalizationSimple
 
     /// <summary>文本本地化项，逻辑功能导向的</summary>
     [Serializable]
-    public class LocalizationItemText : LocalizationItemBase<LocalizationData>
+    public class LocalizationItemText : LocalizationItemBase<LocalizationDataString>
     {
         public Text _item;
         [SerializeField]
-        private List<LocalizationData> _datas = new List<LocalizationData>();
+        [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
+        private List<LocalizationDataString> _datas = new List<LocalizationDataString>();
 
-        public override List<LocalizationData> datas { get => _datas; set => _datas = value; }
+        public override List<LocalizationDataString> datas { get => _datas; set => _datas = value; }
 
-        protected override void Execute(LocalizationData data)
+        protected override void Execute(LocalizationDataString data)
         {
             if (_item == null) return;
             if (data != null && data._text != null)

@@ -522,6 +522,150 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _curLanguage: 8
+  _dataOnlyLang:
+    _id: 
+    _language: 
+    _langProvider: {fileID: 0}
+    _text: 
+  _datasOnlyLang:
+  - _id: 
+    _language: 
+    _langProvider: {fileID: 0}
+    _text: 
+  _dataString:
+    _data:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _dataAll:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _dataNone:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _dataOnlyId:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _dataOnlyLang:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _datasAll:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _datasNone:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _datasOnlyId:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+    _datasOnlyLang:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _text: 
+  _dataSprite:
+    _data:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _dataAll:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _dataNone:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _dataOnlyId:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _dataOnlyLang:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _datasAll:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _datasNone:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _datasOnlyId:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+    _datasOnlyLang:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _sprite: {fileID: 0}
+  _dataComponent:
+    _data:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _dataAll:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _dataNone:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _dataOnlyId:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _dataOnlyLang:
+      _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _datasAll:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _datasNone: []
+    _datasOnlyId:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
+    _datasOnlyLang:
+    - _id: 
+      _language: 
+      _langProvider: {fileID: 0}
+      _data: {fileID: 0}
 --- !u!4 &158388784
 Transform:
   m_ObjectHideFlags: 0
@@ -1981,30 +2125,36 @@ MonoBehaviour:
     _stringDatas:
     - _id: 1
       _datas:
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 221b3c9122c8cb647bb7bc5d44ce36f3,
           type: 3}
         _text: "\u4F60\u597D"
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 614a59bcdf2a9424abcd53bef184b18f,
           type: 3}
         _text: "\u59B3\u597D"
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 8dc24e4003e9e54449e00b5559629de6,
           type: 3}
         _text: holle
     _spriteDatas:
     - _id: 2
       _datas:
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 221b3c9122c8cb647bb7bc5d44ce36f3,
           type: 3}
         _sprite: {fileID: 21300000, guid: 639e1695e575fde42adbc8ee8ef8b47c, type: 3}
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 614a59bcdf2a9424abcd53bef184b18f,
           type: 3}
         _sprite: {fileID: 21300000, guid: 639e1695e575fde42adbc8ee8ef8b47c, type: 3}
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 8dc24e4003e9e54449e00b5559629de6,
           type: 3}
         _sprite: {fileID: 21300000, guid: 18fe67a7cc708cc4aab28c60393c8a9e, type: 3}
@@ -2012,7 +2162,8 @@ MonoBehaviour:
     _selectableSpriteDatas:
     - _id: 3
       _datas:
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 221b3c9122c8cb647bb7bc5d44ce36f3,
           type: 3}
         _spriteSwapData:
@@ -2028,7 +2179,8 @@ MonoBehaviour:
           _disabledSprite:
             _enable: 0
             _sprite: {fileID: 0}
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 614a59bcdf2a9424abcd53bef184b18f,
           type: 3}
         _spriteSwapData:
@@ -2044,7 +2196,8 @@ MonoBehaviour:
           _disabledSprite:
             _enable: 0
             _sprite: {fileID: 0}
-      - _language: 
+      - _id: 
+        _language: 
         _langProvider: {fileID: 108875586555957630, guid: 8dc24e4003e9e54449e00b5559629de6,
           type: 3}
         _spriteSwapData:
@@ -2674,15 +2827,18 @@ MonoBehaviour:
     _dataProvider: {fileID: 0}
     _curGO: {fileID: 162707394}
     _datas:
-    - _language: 
+    - _id: 
+      _language: 
       _langProvider: {fileID: 108875586555957630, guid: 221b3c9122c8cb647bb7bc5d44ce36f3,
         type: 3}
       _gameObject: {fileID: 162707394}
-    - _language: 
+    - _id: 
+      _language: 
       _langProvider: {fileID: 108875586555957630, guid: 614a59bcdf2a9424abcd53bef184b18f,
         type: 3}
       _gameObject: {fileID: 963034886}
-    - _language: 
+    - _id: 
+      _language: 
       _langProvider: {fileID: 108875586555957630, guid: 8dc24e4003e9e54449e00b5559629de6,
         type: 3}
       _gameObject: {fileID: 1886373008}

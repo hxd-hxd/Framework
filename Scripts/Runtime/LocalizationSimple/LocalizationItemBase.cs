@@ -5,9 +5,15 @@ using Framework.Localization;
 
 namespace Framework.LocalizationSimple
 {
+    /// <summary>本地化项非泛型基类，供编辑器属性绘制识别派生类型。</summary>
+    [Serializable]
+    public abstract class LocalizationItemBase
+    {
+    }
+
     /// <summary>本地化项基类</summary>
     [Serializable]
-    public abstract class LocalizationItemBase<Data> where Data : LocalizationDataBase
+    public abstract class LocalizationItemBase<Data> : LocalizationItemBase where Data : LocalizationDataBase
     {
         public LocalizationDataGetMode _dataMode;
 

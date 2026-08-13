@@ -13,14 +13,27 @@ namespace Framework.LocalizationSimple
         [TextArea(1, 10)]
         public string _text;
 
+        //public override T GetData<T>()
+        //{
+        //    return (T)(object)_text;
+        //}
+
+        //public override void SetData<T>(T data)
+        //{
+        //    _text = (string)(object)data;
+        //}
+
         public override T GetData<T>()
         {
-            return (T)(object)_text;
+            if (_text is T t) return t;
+            return default;
         }
 
         public override void SetData<T>(T data)
         {
-            _text = (string)(object)data;
+            if (data is string t) _text = t;
+            else _text = default;
         }
+
     }
 }

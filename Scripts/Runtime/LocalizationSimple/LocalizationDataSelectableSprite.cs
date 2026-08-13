@@ -61,14 +61,26 @@ namespace Framework.LocalizationSimple
     {
         public SpriteSwapData _spriteSwapData;
 
+        //public override T GetData<T>()
+        //{
+        //    return (T)(object)_spriteSwapData;
+        //}
+
+        //public override void SetData<T>(T data)
+        //{
+        //    _spriteSwapData = (SpriteSwapData)(object)data;
+        //}
+
         public override T GetData<T>()
         {
-            return (T)(object)_spriteSwapData;
+            if (_spriteSwapData is T t) return t;
+            return default;
         }
 
         public override void SetData<T>(T data)
         {
-            _spriteSwapData = (SpriteSwapData)(object)data;
+            if (data is SpriteSwapData t) _spriteSwapData = t;
+            else _spriteSwapData = default;
         }
 
         [Serializable]

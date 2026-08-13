@@ -20,6 +20,7 @@ namespace Framework.LocalizationSimple
         public Selectable _itemS;
 
         [SerializeField]
+        [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
         private List<LocalizationData> _datas = new List<LocalizationData>();
 
         public override List<LocalizationData> datas { get => _datas; set => _datas = value; }

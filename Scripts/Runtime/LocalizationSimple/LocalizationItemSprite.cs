@@ -14,6 +14,7 @@ namespace Framework.LocalizationSimple
     public class LocalizationItemSprite : LocalizationItemBase<LocalizationData>
     {
         [SerializeField]
+        [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
         private List<LocalizationData> _datas = new List<LocalizationData>();
 
         [SerializeField]

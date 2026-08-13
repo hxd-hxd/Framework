@@ -18,6 +18,15 @@ namespace Framework.LocalizationSimple
         [Header("游戏对象")]
         public List<LocalizationItemGameObject> _itemsGameObject;
 
+        public override void GetAllItem(ref List<ILocalizationItem> items)
+        {
+            items ??= TypePool.root.GetList<ILocalizationItem>();
+
+            AddItemTo(_itemsText, items);
+            AddItemTo(_itemsImage, items);
+            AddItemTo(_itemsGameObject, items);
+        }
+
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);

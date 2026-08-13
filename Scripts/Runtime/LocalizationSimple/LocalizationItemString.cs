@@ -11,20 +11,20 @@ namespace Framework.LocalizationSimple
 
     /// <summary>精灵本地化项，数据导向的</summary>
     [Serializable]
-    public class LocalizationItemString : LocalizationItemBase<LocalizationDataString>
+    public class LocalizationItemString : LocalizationItemBase<LocalizationData>
     {
         [SerializeField]
         [LocalizationDataCfg(LocalizationDataCfgMode.OnlyLang)]
-        private List<LocalizationDataString> _datas = new List<LocalizationDataString>();
+        private List<LocalizationData> _datas = new List<LocalizationData>();
 
         [SerializeField]
         private UnityEvent<string> _onExecute;
 
-        public override List<LocalizationDataString> datas { get => _datas; set => _datas = value; }
+        public override List<LocalizationData> datas { get => _datas; set => _datas = value; }
 
         public UnityEvent<string> onExecute { get => _onExecute; set => _onExecute = value; }
 
-        protected override void Execute(LocalizationDataString data)
+        protected override void Execute(LocalizationData data)
         {
             if (data != null && data._text != null)
             {

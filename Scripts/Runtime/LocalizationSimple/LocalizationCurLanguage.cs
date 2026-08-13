@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Framework.Localization;
 
-namespace Framework
+namespace Framework.LocalizationSimple
 {
     /// <summary>本地化设置当前语言</summary>
     public class LocalizationCurLanguage : Singleton<LocalizationCurLanguage>

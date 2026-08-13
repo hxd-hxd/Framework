@@ -7,13 +7,24 @@ namespace Framework.LocalizationSimple
 {
     /// <summary>本地化项非泛型基类，供编辑器属性绘制识别派生类型。</summary>
     [Serializable]
-    public abstract class LocalizationItemBase
+    public abstract class LocalizationItemBase : ILocalizationItem
     {
+        public abstract string dataId { get; set; }
+
+        public abstract ILocalizationDataProvider dataProvider { get; set; }
+
+        List<ILocalizationData> ILocalizationItem.datas { get; set; }
+
+        public abstract void SetLanguage(string language);
+
+        public abstract void SetLanguage(ILanguageProvider languageProvider);
+
+        public abstract void SetLanguage(ILocalizationData data);
     }
 
     /// <summary>本地化项基类</summary>
     [Serializable]
-    public abstract class LocalizationItemBase<Data> : LocalizationItemBase where Data : LocalizationDataBase
+    public abstract class LocalizationItemBase<Data> : LocalizationItemBase, ILocalizationItem where Data : LocalizationDataBase
     {
         public LocalizationDataGetMode _dataMode;
 
@@ -22,16 +33,60 @@ namespace Framework.LocalizationSimple
 
         public LocalizationDataProviderCompBase _dataProvider;
 
-        public virtual string dataId { get => _dataId; set => _dataId = value; }
-
         /// <summary>数据获取方式</summary>
         public virtual LocalizationDataGetMode dataMode { get => _dataMode; set => _dataMode = value; }
+
+        public override string dataId { get => _dataId; set => _dataId = value; }
 
         /// <summary>数据</summary>
         public abstract List<Data> datas { get; set; }
 
+        List<ILocalizationData> ILocalizationItem.datas
+        {
+            get
+            {
+                List<ILocalizationData> dataList = null;
+                if (datas != null && datas.Count > 0)
+                {
+                    dataList = new List<ILocalizationData>();
+                    foreach (var data in datas)
+                    {
+                        dataList.Add(data);
+                    }
+                }
+                return dataList;
+            }
+            set
+            {
+                datas?.Clear();
+                datas ??= new List<Data>();
+                foreach (var data in value)
+                {
+                    if (data is Data d) datas.Add(d);
+                }
+            }
+        }
+
+        ///// <summary>数据提供者</summary>
+        //public override LocalizationDataProviderCompBase dataProvider
+        //{
+        //    get => _dataProvider;
+        //    set => _dataProvider = value;
+        //}
+
+        public override ILocalizationDataProvider dataProvider { get => _dataProvider; set => _dataProvider = value as LocalizationDataProviderCompBase; }
+
         /// <summary>执行本地化操作</summary>
         protected abstract void Execute(Data data);
+
+        /// <summary>获取可用的数据提供者</summary>
+        public virtual ILocalizationDataProvider GetUsableDataProvider()
+        {
+            // 优先本地
+            if (!ObjectUtility.IsNull(_dataProvider)) return _dataProvider;
+            // 没有则用全局
+            return LocalizationSetManager.Instance.globalDataProvider;
+        }
 
         public virtual Data GetData(string language)
         {
@@ -46,12 +101,13 @@ namespace Framework.LocalizationSimple
             data = default;
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
+                var _dataProvider = GetUsableDataProvider();
                 if (!ObjectUtility.IsNull(_dataProvider))
                     r = _dataProvider.TryGetData(_dataId, language, out data);
             }
             else if (datas != null && datas.Count > 0)
             {
-                data = datas.Find(d => d._language == language);
+                data = datas.Find(d => d.language == language);
                 r = data != null;
             }
             return r;
@@ -73,13 +129,14 @@ namespace Framework.LocalizationSimple
 
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
+                var _dataProvider = GetUsableDataProvider();
                 if (!ObjectUtility.IsNull(_dataProvider))
                     r = _dataProvider.TryGetData(_dataId, languageProvider, out data);
             }
             else if (datas != null && datas.Count > 0)
             {
                 data = datas.Find(d =>
-                    !ObjectUtility.IsNull(d._langProvider) && d._langProvider.IsProviderLanguage(languageProvider));
+                    !ObjectUtility.IsNull(d.langProvider) && d.langProvider.IsProviderLanguage(languageProvider));
                 r = data != null;
             }
             return r;
@@ -91,24 +148,31 @@ namespace Framework.LocalizationSimple
             result = null;
             if (_dataMode == LocalizationDataGetMode.Provider)
             {
+                var _dataProvider = GetUsableDataProvider();
                 if (ObjectUtility.IsNull(_dataProvider)) return false;
-                return _dataProvider.TryGetDatasById(_dataId, ref result);
+                return _dataProvider.TryGetDatasById(dataId, ref result);
             }
 
             result = datas;
             return result != null && result.Count > 0;
         }
 
-        public virtual void SetLanguage(string language)
+        public override void SetLanguage(string language)
         {
             var data = GetData(language);
             Execute(data);
         }
 
-        public virtual void SetLanguage(ILanguageProvider languageProvider)
+        public override void SetLanguage(ILanguageProvider languageProvider)
         {
             var data = GetData(languageProvider);
             Execute(data);
+        }
+
+        public override void SetLanguage(ILocalizationData data)
+        {
+            if (data is Data d)
+                Execute(d);
         }
 
         /// <summary>直接使用数据设置语言</summary>

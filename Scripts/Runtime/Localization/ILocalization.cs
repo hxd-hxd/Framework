@@ -27,5 +27,8 @@ namespace Framework.Localization
         /// <para></para><paramref name="languageProvider"/>：目标语言
         /// </summary>
         void SetLanguage(ILanguageProvider languageProvider);
+
+        /// <summary>获取所有 <see cref="ILocalizationItem"/></summary>
+        void GetAllItem(ref List<ILocalizationItem> items);
     }
 }

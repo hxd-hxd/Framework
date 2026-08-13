@@ -15,6 +15,17 @@ namespace Framework.LocalizationSimple
 
         public List<LocalizationCompBase> localizations { get => _localizations; }
 
+        public override void GetAllItem(ref List<ILocalizationItem> items)
+        {
+            foreach (var localization in localizations)
+            {
+                if (localization != null)
+                {
+                    localization.GetAllItem(ref items);
+                }
+            }
+        }
+
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);

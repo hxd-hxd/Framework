@@ -25,9 +25,11 @@ namespace Framework.LocalizationSimple
 
         ILanguageProvider ILocalization.defaultProvider { get => _defaultProvider; set => _defaultProvider = value as LanguageProviderComponentBase; }
 
+        public abstract void GetAllItem(ref List<ILocalizationItem> items);
+
         protected virtual void Start()
         {
-            
+
         }
 
         public virtual void SetLanguage(string language)
@@ -68,6 +70,16 @@ namespace Framework.LocalizationSimple
                 {
                     SetItemLanguage(item, cur, def);
                 }
+        }
+
+
+        protected void AddItemTo<Item>(List<Item> srcItems, List<ILocalizationItem> destItems) where Item : ILocalizationItem
+        {
+            if (srcItems == null || srcItems.Count <= 0) return;
+            foreach (var srcItem in srcItems)
+            {
+                if (srcItem != null) destItems.Add(srcItem);
+            }
         }
     }
 }

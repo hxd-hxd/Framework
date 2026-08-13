@@ -13,6 +13,13 @@ namespace Framework.LocalizationSimple
         [UnityEngine.Serialization.FormerlySerializedAs("_itemsButton")]
         public List<LocalizationItemSelectable> _itemsSelectable;
 
+        public override void GetAllItem(ref List<ILocalizationItem> items)
+        {
+            items ??= TypePool.root.GetList<ILocalizationItem>();
+
+            AddItemTo(_itemsSelectable, items);
+        }
+
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);

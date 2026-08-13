@@ -10,6 +10,12 @@ namespace Framework.LocalizationSimple
     {
         public LocalizationItemSelectable _item;
 
+        public override void GetAllItem(ref List<ILocalizationItem> items)
+        {
+            items ??= TypePool.root.GetList<ILocalizationItem>();
+            if (_item != null) items.Add(_item);
+        }
+
         public override void SetLanguage(string language)
         {
             base.SetLanguage(language);

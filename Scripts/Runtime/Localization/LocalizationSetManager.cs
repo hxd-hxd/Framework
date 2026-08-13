@@ -7,12 +7,16 @@ namespace Framework.Localization
     public class LocalizationSetManager : Singleton<LocalizationSetManager>
     {
         private List<ILocalizationSet> _sets;
+        private ILocalizationDataProvider _globalDataProvider;
 
         /// <summary>已注册的数量</summary>
         public int count => _sets.Count;
 
         /// <summary>已注册的本地化设置列表</summary>
         public List<ILocalizationSet> sets => _sets;
+
+        /// <summary>全局数据提供者</summary>
+        public ILocalizationDataProvider globalDataProvider { get => _globalDataProvider; set => _globalDataProvider = value; }
 
         public LocalizationSetManager()
         {

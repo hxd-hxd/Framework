@@ -12,7 +12,7 @@ namespace Framework.LocalizationSimple
         public List<ILocalization> _localizations = new List<ILocalization>();
         public List<LanguageProviderComponentBase> _langProviders;
 
-        protected virtual List<ILocalization> localizations
+        public virtual List<ILocalization> localizations
         {
             get
             {

@@ -8,9 +8,14 @@ namespace Framework.LocalizationSimple
     /// <summary>设置本地化语言</summary>
     public class LocalizationSet : LocalizationSetBase
     {
+        public override object GetCurrentLang()
+        {
+            return LocalizationCurLanguage.Instance.curLanguage;
+        }
+
         public override void Set()
         {
-            Set(LocalizationCurLanguage.Instance.curLanguage);
+            Set(GetCurrentLang());
         }
 
         /// <summary>设置</summary>

@@ -44,6 +44,9 @@ namespace Framework.LocalizationSimple
         /// <summary>将语言类型转换成字符串形式</summary>
         public abstract string LangTypeToString(object lang);
 
+        /// <summary>获取当前语言</summary>
+        public abstract object GetCurrentLang();
+
         /// <summary>设置</summary>
         public abstract void Set();
 

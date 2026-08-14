@@ -12,7 +12,7 @@ namespace Framework.Editor
 {
     /// <summary>
     /// <see cref="LocalizationSetBase"/> 检视面板基类。
-    /// 语言列表与标签走运行时基类 API，当前语言来源由子类注入；Apply / Refresh 逻辑共用。
+    /// 语言列表、标签与当前语言走运行时基类 API；Apply / Refresh 逻辑共用。
     /// </summary>
     public abstract class LocalizationSetInspectorBase : UnityEditor.Editor
     {
@@ -24,8 +24,8 @@ namespace Framework.Editor
 
         protected string GetLangLabel(object lang) => Set.LangTypeToString(lang);
 
-        /// <summary>当前语言（与运行时 <see cref="LocalizationSetBase.Set()"/> 所用来源一致）。</summary>
-        protected abstract object GetCurrentLanguage();
+        /// <summary>当前语言（与运行时 <see cref="LocalizationSetBase.GetCurrentLang"/> 一致）。</summary>
+        protected object GetCurrentLanguage() => Set.GetCurrentLang();
 
         protected virtual bool IsLanguageVisible(object lang) => true;
 

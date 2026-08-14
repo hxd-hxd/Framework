@@ -35,5 +35,16 @@ namespace Framework.LocalizationSimple
 
         public abstract bool TryGetData<Data>(string id, ILanguageProvider languageProvider, out Data data) where Data : ILocalizationData;
 
+        /// <summary>设置对应语言的数据</summary>
+        public abstract void SetData(string language, ILocalizationData data);
+
+        /// <summary>设置对应语言提供者的数据</summary>
+        public abstract void SetData(ILanguageProvider languageProvider, ILocalizationData data);
+
+        /// <summary>移除对应语言的数据</summary>
+        public abstract void RemoveData(string language);
+
+        /// <summary>移除对应语言提供者的数据</summary>
+        public abstract void RemoveData(ILanguageProvider languageProvider);
     }
 }

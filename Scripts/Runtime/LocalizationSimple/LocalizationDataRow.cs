@@ -9,6 +9,7 @@ namespace Framework.LocalizationSimple
     [Serializable]
     public class LocalizationDataRow<D> : LocalizationDataRowBase where D : ILocalizationData
     {
+        // 数据行里数据的 id 都统一通过行 id 设置
         public string _id;
         //public string _language;
         //public LanguageProviderComponentBase _langProvider;
@@ -161,6 +162,53 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
+        public override void SetData(string language, ILocalizationData data)
+        {
+            if (data == null)
+            {
+                RemoveData(language);
+                return;
+            }
+
+            D d = default;
+            bool validData = data is D;
+            if (validData) d = (D)data;
+            else return;
+            if (_langDic.ContainsKey(language))
+            {
+                var i = _datas.FindIndex(d => d != null && d.language == language);
+                _datas[i] = d;
+            }
+            if (validData) _langDic[language] = d;
+        }
+
+        public override void SetData(ILanguageProvider languageProvider, ILocalizationData data)
+        {
+            if (data == null)
+            {
+                RemoveData(languageProvider);
+                return;
+            }
+
+            D d = default;
+            bool validData = data is D;
+            if (validData) d = (D)data;
+            else return;
+            var i = _datas.FindIndex(d => d != null && languageProvider.IsProviderLanguage(d.langProvider));
+            _datas[i] = d;
+        }
+
+        public override void RemoveData(string language)
+        {
+            _langDic.Remove(language);
+            _datas.RemoveAll(d => d != null && d.language == language);
+        }
+
+        public override void RemoveData(ILanguageProvider languageProvider)
+        {
+            _datas.RemoveAll(d => d != null && languageProvider.IsProviderLanguage(d.langProvider));
+        }
+
         // 忽略 id 的方法
         /// <summary>获取对应语言的数据</summary>
         public Data GetData<Data>(string language) where Data : ILocalizationData
@@ -181,10 +229,9 @@ namespace Framework.LocalizationSimple
         }
 
         /// <summary>尝试获取对应语言提供者的数据</summary>
-        public bool TryGetData<Data>(ILanguageProvider languageProvider, ref Data data) where Data : ILocalizationData
+        public bool TryGetData<Data>(ILanguageProvider languageProvider, out Data data) where Data : ILocalizationData
         {
             return TryGetData(null, languageProvider, out data);
         }
-
     }
 }

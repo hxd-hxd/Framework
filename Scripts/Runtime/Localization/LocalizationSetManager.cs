@@ -8,6 +8,8 @@ namespace Framework.Localization
     {
         private List<ILocalizationSet> _sets;
         private ILocalizationDataProvider _globalDataProvider;
+        private string _defaultLanguage;
+        private ILanguageProvider _defaultLangProvider;
 
         /// <summary>已注册的数量</summary>
         public int count => _sets.Count;
@@ -17,6 +19,12 @@ namespace Framework.Localization
 
         /// <summary>全局数据提供者</summary>
         public ILocalizationDataProvider globalDataProvider { get => _globalDataProvider; set => _globalDataProvider = value; }
+
+        /// <summary>默认语言</summary>
+        public string defaultLanguage { get => _defaultLanguage; set => _defaultLanguage = value; }
+
+        /// <summary>默认语言提供者</summary>
+        public ILanguageProvider defaultLangProvider { get => _defaultLangProvider; set => _defaultLangProvider = value; }
 
         public LocalizationSetManager()
         {

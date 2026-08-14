@@ -6,30 +6,48 @@ using UnityEngine;
 
 namespace Framework.LocalizationSimple
 {
-    /// <summary>本地化基类</summary>
+    /// <summary>本地化组件基类</summary>
     public abstract class LocalizationCompBase : MonoBehaviour, ILocalization
     {
         [Header("语言类型")]
-        public string _currentLanguage = "0";
-        public string _defaultLanguage = "0";
+        public string _currentLanguage;
+        public string _defaultLanguage;
 
         [Header("语言类型提供者")]
         public LanguageProviderComponentBase _currentProvider;
         public LanguageProviderComponentBase _defaultProvider;
 
-        string ILocalization.currentLanguage => _currentLanguage;
+        public string currentLanguage => _currentLanguage;
 
-        ILanguageProvider ILocalization.currentProvider => _currentProvider;
+        public ILanguageProvider currentProvider => _currentProvider;
 
-        string ILocalization.defaultLanguage { get => _defaultLanguage; set => _defaultLanguage = value; }
+        public string defaultLanguage { get => _defaultLanguage; set => _defaultLanguage = value; }
 
-        ILanguageProvider ILocalization.defaultProvider { get => _defaultProvider; set => _defaultProvider = value as LanguageProviderComponentBase; }
+        public ILanguageProvider defaultProvider { get => _defaultProvider; set => _defaultProvider = value as LanguageProviderComponentBase; }
 
         public abstract void GetAllItem(ref List<ILocalizationItem> items);
 
         protected virtual void Start()
         {
 
+        }
+
+        /// <summary>获取可用的默认语言</summary>
+        public virtual string GetUsableDefaultLang()
+        {
+            // 优先本地
+            if (!string.IsNullOrEmpty(_defaultLanguage)) return _defaultLanguage;
+            // 没有则用全局
+            return LocalizationSetManager.Instance.defaultLanguage;
+        }
+
+        /// <summary>获取可用的默认语言提供者</summary>
+        public virtual ILanguageProvider GetUsableDefaultLangProvider()
+        {
+            // 优先本地
+            if (!ObjectUtility.IsNull(_defaultProvider)) return _defaultProvider;
+            // 没有则用全局
+            return LocalizationSetManager.Instance.defaultLangProvider;
         }
 
         public virtual void SetLanguage(string language)
@@ -54,7 +72,7 @@ namespace Framework.LocalizationSimple
 
         protected void SetLanguageInternal<T, Data>(List<T> items, string cur) where T : LocalizationItemBase<Data> where Data : LocalizationDataBase
         {
-            var def = _defaultLanguage;
+            var def = GetUsableDefaultLang();
             if (items != null && items.Count > 0)
                 foreach (var item in items)
                 {
@@ -64,7 +82,7 @@ namespace Framework.LocalizationSimple
 
         protected void SetLanguageInternal<T, Data>(List<T> items, ILanguageProvider cur) where T : LocalizationItemBase<Data> where Data : LocalizationDataBase
         {
-            var def = _defaultProvider;
+            var def = GetUsableDefaultLangProvider();
             if (items != null && items.Count > 0)
                 foreach (var item in items)
                 {

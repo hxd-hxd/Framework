@@ -22,8 +22,18 @@ namespace Framework.LocalizationSimple
 
         private void Awake()
         {
-            if (_awakeAutoSetToGlobal && _dataProvider)
-                SetToGlobal();
+            if (!_localizationSet)
+            {
+                TryGetComponent(out _localizationSet);
+            }
+
+            if (Application.isPlaying)
+            {
+                if (_awakeAutoSetToGlobal && _dataProvider)
+                    SetToGlobal();
+                if (_awakeAutoSetToItem && _dataProvider)
+                    SetToItem();
+            }
         }
 
         void Start()

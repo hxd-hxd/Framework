@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Google.Protobuf.WellKnownTypes;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Framework.LogSystem
 {
     /// <summary>
-    /// ÈÕÖ¾²Ù×÷ÊÓÍ¼ ui 
+    /// æ—¥å¿—æ“ä½œè§†å›¾ ui 
     /// </summary>
     public class LogViewUI : UIBase
     {
@@ -16,10 +17,10 @@ namespace Framework.LogSystem
         [SerializeField]
         private Transform _logInfoItemUIParent;
         private GameObjectPool _logInfoItemUIPool;
-        private LinkedList<LogInfoItemUI> _logInfoItemUIs;// ËùÓĞÏÔÊ¾µÄÈÕÖ¾Ïî
-        private LogInfoItemUI _selectLogInfoItemUI;// µ±Ç°Ñ¡ÔñµÄ log ui
+        private LinkedList<LogInfoItemUI> _logInfoItemUIs;// æ‰€æœ‰æ˜¾ç¤ºçš„æ—¥å¿—é¡¹
+        private LogInfoItemUI _selectLogInfoItemUI;// å½“å‰é€‰æ‹©çš„ log ui
         [SerializeField]
-        private int _logInfoItemUIShowMaxNum = 200;// ÔÊĞíÈÕÖ¾ÏÔÊ¾µÄ×î´óÊıÁ¿
+        private int _logInfoItemUIShowMaxNum = 200;// å…è®¸æ—¥å¿—æ˜¾ç¤ºçš„æœ€å¤§æ•°é‡
         private Dictionary<LogShowType, LogShowTypeNum> _logShowTypeNumDic;
 
         [Space]
@@ -36,13 +37,13 @@ namespace Framework.LogSystem
         [SerializeField]
         private Toggle _infoToggle, _warningToggle, _errorToggle, _excptionToggle;
         [SerializeField]
-        private Text _logNumText;// ÏÔÊ¾ÈÕÖ¾ÊıÁ¿
+        private Text _logNumText;// æ˜¾ç¤ºæ—¥å¿—æ•°é‡
 
         [SerializeField]
         private LogShowType _logShowType = LogShowType.All;
 
         /// <summary>
-        /// ¹Ø±ÕÊ±´¥·¢´ËÊÂ¼ş
+        /// å…³é—­æ—¶è§¦å‘æ­¤äº‹ä»¶
         /// </summary>
         public Action closeClickEvent;
 
@@ -65,7 +66,7 @@ namespace Framework.LogSystem
             _logInfoItemUIs ??= new LinkedList<LogInfoItemUI>();
             _logShowTypeNumDic ??= new Dictionary<LogShowType, LogShowTypeNum>();
 
-            // ¸ù¾İuiµÄÉèÖÃ³õÊ¼»¯ÈÕÖ¾ÏÔÊ¾ÀàĞÍ
+            // æ ¹æ®uiçš„è®¾ç½®åˆå§‹åŒ–æ—¥å¿—æ˜¾ç¤ºç±»å‹
             //if (_infoToggle) SetLogShowType(_infoToggle.isOn, LogShowType.Info);
             //if (_warningToggle) SetLogShowType(_warningToggle.isOn, LogShowType.Warning);
             //if (_errorToggle) SetLogShowType(_errorToggle.isOn, LogShowType.Error);
@@ -87,12 +88,12 @@ namespace Framework.LogSystem
             });
             AddEvent(_clearLogBtn, () =>
             {
-                // Çå³ı
+                // æ¸…é™¤
                 ClearLog();
             });
             AddEvent(_copySelectedLogBtn, () =>
             {
-                // ¸´ÖÆÈÕÖ¾
+                // å¤åˆ¶æ—¥å¿—
                 //_selectLogInfoItemUI .0
                 if (_selectLogInfoItemUI)
                 {
@@ -102,11 +103,11 @@ namespace Framework.LogSystem
             });
             AddEvent(_copyAllLogBtn, () =>
             {
-                // ¸´ÖÆÈÕÖ¾
+                // å¤åˆ¶æ—¥å¿—
                 GUIUtility.systemCopyBuffer = LogInfo.ToFileFormatTextAll();
             });
 
-            // ×¢²áÈÕÖ¾ÏÔÊ¾ÀàĞÍ¿ØÖÆÊÂ¼ş
+            // æ³¨å†Œæ—¥å¿—æ˜¾ç¤ºç±»å‹æ§åˆ¶äº‹ä»¶
             Init(_infoToggle, LogShowType.Info);
             Init(_warningToggle, LogShowType.Warning);
             Init(_errorToggle, LogShowType.Error);
@@ -118,16 +119,16 @@ namespace Framework.LogSystem
         {
             if (toggle)
             {
-                // ¸ù¾İÈÕÖ¾²é¿´ÀàĞÍ³õÊ¼»¯ui
+                // æ ¹æ®æ—¥å¿—æŸ¥çœ‹ç±»å‹åˆå§‹åŒ–ui
                 if (toggle) toggle.isOn = _logShowType.HasFlag(type);
-                // Ìí¼Ó²é¿´ÈÕÖ¾ÏÔÊ¾ÊıÁ¿
+                // æ·»åŠ æŸ¥çœ‹æ—¥å¿—æ˜¾ç¤ºæ•°é‡
                 var numText = toggle.transform.FindOf<Text>("Num");
                 if (!_logShowTypeNumDic.TryGetValue(type, out var showNum))
                 {
                     _logShowTypeNumDic[type] = showNum = new LogShowTypeNum();
                 }
                 showNum.text = numText;
-                // ×¢²áÊÂ¼ş
+                // æ³¨å†Œäº‹ä»¶
                 toggle.onValueChanged.AddListener((isOn) =>
                 {
                     SetLogShowType(isOn, type);
@@ -140,7 +141,7 @@ namespace Framework.LogSystem
             if (_logNumText)
             {
                 //_logNumText.text = $"{_logInfoItemUIs.Count}/{_logInfoItemUIShowMaxNum}";
-                _logNumText.text = $"ÏÔÊ¾ÊıÁ¿ {_logInfoItemUIs.Count}/{_logInfoItemUIShowMaxNum}£¬×ÜÁ¿ {LogInfo.logInfoCount}";
+                _logNumText.text = $"æ˜¾ç¤ºæ•°é‡ {_logInfoItemUIs.Count}/{_logInfoItemUIShowMaxNum}ï¼Œæ€»é‡ {LogInfo.logInfoCount}";
             }
         }
 
@@ -148,7 +149,7 @@ namespace Framework.LogSystem
         {
             base.OnEnable();
 
-            // ¸üĞÂÈÕÖ¾ÏÔÊ¾
+            // æ›´æ–°æ—¥å¿—æ˜¾ç¤º
             UpdateLogUI();
 
             LogInfo.logMessageReceived += OnHandleLog;
@@ -160,7 +161,7 @@ namespace Framework.LogSystem
             LogInfo.logMessageReceived -= OnHandleLog;
         }
 
-        // ½ÓÊÕ´¦ÀíÈÕÖ¾
+        // æ¥æ”¶å¤„ç†æ—¥å¿—
         //private void OnHandleLog(string condition, string stackTrace, LogType type)
         private void OnHandleLog(LogInfo info)
         {
@@ -168,7 +169,7 @@ namespace Framework.LogSystem
         }
 
         /// <summary>
-        /// Ë¢ĞÂÈÕÖ¾ ui
+        /// åˆ·æ–°æ—¥å¿— ui
         /// </summary>
         public void RefreshLogUI()
         {
@@ -184,10 +185,10 @@ namespace Framework.LogSystem
                 SetLogUIFills(_ui, n++);
             }
         }
-        // ÉèÖÃÌî³äÇø·ÖÉ«¿é
+        // è®¾ç½®å¡«å……åŒºåˆ†è‰²å—
         void SetLogUIFills(LogInfoItemUI _ui, int n)
         {
-            // Ë«Êı´ò¿ª±³¾°
+            // åŒæ•°æ‰“å¼€èƒŒæ™¯
             if (_ui)
             {
                 _ui.isOpenBG = n % 2 == 0;
@@ -195,14 +196,14 @@ namespace Framework.LogSystem
         }
 
         /// <summary>
-        /// ¸üĞÂÈÕÖ¾ ui
+        /// æ›´æ–°æ—¥å¿— ui
         /// </summary>
         public void UpdateLogUI()
         {
             ClearLog();
 
-            // È¡³öÏŞÖÆÊıÁ¿µÄ ÈÕÖ¾
-            // ¼ÆËã¿ªÊ¼Ë÷Òı
+            // å–å‡ºé™åˆ¶æ•°é‡çš„ æ—¥å¿—
+            // è®¡ç®—å¼€å§‹ç´¢å¼•
             int startIndex = LogInfo.logInfos.Count - _logInfoItemUIShowMaxNum;
             startIndex = Mathf.Max(startIndex, 0);
             for (int i = startIndex; i < LogInfo.logInfos.Count; i++)
@@ -211,12 +212,12 @@ namespace Framework.LogSystem
                 AddLogUI(info);
             }
 
-            //// ¸üĞÂÏÔÊ¾ÀàĞÍ
+            //// æ›´æ–°æ˜¾ç¤ºç±»å‹
             //ShowLogType();
         }
 
         /// <summary>
-        /// Ìí¼Ó
+        /// æ·»åŠ 
         /// </summary>
         /// <param name="info"></param>
         public void AddLogUI(LogInfo info)
@@ -232,26 +233,26 @@ namespace Framework.LogSystem
                 _ui.SetLogInfo(info);
                 _ui.clickEvent = () =>
                 {
-                    // ÉèÖÃµã»÷ÊÂ¼ş
+                    // è®¾ç½®ç‚¹å‡»äº‹ä»¶
                     SelectLogItemUI(_ui);
                 };
                 _logInfoItemUIs.AddLast(_ui);
 
-                // Çø·ÖÉ«¿é
+                // åŒºåˆ†è‰²å—
                 SetLogUIFills(_ui, _logInfoItemUIs.Count);
 
                 ShowLogItem(_ui, _logShowType, info.logType);
 
                 AddLogShowTypeNum(_ui.logInfo.logType, 1);
 
-                // ¼ì²éÊÇ·ñ³¬¹ı×î´óÊıÁ¿
+                // æ£€æŸ¥æ˜¯å¦è¶…è¿‡æœ€å¤§æ•°é‡
                 while (_logInfoItemUIs.Count > _logInfoItemUIShowMaxNum && _logInfoItemUIs.Count > 0)
                 {
-                    RemoveLogUI();// ÒÆ³ı×îÀÏµÄ
+                    RemoveLogUI();// ç§»é™¤æœ€è€çš„
                 }
             }
         }
-        // ÒÆ³ı
+        // ç§»é™¤
         //public void RemoveLogUI(int index)
         //{
         //    var _ui = _logInfoItemUIs[index];
@@ -272,7 +273,7 @@ namespace Framework.LogSystem
             }
         }
 
-        // Ñ¡ÖĞ
+        // é€‰ä¸­
         public void SelectLogItemUI(LogInfoItemUI _ui)
         {
             if (_ui == _selectLogInfoItemUI)
@@ -294,14 +295,14 @@ namespace Framework.LogSystem
                 }
                 _ui.isSelected = true;
 
-                // ÏÔÊ¾ log ÏêÇé
+                // æ˜¾ç¤º log è¯¦æƒ…
                 ShowLogInfoText(_ui.logInfo);
             }
 
             _selectLogInfoItemUI = _ui;
         }
 
-        // ÏÔÊ¾Ä³Ò»ÌõÈÕÖ¾ĞÅÏ¢ÎÄ±¾
+        // æ˜¾ç¤ºæŸä¸€æ¡æ—¥å¿—ä¿¡æ¯æ–‡æœ¬
         public void ShowLogInfoText(LogInfo info)
         {
             if (info == null)
@@ -316,29 +317,29 @@ namespace Framework.LogSystem
             }
         }
 
-        // ÏÔÊ¾²»Í¬ÀàĞÍµÄÈÕÖ¾
+        // æ˜¾ç¤ºä¸åŒç±»å‹çš„æ—¥å¿—
         public void ShowLogType()
         {
             ShowLogType(_logShowType);
         }
-        // ÏÔÊ¾²»Í¬ÀàĞÍµÄÈÕÖ¾
+        // æ˜¾ç¤ºä¸åŒç±»å‹çš„æ—¥å¿—
         public void ShowLogType(LogShowType type)
         {
             foreach (var item in _logInfoItemUIs)
             {
-                // ÏÔÊ¾»òÒş²Ø ÆÕÍ¨ ÈÕÖ¾ĞÅÏ¢
+                // æ˜¾ç¤ºæˆ–éšè— æ™®é€š æ—¥å¿—ä¿¡æ¯
                 ShowLogItem(item, type, LogType.Log);
-                // ÏÔÊ¾»òÒş²Ø ¾¯¸æ ÈÕÖ¾ĞÅÏ¢
+                // æ˜¾ç¤ºæˆ–éšè— è­¦å‘Š æ—¥å¿—ä¿¡æ¯
                 ShowLogItem(item, type, LogType.Warning);
-                // ÏÔÊ¾»òÒş²Ø ´íÎó ÈÕÖ¾ĞÅÏ¢
+                // æ˜¾ç¤ºæˆ–éšè— é”™è¯¯ æ—¥å¿—ä¿¡æ¯
                 ShowLogItem(item, type, LogType.Error);
-                // ÏÔÊ¾»òÒş²Ø Òì³£ ÈÕÖ¾ĞÅÏ¢
+                // æ˜¾ç¤ºæˆ–éšè— å¼‚å¸¸ æ—¥å¿—ä¿¡æ¯
                 ShowLogItem(item, type, LogType.Exception);
-                // ÏÔÊ¾»òÒş²Ø ¶ÏÑÔ ÈÕÖ¾ĞÅÏ¢
+                // æ˜¾ç¤ºæˆ–éšè— æ–­è¨€ æ—¥å¿—ä¿¡æ¯
                 ShowLogItem(item, type, LogType.Assert);
             }
         }
-        // ¿ØÖÆÖ¸¶¨ÈÕÖ¾ÏîÀàĞÍµÄÏÔÊ¾»òÒş²Ø
+        // æ§åˆ¶æŒ‡å®šæ—¥å¿—é¡¹ç±»å‹çš„æ˜¾ç¤ºæˆ–éšè—
         private void ShowLogItem(LogInfoItemUI item, LogShowType baseLogShowType, LogType logType)
         {
             if (item.logInfo.logType == logType)
@@ -360,7 +361,7 @@ namespace Framework.LogSystem
                     return LogShowType.Info;
                 case LogType.Warning:
                     return LogShowType.Warning;
-                case LogType.Assert:// ¶ÏÑÔËã×÷´íÎó
+                case LogType.Assert:// æ–­è¨€ç®—ä½œé”™è¯¯
                 case LogType.Error:
                     return LogShowType.Error;
                 case LogType.Exception:
@@ -402,7 +403,7 @@ namespace Framework.LogSystem
             showNum.AddNum(num);
         }
 
-        // ÉèÖÃÊÇ·ñÏÔÊ¾¶ÔÓ¦ÀàĞÍµÄÈÕÖ¾
+        // è®¾ç½®æ˜¯å¦æ˜¾ç¤ºå¯¹åº”ç±»å‹çš„æ—¥å¿—
         private void SetLogShowType(bool isOn, LogShowType type, bool refresh = true)
         {
             if (isOn) _logShowType |= type;
@@ -411,7 +412,7 @@ namespace Framework.LogSystem
             if (refresh) ShowLogType();
         }
 
-        // ·µ»Ø¶ÔÏó³Ø
+        // è¿”å›å¯¹è±¡æ± 
         private void ReturnPool(LogInfoItemUI _ui)
         {
             _logInfoItemUIPool.Return(_ui.gameObject);
@@ -421,6 +422,7 @@ namespace Framework.LogSystem
         {
             foreach (var item in _logInfoItemUIs)
             {
+                AddLogShowTypeNum(item.logInfo.logType, -1);
                 ReturnPool(item);
             }
             _logInfoItemUIs.Clear();
@@ -464,7 +466,7 @@ namespace Framework.LogSystem
     }
 
     /// <summary>
-    /// ÈÕÖ¾ÏÔÊ¾ÀàĞÍ
+    /// æ—¥å¿—æ˜¾ç¤ºç±»å‹
     /// </summary>
     [Flags]
     public enum LogShowType : byte

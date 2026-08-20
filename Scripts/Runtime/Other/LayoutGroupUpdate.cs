@@ -28,23 +28,32 @@ namespace Framework
 
         private IEnumerator UpdateLayoutGroup()
         {
-            var lg = GetComponent<LayoutGroup>();
+            //var lg = GetComponent<LayoutGroup>();
 
-            //while (true)
-            {
-                yield return null;
-                if (lg != null)
-                {
-                    lg.SetLayoutHorizontal();
-                    lg.SetLayoutVertical();
-                    //if (lg.enabled)
-                    //{
-                    //    lg.enabled = false;
-                    //    yield return null;
-                    //    lg.enabled = true;
-                    //}
-                }
-            }
+            ////while (true)
+            //{
+            //    yield return null;
+            //    if (lg != null)
+            //    {
+            //        //if (lg.enabled)
+            //        //{
+            //        //    lg.enabled = false;
+            //        //    yield return null;
+            //        //    lg.enabled = true;
+            //        //}
+
+            //        lg.SetLayoutHorizontal();
+            //        lg.SetLayoutVertical();
+
+
+            //        //Debug.Log($"{name} 更新 UGUI 布局");
+            //    }
+            //}
+
+            yield return null;
+            var targetLayoutRoot = transform as RectTransform;
+            //LayoutRebuilder.MarkLayoutForRebuild(targetLayoutRoot);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(targetLayoutRoot);
         }
     }
 }

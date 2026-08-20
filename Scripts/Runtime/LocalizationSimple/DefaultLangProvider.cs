@@ -10,7 +10,7 @@ namespace Framework.LocalizationSimple
     {
         public LangType _lang;
 
-        public void SetLanguage<T>(T language)
+        public virtual void SetLanguage<T>(T language)
         {
             if (language is LangType t)
             {
@@ -22,7 +22,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        public T GetLanguage<T>()
+        public virtual T GetLanguage<T>()
         {
             if (_lang is T t)
             {
@@ -34,7 +34,7 @@ namespace Framework.LocalizationSimple
             }
         }
 
-        public bool TryGetLanguage<T>(out T language)
+        public virtual bool TryGetLanguage<T>(out T language)
         {
             language = default;
 
@@ -48,7 +48,7 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
-        public bool IsLanguage<T>(T language)
+        public virtual bool IsLanguage<T>(T language)
         {
             bool r = false;
             if (language is LangType t)
@@ -59,7 +59,7 @@ namespace Framework.LocalizationSimple
             return r;
         }
 
-        public bool IsProviderLanguage(ILanguageProvider languageProvider)
+        public virtual bool IsProviderLanguage(ILanguageProvider languageProvider)
         {
             if (languageProvider == null) return false;
 

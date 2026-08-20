@@ -29,6 +29,7 @@ namespace Framework.LocalizationSimple
             string langStr = default;
             if (lang is LangType langType)
                 langStr = LangTypeToString(langType);
+            else langStr = lang.ToString();
             return langStr;
         }
 

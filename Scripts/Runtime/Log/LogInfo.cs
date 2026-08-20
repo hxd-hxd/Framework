@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Framework.LogSystem
 {
     /// <summary>
-    /// ÈÕÖ¾ĞÅÏ¢
+    /// æ—¥å¿—ä¿¡æ¯
     /// </summary>
     [Serializable]
     public sealed partial class LogInfo : ITypePoolObject
@@ -24,7 +24,7 @@ namespace Framework.LogSystem
         //public static Dictionary<LogType, Color> 
 
         /// <summary>
-        /// ½ÓÊÕ ÈÕÖ¾ĞÅÏ¢¼ÇÂ¼Ê±»á´¥·¢´ËÊÂ¼ş
+        /// æ¥æ”¶ æ—¥å¿—ä¿¡æ¯è®°å½•æ—¶ä¼šè§¦å‘æ­¤äº‹ä»¶
         /// </summary>
         public static event Action<LogInfo> logMessageReceived;
 
@@ -42,33 +42,33 @@ namespace Framework.LogSystem
         Color _logColor = Color.white;
 
         /// <summary>
-        /// ÆÕÍ¨ ÈÕÖ¾ÊıÁ¿
+        /// æ™®é€š æ—¥å¿—æ•°é‡
         /// </summary>
         public static int LogCount { get => _logCount; private set => _logCount = value; }
         /// <summary>
-        /// ´íÎó ÈÕÖ¾ÊıÁ¿
+        /// é”™è¯¯ æ—¥å¿—æ•°é‡
         /// </summary>
         public static int ErrorCount { get => _errorCount; private set => _errorCount = value; }
         /// <summary>
-        /// Òì³£ ÈÕÖ¾ÊıÁ¿
+        /// å¼‚å¸¸ æ—¥å¿—æ•°é‡
         /// </summary>
         public static int ExceptionCount { get => _exceptionCount; private set => _exceptionCount = value; }
         /// <summary>
-        /// ¾¯¸æ ÈÕÖ¾ÊıÁ¿
+        /// è­¦å‘Š æ—¥å¿—æ•°é‡
         /// </summary>
         public static int WarningCount { get => _warningCount; private set => _warningCount = value; }
         /// <summary>
-        /// ¶ÏÑÔ ÈÕÖ¾ÊıÁ¿
+        /// æ–­è¨€ æ—¥å¿—æ•°é‡
         /// </summary>
         public static int AssertCount { get => _assertCount; private set => _assertCount = value; }
 
         /// <summary>
-        /// ÈÕÖ¾ĞÅÏ¢×ÜÊıÁ¿
+        /// æ—¥å¿—ä¿¡æ¯æ€»æ•°é‡
         /// </summary>
         public static int logInfoCount => _logInfos.Count;
 
         /// <summary>
-        /// ÈÕÖ¾ĞÅÏ¢ÁĞ±í
+        /// æ—¥å¿—ä¿¡æ¯åˆ—è¡¨
         /// </summary>
         public static List<LogInfo> logInfos => _logInfos;
 
@@ -80,11 +80,11 @@ namespace Framework.LogSystem
         public DateTime time { get => _time; set => _time = value; }
         public string condition { get => _condition; set => _condition = value; }
         /// <summary>
-        /// ¶ÑÕ»
+        /// å †æ ˆ
         /// </summary>
         public string stackTrace { get => _stackTrace; set => _stackTrace = value; }
         /// <summary>
-        /// ÈÕÖ¾ÀàĞÍ
+        /// æ—¥å¿—ç±»å‹
         /// </summary>
         public LogType logType
         {
@@ -95,7 +95,7 @@ namespace Framework.LogSystem
             }
         }
         /// <summary>
-        /// ÈÕÖ¾ÑÕÉ«
+        /// æ—¥å¿—é¢œè‰²
         /// </summary>
         public Color logColor
         {
@@ -111,20 +111,20 @@ namespace Framework.LogSystem
             Set(condition, stackTrace, logType);
         }
 
-        /// <summary>×¢²áµ½ Unity µÄÈÕÖ¾¼àÊÓÆ÷</summary>
+        /// <summary>æ³¨å†Œåˆ° Unity çš„æ—¥å¿—ç›‘è§†å™¨</summary>
         public static void Login()
         {
             Application.logMessageReceived -= LogInfo.Received;
             Application.logMessageReceived += LogInfo.Received;
         }
-        /// <summary>´Ó Unity µÄÈÕÖ¾¼àÊÓÆ÷×¢Ïú</summary>
+        /// <summary>ä» Unity çš„æ—¥å¿—ç›‘è§†å™¨æ³¨é”€</summary>
         public static void Logout()
         {
             Application.logMessageReceived -= LogInfo.Received;
         }
 
         /// <summary>
-        /// »ñÈ¡¶ÔÓ¦ log ÀàĞÍµÄÑÕÉ«
+        /// è·å–å¯¹åº” log ç±»å‹çš„é¢œè‰²
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
@@ -151,7 +151,7 @@ namespace Framework.LogSystem
         }
 
         /// <summary>
-        /// ¼ÇÂ¼ÈÕÖ¾ĞÅÏ¢
+        /// è®°å½•æ—¥å¿—ä¿¡æ¯
         /// </summary>
         public static void Received(string condition, string stackTrace, LogType logType)
         {
@@ -159,7 +159,7 @@ namespace Framework.LogSystem
             Received(info);
         }
         /// <summary>
-        /// ¼ÇÂ¼ÈÕÖ¾ĞÅÏ¢
+        /// è®°å½•æ—¥å¿—ä¿¡æ¯
         /// </summary>
         /// <param name="info"></param>
         public static void Received(LogInfo info)
@@ -168,7 +168,7 @@ namespace Framework.LogSystem
             if (!logInfos.Contains(info))
             {
                 logInfos.Add(info);
-                // ¼ÆËãÊıÁ¿
+                // è®¡ç®—æ•°é‡
                 switch (info.logType)
                 {
                     case LogType.Error:
@@ -190,15 +190,15 @@ namespace Framework.LogSystem
                         break;
                 }
 
-                AddLogToFile(info);// ÓĞÈÕÖ¾×¢²áÊ±Ìí¼Óµ½ÎÄ¼ş
+                AddLogToFile(info);// æœ‰æ—¥å¿—æ³¨å†Œæ—¶æ·»åŠ åˆ°æ–‡ä»¶
                 //logMessageReceived?.Invoke(info._condition, info._stackTrace, info._logType);
                 logMessageReceived?.Invoke(info);
             }
         }
 
         /// <summary>
-        /// ÉèÖÃÈÕÖ¾ĞÅÏ¢
-        /// <para>×¢Òâ <see cref="time"/> ºÍ <see cref="logColor"/> »á×Ô¶¯ÉèÖÃ</para>
+        /// è®¾ç½®æ—¥å¿—ä¿¡æ¯
+        /// <para>æ³¨æ„ <see cref="time"/> å’Œ <see cref="logColor"/> ä¼šè‡ªåŠ¨è®¾ç½®</para>
         /// </summary>
         /// <param name="condition"></param>
         /// <param name="stackTrace"></param>
@@ -214,10 +214,10 @@ namespace Framework.LogSystem
 
         // "========================================================================"
         /// <summary>
-        /// ×ª»»³ÉÎÄ±¾¸ñÊ½£¨´æ´¢µ½ÈÕÖ¾ÎÄ¼şÊ±¿ÉÊ¹ÓÃ´Ë¸ñÊ½£©
-        /// <para>¸ñÊ½²Î¿¼£º[ÈÕÆÚ] + [ÀàĞÍ] + ÈÕÖ¾ÄÚÈİ + ¶ÑÕ»</para>
+        /// è½¬æ¢æˆæ–‡æœ¬æ ¼å¼ï¼ˆå­˜å‚¨åˆ°æ—¥å¿—æ–‡ä»¶æ—¶å¯ä½¿ç”¨æ­¤æ ¼å¼ï¼‰
+        /// <para>æ ¼å¼å‚è€ƒï¼š[æ—¥æœŸ] + [ç±»å‹] + æ—¥å¿—å†…å®¹ + å †æ ˆ</para>
         /// <code>
-        /// [2024/02/26 09:44:15][Log]  1 ÆÕÍ¨ ÈÕÖ¾ µ±Ç°Ê±¼ä£º2024/2/26 9:44:15
+        /// [2024/02/26 09:44:15][Log]  1 æ™®é€š æ—¥å¿— å½“å‰æ—¶é—´ï¼š2024/2/26 9:44:15
         /// UnityEngine.Debug:Log(object)
         /// TestLog:LogTime() (at Assets/Demo/Scripts/Test/TestLog.cs:20)
         /// UnityEngine.EventSystems.EventSystem:Update() (at Library/PackageCache/com.unity.ugui@1.0.0/Runtime/EventSystem/EventSystem.cs:501)
@@ -228,17 +228,17 @@ namespace Framework.LogSystem
         {
             var sb = TypePool.root.Get<StringBuilder>();
 
-            // ¶¨ÒåÎÄ±¾¸ñÊ½
+            // å®šä¹‰æ–‡æœ¬æ ¼å¼
             //sb.Append(ToConditionText());
-            // Ê±¼ä
+            // æ—¶é—´
             sb.Append("[").Append(time.ToTimeText()).Append("]");
-            // Ìí¼ÓÀàĞÍ±êÊ¶
+            // æ·»åŠ ç±»å‹æ ‡è¯†
             sb.Append("[").Append(_logType).Append("]");
-            // ¿Õ¸ñ
+            // ç©ºæ ¼
             sb.Append("  ");
-            // log ĞÅÏ¢
+            // log ä¿¡æ¯
             sb.Append(condition);
-            // ¶ÑÕ»ĞÅÏ¢
+            // å †æ ˆä¿¡æ¯
             sb.AppendLine();
             sb.Append(_stackTrace);
 
@@ -247,10 +247,10 @@ namespace Framework.LogSystem
             return t;
         }
         /// <summary>
-        /// ×ª»»³ÉÎÄ±¾¸ñÊ½
-        /// <para>¸ñÊ½²Î¿¼£º[ÈÕÆÚ] + ÈÕÖ¾ÄÚÈİ</para>
+        /// è½¬æ¢æˆæ–‡æœ¬æ ¼å¼
+        /// <para>æ ¼å¼å‚è€ƒï¼š[æ—¥æœŸ] + æ—¥å¿—å†…å®¹</para>
         /// <code>
-        /// [2024/02/26 09:44:15]  1 ÆÕÍ¨ ÈÕÖ¾ µ±Ç°Ê±¼ä£º2024/2/26 9:44:15
+        /// [2024/02/26 09:44:15]  1 æ™®é€š æ—¥å¿— å½“å‰æ—¶é—´ï¼š2024/2/26 9:44:15
         /// </code>
         /// </summary>
         /// <returns></returns>
@@ -258,11 +258,11 @@ namespace Framework.LogSystem
         {
             var sb = TypePool.root.Get<StringBuilder>();
 
-            // ¶¨ÒåÎÄ±¾¸ñÊ½
-            // Ê±¼ä
+            // å®šä¹‰æ–‡æœ¬æ ¼å¼
+            // æ—¶é—´
             //sb.Append("[").Append(time.ToTimeText()).Append("]");
             sb.Append("[").Append(time.ToHourBehindTimeText()).Append("]");
-            // ¿Õ¸ñ
+            // ç©ºæ ¼
             sb.Append("  ");
             sb.Append(condition);
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Google.Protobuf.WellKnownTypes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,10 +12,16 @@ namespace Framework.LogSystem
     public class LogViewUI : UIBase
     {
         [SerializeField]
+        private bool _isUpdateShowLog = true;
+        [SerializeField]
+        private bool _isStackShowLog = false;
+
+        [SerializeField]
         private GameObject _logInfoItemUITemplate;
         [SerializeField]
         private Transform _logInfoItemUIParent;
         private GameObjectPool _logInfoItemUIPool;
+        private LinkedList<LogInfo> _logInfos;// 所有显示的日志
         private LinkedList<LogInfoItemUI> _logInfoItemUIs;// 所有显示的日志项
         private LogInfoItemUI _selectLogInfoItemUI;// 当前选择的 log ui
         [SerializeField]
@@ -36,6 +41,8 @@ namespace Framework.LogSystem
         private Button _clearLogBtn, _copySelectedLogBtn, _copyAllLogBtn;
         [SerializeField]
         private Toggle _infoToggle, _warningToggle, _errorToggle, _excptionToggle;
+        [SerializeField]
+        private Toggle _updateToggle, _stackToggle;
         [SerializeField]
         private Text _logNumText;// 显示日志数量
 
@@ -57,6 +64,37 @@ namespace Framework.LogSystem
             }
         }
 
+        /// <summary>是否更新显示日志</summary>
+        public bool isUpdateShowLog
+        {
+            get => _isUpdateShowLog;
+            set
+            {
+                _isUpdateShowLog = value;
+
+                if (_isUpdateShowLog)
+                    LogInfo.logMessageReceived += OnHandleLog;
+                else
+                    LogInfo.logMessageReceived -= OnHandleLog;
+
+                _updateToggle.transform.FindOf<Text>("Label").text = _isUpdateShowLog ? "暂停\r\n更新日志" : "开始\r\n更新日志";
+            }
+        }
+
+        /// <summary>是否堆叠显示日志</summary>
+        public bool isStackShowLog
+        {
+            get => _isStackShowLog;
+            set
+            {
+                _isStackShowLog = value;
+
+                // 更新堆叠效果
+                //UpdateLogUI();
+                UpdateStackCurUI();
+            }
+        }
+
         protected override void Awake()
         {
             base.Awake();
@@ -64,6 +102,7 @@ namespace Framework.LogSystem
             _logInfoItemUIPool ??= new GameObjectPool(1, _logInfoItemUITemplate);
             //_logInfoItemUIs ??= new List<LogInfoItemUI>(_logInfoItemUIShowMaxNum);
             _logInfoItemUIs ??= new LinkedList<LogInfoItemUI>();
+            _logInfos ??= new LinkedList<LogInfo>();
             _logShowTypeNumDic ??= new Dictionary<LogShowType, LogShowTypeNum>();
 
             // 根据ui的设置初始化日志显示类型
@@ -113,6 +152,21 @@ namespace Framework.LogSystem
             Init(_errorToggle, LogShowType.Error);
             Init(_excptionToggle, LogShowType.Exception);
 
+            if (_updateToggle)
+            {
+                _updateToggle.onValueChanged.AddListener((isOn) =>
+                {
+                    isUpdateShowLog = isOn;
+                });
+            }
+
+            if (_stackToggle)
+            {
+                _stackToggle.onValueChanged.AddListener((isOn) =>
+                {
+                    isStackShowLog = isOn;
+                });
+            }
         }
 
         private void Init(Toggle toggle, LogShowType type)
@@ -152,7 +206,20 @@ namespace Framework.LogSystem
             // 更新日志显示
             UpdateLogUI();
 
-            LogInfo.logMessageReceived += OnHandleLog;
+            // 不更新的话不再接收新的日志消息，但每次启用时仍会更新最新的日志
+            if (isUpdateShowLog)
+                LogInfo.logMessageReceived += OnHandleLog;
+
+            if (_updateToggle)
+            {
+                _updateToggle.SetIsOnWithoutNotify(isUpdateShowLog);
+                _updateToggle.transform.FindOf<Text>("Label").text = isUpdateShowLog ? "暂停\r\n更新日志" : "开始\r\n更新日志";
+            }
+
+            if (_stackToggle)
+            {
+                _stackToggle.SetIsOnWithoutNotify(isStackShowLog);
+            }
         }
 
         protected override void OnDisable()
@@ -165,7 +232,7 @@ namespace Framework.LogSystem
         //private void OnHandleLog(string condition, string stackTrace, LogType type)
         private void OnHandleLog(LogInfo info)
         {
-            AddLogUI(info);
+            StackOrAddLogUI(info);
         }
 
         /// <summary>
@@ -195,9 +262,7 @@ namespace Framework.LogSystem
             }
         }
 
-        /// <summary>
-        /// 更新日志 ui
-        /// </summary>
+        /// <summary>更新日志 ui</summary>
         public void UpdateLogUI()
         {
             ClearLog();
@@ -209,41 +274,106 @@ namespace Framework.LogSystem
             for (int i = startIndex; i < LogInfo.logInfos.Count; i++)
             {
                 var info = LogInfo.logInfos[i];
-                AddLogUI(info);
+
+                StackOrAddLogUI(info);
             }
 
             //// 更新显示类型
             //ShowLogType();
         }
 
-        /// <summary>
-        /// 添加
-        /// </summary>
-        /// <param name="info"></param>
-        public void AddLogUI(LogInfo info)
+        /// <summary>更新当前堆叠</summary>
+        public void UpdateStackCurUI()
         {
-            var _ui = _logInfoItemUIPool.Get(_logInfoItemUIParent).GetComponent<LogInfoItemUI>();
-            if (_ui != null)
+            foreach (var item in _logInfoItemUIs)
+            {
+                item.logNumUI.Clear();
+            }
+            ClearLogItemUI();
+
+            //ClearLog();
+            //var _logInfos = TypePool.root.Get<LinkedList<LogInfo>>();
+            //foreach (var _ui in _logInfoItemUIs)
+            //{
+            //    _logInfos.AddLast(_ui.logInfo);
+            //}
+
+            foreach (var info in _logInfos)
+            {
+                StackOrAddLogUI(info, false);
+            }
+
+            //TypePool.root.Return(_logInfos);
+        }
+
+        /// <summary>堆叠或者添加日志项</summary>
+        public void StackOrAddLogUI(LogInfo info, bool isAddInfo = true)
+        {
+            // 根据是否堆叠决定添加ui项还是加数量
+            if (isStackShowLog)
+            {
+                StackLogUI(info, isAddInfo);
+            }
+            else
+            {
+                AddLogUI(info, isAddInfo);
+            }
+        }
+
+        /// <summary>堆叠日志项</summary>
+        public void StackLogUI(LogInfo info, bool isAddInfo = true)
+        {
+            bool find = false;
+            LogInfoItemUI itemUI = null;
+            // 尝试找到一个可以堆叠的项
+            foreach (var item in _logInfoItemUIs)
+            {
+                if (item.TryStack(info))
+                {
+                    itemUI = item;
+                    find = true;
+                    // 即使堆叠了也要添加日志信息，
+                    if (isAddInfo) _logInfos.AddLast(info);
+                    break;
+                }
+            }
+
+            // 找不到则添加
+            if (!find)
+            {
+                itemUI = AddLogUI(info, isAddInfo);
+                itemUI.num = 1;
+            }
+
+            itemUI.showNum = true;
+        }
+
+        /// <summary>添加日志项</summary>
+        public LogInfoItemUI AddLogUI(LogInfo info, bool isAddInfo = true)
+        {
+            var ui = _logInfoItemUIPool.Get(_logInfoItemUIParent).GetComponent<LogInfoItemUI>();
+            if (ui != null)
             {
                 //_ui.transform.SetParent(_logInfoItemUIParent);
                 //_ui.transform.localScale = Vector3.one;
-                _ui.transform.SetAsLastSibling();
-                if (!_ui.gameObject.activeSelf)
-                    _ui.gameObject.SetActive(true);
-                _ui.SetLogInfo(info);
-                _ui.clickEvent = () =>
+                ui.transform.SetAsLastSibling();
+                if (!ui.gameObject.activeSelf)
+                    ui.gameObject.SetActive(true);
+                ui.SetLogInfo(info);
+                ui.clickEvent = () =>
                 {
                     // 设置点击事件
-                    SelectLogItemUI(_ui);
+                    SelectLogItemUI(ui);
                 };
-                _logInfoItemUIs.AddLast(_ui);
+                _logInfoItemUIs.AddLast(ui);
+                if (isAddInfo) _logInfos.AddLast(info);
 
                 // 区分色块
-                SetLogUIFills(_ui, _logInfoItemUIs.Count);
+                SetLogUIFills(ui, _logInfoItemUIs.Count);
 
-                ShowLogItem(_ui, _logShowType, info.logType);
+                ShowLogItem(ui, _logShowType, info.logType);
 
-                AddLogShowTypeNum(_ui.logInfo.logType, 1);
+                AddLogShowTypeNum(ui.logInfo.logType, 1);
 
                 // 检查是否超过最大数量
                 while (_logInfoItemUIs.Count > _logInfoItemUIShowMaxNum && _logInfoItemUIs.Count > 0)
@@ -251,7 +381,9 @@ namespace Framework.LogSystem
                     RemoveLogUI();// 移除最老的
                 }
             }
+            return ui;
         }
+
         // 移除
         //public void RemoveLogUI(int index)
         //{
@@ -266,6 +398,7 @@ namespace Framework.LogSystem
         {
             var _ui = _logInfoItemUIs.First.Value;
             _logInfoItemUIs.RemoveFirst();
+            _logInfos.RemoveFirst();
             if (_ui != null)
             {
                 ReturnPool(_ui);
@@ -418,7 +551,7 @@ namespace Framework.LogSystem
             _logInfoItemUIPool.Return(_ui.gameObject);
         }
 
-        public void ClearLog()
+        public void ClearLogItemUI()
         {
             foreach (var item in _logInfoItemUIs)
             {
@@ -428,6 +561,12 @@ namespace Framework.LogSystem
             _logInfoItemUIs.Clear();
 
             ShowLogInfoText(null);
+        }
+
+        public void ClearLog()
+        {
+            ClearLogItemUI();
+            _logInfos.Clear();
         }
 
 

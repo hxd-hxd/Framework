@@ -1672,7 +1672,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isUpdateShowLog: 1
-  _isStackShowLog: 0
+  _isStackShowLog: 1
   _logInfoItemUITemplate: {fileID: 8523503452117872161}
   _logInfoItemUIParent: {fileID: 8935448367846483037}
   _logInfoItemUIShowMaxNum: 1000

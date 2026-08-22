@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
 namespace Framework.Core
 {
     /// <summary>
     /// 属性变量。
     /// </summary>
-    public abstract class ProperttyVariable : Variable
+    public abstract class PropertyVariable : Variable
     {
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        public ProperttyVariable()
+        public PropertyVariable()
         {
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Framework.Core
 {
@@ -18,9 +18,6 @@ namespace Framework.Core
             m_Value = default(T);
         }
 
-        /// <summary>
-        /// 获取变量类型。
-        /// </summary>
         public override Type Type
         {
             get
@@ -44,39 +41,64 @@ namespace Framework.Core
             }
         }
 
-        /// <summary>
-        /// 获取变量值。
-        /// </summary>
-        /// <returns>变量值。</returns>
-        public override object GetValue()
+        public override V GetValue<V>()
         {
-            return m_Value;
+            return (V)(object)m_Value;
         }
 
-        /// <summary>
-        /// 设置变量值。
-        /// </summary>
-        /// <param name="value">变量值。</param>
-        public override void SetValue(object value)
+        public override bool TryGetValue<V>(out V result)
         {
-            m_Value = (T)value;
+            if (m_Value is V v)
+            {
+                result = v;
+                return true;
+            }
+            result = default(V);
+            return false;
         }
 
-        /// <summary>
-        /// 清理变量值。
-        /// </summary>
+        public override void SetValue<V>(V value)
+        {
+            m_Value = (T)(object)value;
+        }
+
         public override void Clear()
         {
             m_Value = default(T);
         }
 
-        /// <summary>
-        /// 获取变量字符串。
-        /// </summary>
-        /// <returns>变量字符串。</returns>
         public override string ToString()
         {
             return (m_Value != null) ? m_Value.ToString() : "<Null>";
         }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(Variable<T> pv, T value)
+        {
+            bool result = Equals(pv.Value, value);
+            return result;
+        }
+
+        public static bool operator !=(Variable<T> pv, T value)
+        {
+            bool result = !(pv == value);
+            return result;
+        }
+
+        public static implicit operator T(Variable<T> pv)
+        {
+            var result = pv.Value;
+            return result;
+        }
+
     }
 }

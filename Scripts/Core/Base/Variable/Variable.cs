@@ -26,13 +26,16 @@ namespace Framework.Core
         /// 获取变量值。
         /// </summary>
         /// <returns>变量值。</returns>
-        public abstract object GetValue();
+        public abstract T GetValue<T>();
+
+        /// <summary>尝试获取变量值。</summary>
+        public abstract bool TryGetValue<T>(out T result);
 
         /// <summary>
         /// 设置变量值。
         /// </summary>
         /// <param name="value">变量值。</param>
-        public abstract void SetValue(object value);
+        public abstract void SetValue<T>(T value);
 
         /// <summary>
         /// 清理变量值。

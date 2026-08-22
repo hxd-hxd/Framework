@@ -7,7 +7,7 @@ namespace Framework.Runtime
     /// 属性变量。
     /// </summary>
     [Serializable]
-    public class PropertyVariable<T> : Core.ProperttyVariable<T>
+    public class PropertyVariable<T> : Core.PropertyVariable<T>
     {
         [SerializeField]
         private T _value;
@@ -68,18 +68,18 @@ namespace Framework.Runtime
         /// 获取变量值。
         /// </summary>
         /// <returns>变量值。</returns>
-        public override object GetValue()
+        public override V GetValue<V>()
         {
-            return _value;
+            return (V)(object)_value;
         }
 
         /// <summary>
         /// 设置变量值。
         /// </summary>
         /// <param name="value">变量值。</param>
-        public override void SetValue(object value)
+        public override void SetValue<V>(V value)
         {
-            InteralSetValue((T)value);
+            InteralSetValue((T)(object)value);
         }
 
         /// <summary>
@@ -124,6 +124,34 @@ namespace Framework.Runtime
             _value = value;
 
             _changeCallback?.Invoke(oldValue, value);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(PropertyVariable<T> pv, T value)
+        {
+            bool result = Equals(pv.Value, value);
+            return result;
+        }
+
+        public static bool operator !=(PropertyVariable<T> pv, T value)
+        {
+            bool result = !(pv == value);
+            return result;
+        }
+
+        public static implicit operator T(PropertyVariable<T> pv)
+        {
+            var result = pv.Value;
+            return result;
         }
 
     }

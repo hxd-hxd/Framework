@@ -6,7 +6,7 @@ namespace Framework.Core
     /// 属性变量。
     /// </summary>
     [Serializable]
-    public class ProperttyVariable<T> : ProperttyVariable
+    public class PropertyVariable<T> : PropertyVariable
     {
         private T m_Value;
         private Action<object, object> _changeCallback;
@@ -14,7 +14,7 @@ namespace Framework.Core
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        public ProperttyVariable()
+        public PropertyVariable()
         {
             m_Value = default(T);
         }
@@ -23,7 +23,7 @@ namespace Framework.Core
         /// 初始化变量的新实例。
         /// <para><paramref name="changeCallback"/>：值改变时的回调</para>
         /// </summary>
-        public ProperttyVariable(Action<object, object> changeCallback)
+        public PropertyVariable(Action<object, object> changeCallback)
         {
             m_Value = default(T);
 
@@ -72,18 +72,29 @@ namespace Framework.Core
         /// 获取变量值。
         /// </summary>
         /// <returns>变量值。</returns>
-        public override object GetValue()
+        public override V GetValue<V>()
         {
-            return m_Value;
+            return (V)(object)m_Value;
+        }
+
+        public override bool TryGetValue<V>(out V result)
+        {
+            if (m_Value is V v)
+            {
+                result = v;
+                return true;
+            }
+            result = default(V);
+            return false;
         }
 
         /// <summary>
         /// 设置变量值。
         /// </summary>
         /// <param name="value">变量值。</param>
-        public override void SetValue(object value)
+        public override void SetValue<V>(V value)
         {
-            InteralSetValue((T)value);
+            InteralSetValue((T)(object)value);
         }
 
         /// <summary>
@@ -140,19 +151,19 @@ namespace Framework.Core
             return base.GetHashCode();
         }
 
-        public static bool operator ==(ProperttyVariable<T> pv, T value)
+        public static bool operator ==(PropertyVariable<T> pv, T value)
         {
             bool result = Equals(pv.Value, value);
             return result;
         }
 
-        public static bool operator !=(ProperttyVariable<T> pv, T value)
+        public static bool operator !=(PropertyVariable<T> pv, T value)
         {
             bool result = !(pv == value);
             return result;
         }
 
-        public static implicit operator T(ProperttyVariable<T> pv)
+        public static implicit operator T(PropertyVariable<T> pv)
         {
             var result = pv.Value;
             return result;

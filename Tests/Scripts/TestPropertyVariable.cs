@@ -8,8 +8,12 @@ namespace Framework.Test
     public class TestPropertyVariable : MonoBehaviour
     {
         public PropertyVariable<Vector4> _pv_vec41;
+        [PropertyVariableHideEvent]
+        public PropertyVariable<Vector4> _pv_vec41_hide;
 
         public PropertyVariable<string> _pv_string;
+        [Range(0, 10)]
+        [PropertyVariableValue(typeof(RangeAttribute))]
         public PropertyVariable<int> _pv_int;
 
         public PropertyVariable<Vector2> _pv_vec2;

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Framework.Runtime
 {
@@ -11,7 +12,8 @@ namespace Framework.Runtime
     {
         [SerializeField]
         private T _value;
-        private Action<T, T> _changeCallback;
+        [SerializeField]
+        private UnityEvent<T, T> _onChangeCallback;
 
         /// <summary>
         /// 初始化变量的新实例。
@@ -19,17 +21,21 @@ namespace Framework.Runtime
         public PropertyVariable()
         {
             _value = default(T);
+
+            RegisterBaseOnChangeCallback();
         }
 
         /// <summary>
         /// 初始化变量的新实例。
         /// <para><paramref name="changeCallback"/>：值改变时的回调</para>
         /// </summary>
-        public PropertyVariable(Action<T, T> changeCallback)
+        public PropertyVariable(UnityAction<T, T> changeCallback)
         {
             _value = default(T);
 
-            _changeCallback = changeCallback;
+            RegisterBaseOnChangeCallback();
+
+            _onChangeCallback.AddListener(changeCallback);
         }
 
         /// <summary>
@@ -52,16 +58,9 @@ namespace Framework.Runtime
         /// <para><typeparamref name="T"/> 参数 1：旧值</para>
         /// <para><typeparamref name="T"/> 参数 2：新值</para>
         /// </summary>
-        new public event Action<T, T> changeCallback
+        new public UnityEvent<T, T> onChangeCallback
         {
-            add
-            {
-                _changeCallback += value;
-            }
-            remove
-            {
-                _changeCallback -= value;
-            }
+            get => _onChangeCallback;
         }
 
         /// <summary>
@@ -92,7 +91,7 @@ namespace Framework.Runtime
         }
 
         /// <summary>
-        /// 设置变量值，但不触发 <see cref="changeCallback"/> 回调事件。
+        /// 设置变量值，但不触发 <see cref="onChangeCallback"/> 回调事件。
         /// </summary>
         /// <param name="value">变量值。</param>
         public override void SetValueNotCallback(T value)
@@ -105,8 +104,13 @@ namespace Framework.Runtime
         /// </summary>
         public override void Clear()
         {
+            base.Clear();
+
             _value = default(T);
-            _changeCallback = null;
+            _onChangeCallback = null;
+
+            // 由于父类会清除事件，所以这里要重新注册
+            RegisterBaseOnChangeCallback();
         }
 
         /// <summary>
@@ -123,7 +127,18 @@ namespace Framework.Runtime
             var oldValue = _value;
             _value = value;
 
-            _changeCallback?.Invoke(oldValue, value);
+            _onChangeCallback?.Invoke(oldValue, value);
+        }
+
+        private void RegisterBaseOnChangeCallback()
+        {
+            base.onChangeCallback -= BaseOnChangeCallback;
+            base.onChangeCallback += BaseOnChangeCallback;
+        }
+
+        private void BaseOnChangeCallback(object a1, object a2)
+        {
+            _onChangeCallback?.Invoke((T)a1, (T)a2);
         }
 
         public override bool Equals(object obj)

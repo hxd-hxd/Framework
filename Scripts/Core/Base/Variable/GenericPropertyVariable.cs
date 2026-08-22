@@ -9,7 +9,7 @@ namespace Framework.Core
     public class PropertyVariable<T> : PropertyVariable
     {
         private T m_Value;
-        private Action<object, object> _changeCallback;
+        private Action<object, object> _onChangeCallback;
 
         /// <summary>
         /// 初始化变量的新实例。
@@ -27,18 +27,18 @@ namespace Framework.Core
         {
             m_Value = default(T);
 
-            _changeCallback = changeCallback;
+            _onChangeCallback = changeCallback;
         }
 
-        public override event Action<object, object> changeCallback
+        public override event Action<object, object> onChangeCallback
         {
             add
             {
-                _changeCallback += value;
+                _onChangeCallback += value;
             }
             remove
             {
-                _changeCallback -= value;
+                _onChangeCallback -= value;
             }
         }
 
@@ -107,7 +107,7 @@ namespace Framework.Core
         }
 
         /// <summary>
-        /// 设置变量值，但不触发 <see cref="changeCallback"/> 回调事件。
+        /// 设置变量值，但不触发 <see cref="onChangeCallback"/> 回调事件。
         /// </summary>
         /// <param name="value">变量值。</param>
         public virtual void SetValueNotCallback(T value)
@@ -121,7 +121,7 @@ namespace Framework.Core
         public override void Clear()
         {
             m_Value = default(T);
-            _changeCallback = null;
+            _onChangeCallback = null;
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Framework.Core
             var oldValue = m_Value;
             m_Value = value;
 
-            _changeCallback?.Invoke(oldValue, value);
+            _onChangeCallback?.Invoke(oldValue, value);
         }
 
         public override bool Equals(object obj)

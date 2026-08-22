@@ -19,7 +19,7 @@ namespace Framework.Core
         /// <para><typeparamref name="T"/> 参数 1：旧值</para>
         /// <para><typeparamref name="T"/> 参数 2：新值</para>
         /// </summary>
-        public abstract event Action<object, object> changeCallback;
+        public abstract event Action<object, object> onChangeCallback;
 
     }
 }

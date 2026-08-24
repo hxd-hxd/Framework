@@ -651,6 +651,334 @@ MonoBehaviour:
       _onChangeCallback:
         m_PersistentCalls:
           m_Calls: []
+  _testPV_vec3:
+    a: {x: 0, y: 0, z: 0}
+    b: {x: 0, y: 0, z: 0}
+    _pv:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: {x: 0, y: 0, z: 0}
+    _pv_Tooltip:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+  _testPV_listVec3:
+    a: []
+    b: []
+    _pv:
+      _value:
+      - {x: 0, y: 0, z: 0}
+      - {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: []
+    _pv_Tooltip:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value:
+      - {x: 0, y: 0, z: 0}
+      - {x: 0, y: 0, z: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+  _testPV_arrayVec3:
+    a: []
+    b: []
+    _pv:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: []
+    _pv_Tooltip:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+  _testPV_vec2:
+    a: {x: 0, y: 0}
+    b: {x: 0, y: 0}
+    _pv:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: {x: 0, y: 0}
+    _pv_Tooltip:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: {x: 0, y: 0}
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+  _testPV_listVec2:
+    a: []
+    b: []
+    _pv:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: []
+    _pv_Tooltip:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+  _testPV_arrayVec2:
+    a: []
+    b: []
+    _pv:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    c: []
+    _pv_Tooltip:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_MinMaxRange:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_Range:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_HideEvent_TextArea:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
+    _pv_hide:
+      _value: []
+      _onChangeCallback:
+        m_PersistentCalls:
+          m_Calls: []
   a: 0
   b: 0
   _pv_vec41:

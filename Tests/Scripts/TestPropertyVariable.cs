@@ -19,6 +19,14 @@ namespace Framework.Test
         public Test<Vector4> _testPV_vec4;
         public Test<List<Vector4>> _testPV_listVec4;
         public Test<Vector4[]> _testPV_arrayVec4;
+        
+        public Test<Vector3> _testPV_vec3;
+        public Test<List<Vector3>> _testPV_listVec3;
+        public Test<Vector3[]> _testPV_arrayVec3;
+        
+        public Test<Vector2> _testPV_vec2;
+        public Test<List<Vector2>> _testPV_listVec2;
+        public Test<Vector2[]> _testPV_arrayVec2;
 
         public int a;
         public int b;

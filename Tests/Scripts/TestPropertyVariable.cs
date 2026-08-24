@@ -9,6 +9,16 @@ namespace Framework.Test
     public class TestPropertyVariable : MonoBehaviour
     {
         public Test<int> _testPV_int;
+        public Test<List<int>> _testPV_listInt;
+        public Test<int[]> _testPV_arrayInt;
+        
+        public Test<string> _testPV_string;
+        public Test<List<string>> _testPV_listString;
+        public Test<string[]> _testPV_arrayString;
+        
+        public Test<Vector4> _testPV_vec4;
+        public Test<List<Vector4>> _testPV_listVec4;
+        public Test<Vector4[]> _testPV_arrayVec4;
 
         public int a;
         public int b;
@@ -78,6 +88,7 @@ namespace Framework.Test
             [PropertyVariableHideEvent]
             public PropertyVariable<T> _pv_HideEvent_Range;
 
+            [Header("使用 TextArea")]
             [TextArea(3, 10)]
             public PropertyVariable<T> _pv_TextArea;
 

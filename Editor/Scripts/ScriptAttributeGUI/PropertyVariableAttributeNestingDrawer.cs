@@ -12,109 +12,172 @@ namespace Framework.Editor
     /// Unity 会把字段上的 PropertyAttribute Drawer 排在类型 Drawer 之前。
     /// 若直接对 PropertyVariable（Generic）调用 Range/TextArea 等，只会显示 “Use xxx with …” 错误行。
     /// 本代理在绘制 PropertyVariable 外壳时下沉到下一层 Drawer（类型 Drawer），再由转发逻辑作用到 _value。
+    /// 非 PV 字段转发给安装当下的下一层 Drawer（原版或其它代理）；重入时改走 TrueOriginal，避免包装链成环。
     /// </summary>
     internal sealed class PropertyVariableAttributeNestingDrawer : PropertyDrawer
     {
+        private static readonly Dictionary<Type, bool> s_propertyVariableTypeCache = new Dictionary<Type, bool>();
+        private static int s_invokeDepth;
+
+        private PropertyDrawer _cachedDrawer;
+        private Type _cachedDrawerType;
+        private int _boundGeneration = -1;
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (ShouldNest(property, fieldInfo))
+            if (ShouldNestCurrent(property))
             {
                 EditorGUI.PropertyField(position, property, label, true);
                 return;
             }
 
-            if (!TryCreateOriginalDrawer(out var drawer))
+            if (!TryGetShellDrawer(s_invokeDepth > 0, out var drawer)
+                || !PropertyAttributeForwardingUtility.CanSafelyUseDrawer(drawer, property))
             {
                 EditorGUI.PropertyField(position, property, label, true);
                 return;
             }
 
-            drawer.OnGUI(position, property, label);
+            s_invokeDepth++;
+            try
+            {
+                drawer.OnGUI(position, property, label);
+            }
+            finally
+            {
+                s_invokeDepth--;
+            }
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (ShouldNest(property, fieldInfo))
+            if (ShouldNestCurrent(property))
                 return EditorGUI.GetPropertyHeight(property, label, true);
 
-            if (!TryCreateOriginalDrawer(out var drawer))
+            if (!TryGetShellDrawer(s_invokeDepth > 0, out var drawer)
+                || !PropertyAttributeForwardingUtility.CanSafelyUseDrawer(drawer, property))
                 return EditorGUI.GetPropertyHeight(property, label, true);
 
-            // TextArea/Multiline 的 GetPropertyHeight 会无条件读 stringValue；
-            // 类型不对时 Unity 在抛异常前就已 LogError，try/catch 拦不住控制台报错。
-            if (!CanSafelyQueryOriginalHeight(property))
-                return EditorGUIUtility.singleLineHeight;
-
-            return drawer.GetPropertyHeight(property, label);
+            s_invokeDepth++;
+            try
+            {
+                return drawer.GetPropertyHeight(property, label);
+            }
+            finally
+            {
+                s_invokeDepth--;
+            }
         }
 
-        bool TryCreateOriginalDrawer(out PropertyDrawer drawer)
+        bool TryGetShellDrawer(bool reentered, out PropertyDrawer drawer)
         {
             drawer = null;
             var attrType = attribute != null ? attribute.GetType() : null;
-            var originalType = PropertyVariableAttributeNesting.GetOriginalDrawerType(attrType);
-            if (originalType == null || originalType == typeof(PropertyVariableAttributeNestingDrawer))
+            var drawerType = reentered
+                ? PropertyVariableAttributeNesting.GetOriginalDrawerType(attrType)
+                : PropertyVariableAttributeNesting.GetNextDrawerType(attrType);
+
+            if (!PropertyVariableAttributeNesting.IsUsableDrawerType(drawerType))
+                drawerType = PropertyVariableAttributeNesting.GetOriginalDrawerType(attrType);
+
+            if (!PropertyVariableAttributeNesting.IsUsableDrawerType(drawerType))
                 return false;
 
-            drawer = PropertyVariableAttributeNesting.CreateDrawer(originalType, fieldInfo, attribute);
+            int generation = PropertyVariableAttributeNesting.InstallGeneration;
+            if (_boundGeneration != generation
+                || _cachedDrawerType != drawerType
+                || _cachedDrawer == null)
+            {
+                _cachedDrawer = PropertyVariableAttributeNesting.CreateDrawer(drawerType, fieldInfo, attribute);
+                _cachedDrawerType = drawerType;
+                _boundGeneration = generation;
+            }
+
+            drawer = _cachedDrawer;
             return drawer != null;
         }
 
-        /// <summary>
-        /// 原 Drawer 的 GetPropertyHeight 是否可在当前属性类型上安全调用。
-        /// </summary>
-        bool CanSafelyQueryOriginalHeight(SerializedProperty property)
+        bool ShouldNestCurrent(SerializedProperty property)
         {
-            if (property == null)
-                return false;
-
-            if (attribute is TextAreaAttribute || attribute is MultilineAttribute)
-                return property.propertyType == SerializedPropertyType.String;
-
-            return true;
+            return ShouldNest(property, fieldInfo);
         }
 
         /// <summary>
-        /// 仅当正在绘制 PropertyVariable 外壳（Generic）时下沉；
-        /// 转发到 _value（int/string 等）时走原 Drawer。
+        /// 仅当正在绘制 PropertyVariable 外壳（Generic，且带 <c>_value</c>）时下沉；
+        /// 转发到 _value（int/string/List 等）时走原 Drawer。
+        /// List 等 Generic _value 不能只凭 fieldInfo 判断，否则会当成外壳
+        /// <c>PropertyField(none)</c> 画出空标题折页。
         /// </summary>
         internal static bool ShouldNest(SerializedProperty property, FieldInfo fieldInfo)
         {
             return property != null
                 && property.propertyType == SerializedPropertyType.Generic
-                && IsPropertyVariableType(fieldInfo?.FieldType);
+                && IsPropertyVariableType(fieldInfo?.FieldType)
+                && property.FindPropertyRelative("_value") != null;
         }
 
         internal static bool IsPropertyVariableType(Type type)
         {
-            while (type != null)
+            if (type == null)
+                return false;
+            if (s_propertyVariableTypeCache.TryGetValue(type, out var cached))
+                return cached;
+
+            bool result = false;
+            var current = type;
+            while (current != null)
             {
-                if (type.IsGenericType)
+                if (current.IsGenericType)
                 {
-                    var def = type.GetGenericTypeDefinition();
+                    var def = current.GetGenericTypeDefinition();
                     if (def == typeof(PropertyVariable<>)
                         || def == typeof(Framework.Core.PropertyVariable<>))
-                        return true;
+                    {
+                        result = true;
+                        break;
+                    }
                 }
 
-                type = type.BaseType;
+                current = current.BaseType;
             }
 
-            return false;
+            s_propertyVariableTypeCache[type] = result;
+            return result;
         }
     }
 
     /// <summary>
-    /// 将 ScriptAttributeUtility 中 PropertyAttribute 的 PropertyDrawer 替换为嵌套代理。
+    /// 将 ScriptAttributeUtility 中 PropertyAttribute 的 PropertyDrawer 包一层嵌套代理。
+    /// 可重入、可链式、哨兵自愈；不把 Container[] 压成长度 1。
     /// </summary>
     [InitializeOnLoad]
     internal static class PropertyVariableAttributeNesting
     {
-        private static readonly Dictionary<Type, Type> OriginalDrawerTypes = new Dictionary<Type, Type>();
+        private const int DelayInstallCount = 8;
+        private const double WatchdogIntervalSeconds = 2.0;
+        private const string LogPrefix = "[PropertyVariable] ";
+
+        /// <summary>安装当下注册表中的下一层（原版或其它代理）。非 PV 外壳走这条链。</summary>
+        private static readonly Dictionary<Type, Type> NextDrawerTypes = new Dictionary<Type, Type>();
+
+        /// <summary>TypeCache 解析出的真正 Drawer，供转发到 _value。</summary>
+        private static readonly Dictionary<Type, Type> TypeCacheTrueOriginals = new Dictionary<Type, Type>();
+
         private static readonly FieldInfo DrawerFieldInfoField;
         private static readonly FieldInfo DrawerAttributeField;
-        private static bool _installed;
-        private static int _installAttempts;
+        private static readonly FieldInfo CustomPropertyDrawerTypeField;
+
+        private static readonly Type NestingDrawerType = typeof(PropertyVariableAttributeNestingDrawer);
+
+        private static bool _typeCacheBuilt;
+        private static bool _installInProgress;
+        private static bool _loggedInstallFailure;
+        private static bool _loggedWatchdogRecover;
+        private static int _delayInstallsRemaining;
+        private static double _lastWatchdogTime;
+        private static int _installGeneration;
+
+        public static int InstallGeneration => _installGeneration;
 
         static PropertyVariableAttributeNesting()
         {
@@ -122,31 +185,67 @@ namespace Framework.Editor
                 "m_FieldInfo", BindingFlags.Instance | BindingFlags.NonPublic);
             DrawerAttributeField = typeof(PropertyDrawer).GetField(
                 "m_Attribute", BindingFlags.Instance | BindingFlags.NonPublic);
+            CustomPropertyDrawerTypeField = typeof(CustomPropertyDrawer).GetField(
+                "m_Type", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            // 等程序集与 TypeCache 就绪后再安装；立即尝试一次，失败则 delayCall 重试
+            EditorApplication.delayCall += DelayedInstall;
+            EditorApplication.update -= Watchdog;
+            EditorApplication.update += Watchdog;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+
             try
             {
                 Install();
             }
-            catch
+            catch (Exception e)
             {
-                // ignore
+                LogInstallFailure(e.Message);
             }
-
-            if (!_installed)
-                EditorApplication.delayCall += Install;
         }
 
+        /// <summary>真正的特性 Drawer，供转发到 _value；不是包装链上的代理。</summary>
         public static Type GetOriginalDrawerType(Type attributeType)
         {
             if (attributeType == null)
                 return null;
-            return OriginalDrawerTypes.TryGetValue(attributeType, out var type) ? type : null;
+
+            EnsureTypeCacheTrueOriginals();
+            if (TypeCacheTrueOriginals.TryGetValue(attributeType, out var cached)
+                && IsUsableDrawerType(cached))
+                return cached;
+
+            if (NextDrawerTypes.TryGetValue(attributeType, out var next)
+                && IsUsableDrawerType(next)
+                && !NameLooksLikeProxy(next.Name))
+                return next;
+
+            if (NextDrawerTypes.TryGetValue(attributeType, out next)
+                && IsUsableDrawerType(next))
+                return next;
+
+            return null;
+        }
+
+        /// <summary>非 PV 外壳应调用的下一层 Drawer。</summary>
+        public static Type GetNextDrawerType(Type attributeType)
+        {
+            if (attributeType == null)
+                return null;
+            return NextDrawerTypes.TryGetValue(attributeType, out var type) ? type : null;
+        }
+
+        public static bool IsUsableDrawerType(Type drawerType)
+        {
+            return drawerType != null
+                && drawerType != NestingDrawerType
+                && typeof(PropertyDrawer).IsAssignableFrom(drawerType)
+                && !typeof(DecoratorDrawer).IsAssignableFrom(drawerType);
         }
 
         public static PropertyDrawer CreateDrawer(Type drawerType, FieldInfo fieldInfo, PropertyAttribute attribute)
         {
-            if (drawerType == null || !typeof(PropertyDrawer).IsAssignableFrom(drawerType))
+            if (!IsUsableDrawerType(drawerType))
                 return null;
 
             var drawer = (PropertyDrawer)Activator.CreateInstance(drawerType);
@@ -155,31 +254,90 @@ namespace Framework.Editor
             return drawer;
         }
 
-        static void Install()
+        static void DelayedInstall()
         {
-            if (_installed)
+            Install();
+            _delayInstallsRemaining++;
+            if (_delayInstallsRemaining < DelayInstallCount)
+                EditorApplication.delayCall += DelayedInstall;
+        }
+
+        static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode
+                || state == PlayModeStateChange.EnteredEditMode)
+                Install();
+        }
+
+        static void Watchdog()
+        {
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
                 return;
 
-            _installAttempts++;
+            double now = EditorApplication.timeSinceStartup;
+            if (now - _lastWatchdogTime < WatchdogIntervalSeconds)
+                return;
+            _lastWatchdogTime = now;
+
+            if (IsSentinelOurs())
+                return;
+
+            Install();
+            if (IsSentinelOurs())
+            {
+                if (!_loggedWatchdogRecover)
+                {
+                    _loggedWatchdogRecover = true;
+                    Debug.LogWarning(LogPrefix + "Attribute nesting sentinel lost; registry re-wrapped.");
+                }
+            }
+            else
+            {
+                LogInstallFailure("sentinel is not nesting drawer");
+            }
+        }
+
+        static void Install()
+        {
+            if (_installInProgress)
+                return;
+
+            _installInProgress = true;
             try
             {
-                // 强制构建 Drawer 缓存
                 ForceBuildDrawerCache();
-
-                if (TryInstallModernCache() || TryInstallLegacyCache())
+                bool changed = TryInstallModernCache();
+                changed |= TryInstallLegacyCache();
+                if (changed)
                 {
-                    _installed = true;
+                    _installGeneration++;
                     ClearHandlerCaches();
-                    return;
+                    ClearStaticTypeCache();
+                    _loggedInstallFailure = false;
+                    _loggedWatchdogRecover = false;
                 }
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[PropertyVariable] Attribute nesting install failed: {e.Message}");
+                LogInstallFailure(e.Message);
             }
+            finally
+            {
+                _installInProgress = false;
+            }
+        }
 
-            if (_installAttempts < 10)
-                EditorApplication.delayCall += Install;
+        static bool IsSentinelOurs()
+        {
+            return PeekRegisteredDrawerType(typeof(RangeAttribute)) == NestingDrawerType;
+        }
+
+        static void LogInstallFailure(string message)
+        {
+            if (_loggedInstallFailure)
+                return;
+            _loggedInstallFailure = true;
+            Debug.LogWarning(LogPrefix + "Attribute nesting install failed: " + message);
         }
 
         static void ForceBuildDrawerCache()
@@ -188,8 +346,8 @@ namespace Framework.Editor
             if (utilityType == null)
                 return;
 
-            // 新版签名可能带多个参数，尽量触发缓存构建
-            foreach (var method in utilityType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (var method in utilityType.GetMethods(
+                         BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
             {
                 if (method.Name != "GetDrawerTypeForType" && method.Name != "GetDrawerTypeForPropertyAndType")
                     continue;
@@ -210,6 +368,26 @@ namespace Framework.Editor
                         method.Invoke(null, new object[] { typeof(RangeAttribute), null, false });
                         return;
                     }
+
+                    if (ps.Length >= 1 && ps[0].ParameterType == typeof(Type))
+                    {
+                        var args = new object[ps.Length];
+                        args[0] = typeof(RangeAttribute);
+                        for (int i = 1; i < ps.Length; i++)
+                        {
+                            if (ps[i].ParameterType == typeof(bool))
+                                args[i] = false;
+                            else if (ps[i].ParameterType == typeof(Type[]))
+                                args[i] = null;
+                            else
+                                args[i] = ps[i].ParameterType.IsValueType
+                                    ? Activator.CreateInstance(ps[i].ParameterType)
+                                    : null;
+                        }
+
+                        method.Invoke(null, args);
+                        return;
+                    }
                 }
                 catch
                 {
@@ -223,9 +401,98 @@ namespace Framework.Editor
             return typeof(EditorGUI).Assembly.GetType("UnityEditor.ScriptAttributeUtility");
         }
 
+        static Type PeekRegisteredDrawerType(Type attributeType)
+        {
+            if (attributeType == null)
+                return null;
+
+            Type modern = null;
+            if (TryGetModernDictionary(out var modernDict, out var containerDrawerField)
+                && modernDict.Contains(attributeType)
+                && modernDict[attributeType] is Array containers
+                && containers.Length > 0)
+            {
+                modern = containerDrawerField.GetValue(containers.GetValue(0)) as Type;
+            }
+
+            Type legacy = null;
+            if (TryGetLegacyDictionary(out var legacyDict, out var keySetDrawerField, out _)
+                && legacyDict.Contains(attributeType))
+            {
+                legacy = keySetDrawerField.GetValue(legacyDict[attributeType]) as Type;
+            }
+
+            if (modern == NestingDrawerType || legacy == NestingDrawerType)
+                return NestingDrawerType;
+            return modern ?? legacy;
+        }
+
         /// <summary>Unity 新版：Lazy&lt;Dictionary&lt;Type, CustomPropertyDrawerContainer[]&gt;&gt;</summary>
         static bool TryInstallModernCache()
         {
+            if (!TryGetModernDictionary(out var dict, out var drawerTypeField))
+                return false;
+
+            var keys = CopyAttributeKeys(dict);
+            bool changed = false;
+            foreach (var attrType in keys)
+            {
+                if (!(dict[attrType] is Array containers) || containers.Length == 0)
+                    continue;
+
+                for (int i = 0; i < containers.Length; i++)
+                {
+                    var boxed = containers.GetValue(i);
+                    if (boxed == null)
+                        continue;
+
+                    var current = drawerTypeField.GetValue(boxed) as Type;
+                    if (!IsUsableDrawerType(current))
+                        continue;
+
+                    RememberNextDrawer(attrType, current);
+                    drawerTypeField.SetValue(boxed, NestingDrawerType);
+                    containers.SetValue(boxed, i);
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        /// <summary>Unity 旧版：Dictionary&lt;Type, DrawerKeySet&gt;</summary>
+        static bool TryInstallLegacyCache()
+        {
+            if (!TryGetLegacyDictionary(out var dict, out var drawerField, out var typeField))
+                return false;
+
+            var keys = CopyAttributeKeys(dict);
+            bool changed = false;
+            foreach (var attrType in keys)
+            {
+                var keySet = dict[attrType];
+                if (keySet == null)
+                    continue;
+
+                var current = drawerField.GetValue(keySet) as Type;
+                if (!IsUsableDrawerType(current))
+                    continue;
+
+                RememberNextDrawer(attrType, current);
+                drawerField.SetValue(keySet, NestingDrawerType);
+                typeField?.SetValue(keySet, attrType);
+                dict[attrType] = keySet;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        static bool TryGetModernDictionary(out IDictionary dict, out FieldInfo drawerTypeField)
+        {
+            dict = null;
+            drawerTypeField = null;
+
             var utilityType = GetScriptAttributeUtilityType();
             if (utilityType == null)
                 return false;
@@ -240,9 +507,14 @@ namespace Framework.Editor
             if (lazy == null)
                 return false;
 
-            var valueProp = lazy.GetType().GetProperty("Value");
-            var dictObj = valueProp?.GetValue(lazy);
-            if (!(dictObj is IDictionary dict))
+            object dictObj = lazy;
+            if (!(dictObj is IDictionary))
+            {
+                var valueProp = lazy.GetType().GetProperty("Value");
+                dictObj = valueProp?.GetValue(lazy);
+            }
+
+            if (!(dictObj is IDictionary found))
                 return false;
 
             var containerType = utilityType.GetNestedType(
@@ -251,99 +523,23 @@ namespace Framework.Editor
             if (containerType == null)
                 return false;
 
-            var drawerTypeField = containerType.GetField(
-                "drawerType", BindingFlags.Instance | BindingFlags.Public);
+            drawerTypeField = FindDrawerTypeField(containerType);
             if (drawerTypeField == null)
                 return false;
 
-            ConstructorInfo containerCtor = null;
-            foreach (var ctor in containerType.GetConstructors(
-                         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-            {
-                var ps = ctor.GetParameters();
-                if (ps.Length >= 1 && ps[0].ParameterType == typeof(Type))
-                {
-                    containerCtor = ctor;
-                    break;
-                }
-            }
-
-            if (containerCtor == null)
-                return false;
-
-            var keys = new List<Type>();
-            foreach (var key in dict.Keys)
-            {
-                if (key is Type t)
-                    keys.Add(t);
-            }
-
-            bool changed = false;
-            foreach (var attrType in keys)
-            {
-                if (!typeof(PropertyAttribute).IsAssignableFrom(attrType))
-                    continue;
-
-                var containers = dict[attrType] as Array;
-                if (containers == null || containers.Length == 0)
-                    continue;
-
-                var first = containers.GetValue(0);
-                var originalDrawer = drawerTypeField.GetValue(first) as Type;
-                if (originalDrawer == null)
-                    continue;
-                if (!typeof(PropertyDrawer).IsAssignableFrom(originalDrawer))
-                    continue;
-                if (typeof(DecoratorDrawer).IsAssignableFrom(originalDrawer))
-                    continue;
-                if (originalDrawer == typeof(PropertyVariableAttributeNestingDrawer))
-                    continue;
-
-                if (!OriginalDrawerTypes.ContainsKey(attrType))
-                    OriginalDrawerTypes[attrType] = originalDrawer;
-
-                object newContainer;
-                var ps = containerCtor.GetParameters();
-                if (ps.Length == 3)
-                    newContainer = containerCtor.Invoke(new object[]
-                    {
-                        typeof(PropertyVariableAttributeNestingDrawer),
-                        null,
-                        false
-                    });
-                else if (ps.Length == 2)
-                    newContainer = containerCtor.Invoke(new object[]
-                    {
-                        typeof(PropertyVariableAttributeNestingDrawer),
-                        false
-                    });
-                else
-                    newContainer = containerCtor.Invoke(new object[]
-                    {
-                        typeof(PropertyVariableAttributeNestingDrawer)
-                    });
-
-                var newArray = Array.CreateInstance(containerType, 1);
-                newArray.SetValue(newContainer, 0);
-                dict[attrType] = newArray;
-                changed = true;
-            }
-
-            if (changed)
-            {
-                var staticCache = utilityType.GetField(
-                    "k_DrawerStaticTypesCache",
-                    BindingFlags.Static | BindingFlags.NonPublic);
-                if (staticCache?.GetValue(null) is IDictionary cacheDict)
-                    cacheDict.Clear();
-            }
-
-            return changed;
+            dict = found;
+            return true;
         }
 
-        /// <summary>Unity 旧版：Dictionary&lt;Type, DrawerKeySet&gt;</summary>
-        static bool TryInstallLegacyCache()
+        static bool TryGetLegacyDictionary(
+            out IDictionary dict,
+            out FieldInfo drawerField,
+            out FieldInfo typeField)
         {
+            dict = null;
+            drawerField = null;
+            typeField = null;
+
             var utilityType = GetScriptAttributeUtilityType();
             if (utilityType == null)
                 return false;
@@ -354,62 +550,108 @@ namespace Framework.Editor
             if (dictField == null)
                 return false;
 
-            // 触发构建
-            var getDrawer = utilityType.GetMethod(
-                "GetDrawerTypeForType",
-                BindingFlags.Static | BindingFlags.NonPublic,
-                null,
-                new[] { typeof(Type) },
-                null);
-            getDrawer?.Invoke(null, new object[] { typeof(RangeAttribute) });
-
-            if (!(dictField.GetValue(null) is IDictionary dict))
+            if (!(dictField.GetValue(null) is IDictionary found))
                 return false;
 
             var keySetType = utilityType.GetNestedType("DrawerKeySet", BindingFlags.NonPublic);
             if (keySetType == null)
                 return false;
 
-            var drawerField = keySetType.GetField("drawer", BindingFlags.Instance | BindingFlags.Public);
-            var typeField = keySetType.GetField("type", BindingFlags.Instance | BindingFlags.Public);
+            drawerField = FindDrawerTypeField(keySetType);
+            typeField = keySetType.GetField("type", BindingFlags.Instance | BindingFlags.Public)
+                ?? keySetType.GetField("type", BindingFlags.Instance | BindingFlags.NonPublic);
             if (drawerField == null)
                 return false;
 
+            dict = found;
+            return true;
+        }
+
+        static FieldInfo FindDrawerTypeField(Type entryType)
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            return entryType.GetField("drawerType", flags)
+                ?? entryType.GetField("drawer", flags);
+        }
+
+        static List<Type> CopyAttributeKeys(IDictionary dict)
+        {
             var keys = new List<Type>();
             foreach (var key in dict.Keys)
             {
-                if (key is Type t)
+                if (key is Type t && typeof(PropertyAttribute).IsAssignableFrom(t))
                     keys.Add(t);
             }
 
-            bool changed = false;
-            foreach (var attrType in keys)
+            return keys;
+        }
+
+        static void RememberNextDrawer(Type attributeType, Type currentDrawer)
+        {
+            NextDrawerTypes[attributeType] = currentDrawer;
+        }
+
+        static void EnsureTypeCacheTrueOriginals()
+        {
+            if (_typeCacheBuilt)
+                return;
+            _typeCacheBuilt = true;
+
+            var types = TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>();
+            for (int i = 0; i < types.Count; i++)
             {
-                if (!typeof(PropertyAttribute).IsAssignableFrom(attrType))
+                var type = types[i];
+                if (!IsUsableDrawerType(type))
                     continue;
 
-                var keySet = dict[attrType];
-                var originalDrawer = drawerField.GetValue(keySet) as Type;
-                if (originalDrawer == null)
-                    continue;
-                if (!typeof(PropertyDrawer).IsAssignableFrom(originalDrawer))
-                    continue;
-                if (typeof(DecoratorDrawer).IsAssignableFrom(originalDrawer))
-                    continue;
-                if (originalDrawer == typeof(PropertyVariableAttributeNestingDrawer))
-                    continue;
+                var customDrawerAttributes = type.GetCustomAttributes(typeof(CustomPropertyDrawer), false);
+                for (int j = 0; j < customDrawerAttributes.Length; j++)
+                {
+                    var target = GetCustomPropertyDrawerType((CustomPropertyDrawer)customDrawerAttributes[j]);
+                    if (target == null || !typeof(PropertyAttribute).IsAssignableFrom(target))
+                        continue;
 
-                if (!OriginalDrawerTypes.ContainsKey(attrType))
-                    OriginalDrawerTypes[attrType] = originalDrawer;
-
-                var newKeySet = Activator.CreateInstance(keySetType);
-                drawerField.SetValue(newKeySet, typeof(PropertyVariableAttributeNestingDrawer));
-                typeField?.SetValue(newKeySet, attrType);
-                dict[attrType] = newKeySet;
-                changed = true;
+                    if (!TypeCacheTrueOriginals.TryGetValue(target, out var existing)
+                        || ScoreTrueOriginal(type) > ScoreTrueOriginal(existing))
+                        TypeCacheTrueOriginals[target] = type;
+                }
             }
+        }
 
-            return changed;
+        static int ScoreTrueOriginal(Type drawerType)
+        {
+            if (drawerType == null)
+                return int.MinValue;
+
+            int score = 0;
+            string asm = drawerType.Assembly.GetName().Name;
+            if (asm == "UnityEditor" || asm.StartsWith("UnityEditor."))
+                score += 100;
+
+            string ns = drawerType.Namespace ?? string.Empty;
+            if (ns.StartsWith("UnityEditor") || ns == "UnityEngine")
+                score += 50;
+
+            if (NameLooksLikeProxy(drawerType.Name))
+                score -= 80;
+
+            return score;
+        }
+
+        static bool NameLooksLikeProxy(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return false;
+            return name.IndexOf("Proxy", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Wrapper", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Nesting", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Harmony", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Patch", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static Type GetCustomPropertyDrawerType(CustomPropertyDrawer customDrawer)
+        {
+            return CustomPropertyDrawerTypeField?.GetValue(customDrawer) as Type;
         }
 
         static void ClearHandlerCaches()
@@ -419,6 +661,16 @@ namespace Framework.Editor
                 "ClearGlobalCache",
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             clear?.Invoke(null, null);
+        }
+
+        static void ClearStaticTypeCache()
+        {
+            var utilityType = GetScriptAttributeUtilityType();
+            var staticCache = utilityType?.GetField(
+                "k_DrawerStaticTypesCache",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            if (staticCache?.GetValue(null) is IDictionary cacheDict)
+                cacheDict.Clear();
         }
     }
 }

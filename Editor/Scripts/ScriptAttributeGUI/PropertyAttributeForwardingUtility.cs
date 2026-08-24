@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Framework.Runtime;
 using UnityEditor;
@@ -21,6 +20,12 @@ namespace Framework.Editor
     /// </summary>
     internal static class PropertyAttributeForwardingUtility
     {
+        private struct FieldDrawerSpec
+        {
+            public Type DrawerType;
+            public PropertyAttribute Attribute;
+        }
+
         private static readonly HashSet<Type> SkipAttributeTypes = new HashSet<Type>
         {
             typeof(PropertyVariableHideEventAttribute),
@@ -29,37 +34,23 @@ namespace Framework.Editor
 
         private static readonly FieldInfo DrawerFieldInfoField;
         private static readonly FieldInfo DrawerAttributeField;
-        private static readonly MethodInfo GetDrawerTypeForPropertyMethod;
-        private static readonly MethodInfo GetDrawerTypeForPropertyWithSerializedPropertyMethod;
 
-        /// <summary>按路径缓存 Drawer，保证同字段 GetPropertyHeight / OnGUI 共用实例与宽度状态。</summary>
-        private static readonly Dictionary<string, PropertyDrawer> s_drawerCache = new Dictionary<string, PropertyDrawer>();
-        private const int DrawerCacheCapacity = 48;
+        /// <summary>特性 → 真正的 Drawer 类型；value 为 null 表示确认没有 PropertyDrawer（负缓存）。</summary>
+        private static readonly Dictionary<Type, Type> s_drawerTypeByAttribute = new Dictionary<Type, Type>();
+
+        /// <summary>字段 → 转发规格；null 表示该字段没有可转发 Drawer。</summary>
+        private static readonly Dictionary<FieldInfo, FieldDrawerSpec?> s_fieldSpecCache =
+            new Dictionary<FieldInfo, FieldDrawerSpec?>();
+
+        /// <summary>按 FieldInfo 缓存 Drawer 实例，保证同字段 GetPropertyHeight / OnGUI 共用宽度状态。</summary>
+        private static readonly Dictionary<FieldInfo, PropertyDrawer> s_drawerInstanceCache =
+            new Dictionary<FieldInfo, PropertyDrawer>();
 
         static PropertyAttributeForwardingUtility()
         {
             var drawerType = typeof(PropertyDrawer);
             DrawerFieldInfoField = drawerType.GetField("m_FieldInfo", BindingFlags.NonPublic | BindingFlags.Instance);
             DrawerAttributeField = drawerType.GetField("m_Attribute", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            var scriptAttributeUtility = typeof(EditorGUI).Assembly.GetType("UnityEditor.ScriptAttributeUtility");
-            if (scriptAttributeUtility == null)
-                return;
-
-            const BindingFlags flags = BindingFlags.Static | BindingFlags.NonPublic;
-            GetDrawerTypeForPropertyMethod = scriptAttributeUtility.GetMethod(
-                "GetDrawerTypeForProperty",
-                flags,
-                null,
-                new[] { typeof(Type) },
-                null);
-
-            GetDrawerTypeForPropertyWithSerializedPropertyMethod = scriptAttributeUtility.GetMethod(
-                "GetDrawerTypeForProperty",
-                flags,
-                null,
-                new[] { typeof(SerializedProperty), typeof(Type) },
-                null);
         }
 
         public static void DrawProperty(
@@ -69,13 +60,15 @@ namespace Framework.Editor
             FieldInfo sourceFieldInfo,
             bool includeChildren = true)
         {
-            if (!TryGetPropertyDrawer(sourceFieldInfo, property, out var drawer))
+            if (!TryGetPropertyDrawer(sourceFieldInfo, property, out var drawer)
+                || !CanSafelyUseDrawer(drawer, property))
             {
                 EditorGUI.PropertyField(position, property, label, includeChildren);
                 return;
             }
 
-            drawer.OnGUI(position, property, label);
+            if (!TryDrawForwarded(position, property, label, drawer))
+                drawer.OnGUI(position, property, label);
         }
 
         public static float GetPropertyHeight(
@@ -84,7 +77,8 @@ namespace Framework.Editor
             FieldInfo sourceFieldInfo,
             bool includeChildren = true)
         {
-            if (!TryGetPropertyDrawer(sourceFieldInfo, property, out var drawer))
+            if (!TryGetPropertyDrawer(sourceFieldInfo, property, out var drawer)
+                || !CanSafelyUseDrawer(drawer, property))
                 return EditorGUI.GetPropertyHeight(property, label, includeChildren);
 
             return drawer.GetPropertyHeight(property, label);
@@ -101,19 +95,127 @@ namespace Framework.Editor
             return TryGetPropertyDrawer(sourceFieldInfo, property, out drawer);
         }
 
+        /// <summary>
+        /// Unity 的 TextArea/Multiline 内置 Drawer 嵌套在自定义 PropertyDrawer 中会把标题画两次
+        /// （HandlePrefixLabel 一次 + IndentedRect 错位一次）。由这里自绘并返回 true。
+        /// </summary>
+        public static bool TryDrawForwarded(
+            Rect position,
+            SerializedProperty property,
+            GUIContent label,
+            PropertyDrawer drawer)
+        {
+            if (drawer == null || property == null)
+                return false;
+
+            if (drawer.attribute is TextAreaAttribute)
+            {
+                DrawTextArea(position, property, label);
+                return true;
+            }
+
+            if (drawer.attribute is MultilineAttribute)
+            {
+                DrawMultiline(position, property, label);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 原 Drawer 在当前属性类型上是否可安全调用（避免 TextArea 读 stringValue 等每帧 LogError）。
+        /// </summary>
+        public static bool CanSafelyUseDrawer(PropertyDrawer drawer, SerializedProperty property)
+        {
+            if (drawer == null || property == null)
+                return false;
+            return CanSafelyUseAttribute(drawer.attribute, property);
+        }
+
+        public static bool CanSafelyUseAttribute(PropertyAttribute attribute, SerializedProperty property)
+        {
+            if (property == null)
+                return false;
+            if (attribute == null)
+                return true;
+
+            if (attribute is TextAreaAttribute || attribute is MultilineAttribute)
+                return property.propertyType == SerializedPropertyType.String;
+
+            if (attribute is RangeAttribute)
+            {
+                return property.propertyType == SerializedPropertyType.Float
+                    || property.propertyType == SerializedPropertyType.Integer;
+            }
+
+            return true;
+        }
+
+        static void DrawTextArea(Rect position, SerializedProperty property, GUIContent label)
+        {
+            float line = EditorGUIUtility.singleLineHeight;
+            var indented = EditorGUI.IndentedRect(position);
+            indented.height = position.height;
+
+            int oldIndent = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+
+            var textRect = indented;
+            if (label != null && !string.IsNullOrEmpty(label.text))
+            {
+                EditorGUI.LabelField(new Rect(indented.x, indented.y, indented.width, line), label);
+                textRect = new Rect(
+                    indented.x,
+                    indented.y + line,
+                    indented.width,
+                    Mathf.Max(0f, indented.height - line));
+            }
+
+            EditorGUI.BeginChangeCheck();
+            string newValue = EditorGUI.TextArea(textRect, property.stringValue ?? string.Empty);
+            if (EditorGUI.EndChangeCheck())
+                property.stringValue = newValue;
+
+            EditorGUI.indentLevel = oldIndent;
+        }
+
+        static void DrawMultiline(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var indented = EditorGUI.IndentedRect(position);
+            indented.height = position.height;
+
+            int oldIndent = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+
+            var textRect = indented;
+            if (label != null && !string.IsNullOrEmpty(label.text))
+            {
+                float labelWidth = Mathf.Max(0f, EditorGUIUtility.labelWidth - (indented.x - position.x));
+                EditorGUI.LabelField(
+                    new Rect(indented.x, indented.y, labelWidth, EditorGUIUtility.singleLineHeight),
+                    label);
+                textRect = new Rect(
+                    indented.x + labelWidth,
+                    indented.y,
+                    Mathf.Max(0f, indented.width - labelWidth),
+                    indented.height);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            string newValue = EditorGUI.TextArea(textRect, property.stringValue ?? string.Empty);
+            if (EditorGUI.EndChangeCheck())
+                property.stringValue = newValue;
+
+            EditorGUI.indentLevel = oldIndent;
+        }
+
         /// <summary>偏窄估算宽：无 pos 时宁可略高，避免 Hint 叠到下一控件。</summary>
         public static float EstimateLayoutWidth()
         {
             return Mathf.Max(
                 EditorGUIUtility.currentViewWidth - 70f - EditorGUI.indentLevel * 15f,
                 80f);
-        }
-
-        private static void EnsureDrawerCacheCapacity()
-        {
-            // 跨帧保留实例以复用 _layoutWidth；超限清空，避免选中大量对象时无限增长
-            if (s_drawerCache.Count > DrawerCacheCapacity)
-                s_drawerCache.Clear();
         }
 
         private static bool TryGetPropertyDrawer(
@@ -125,117 +227,102 @@ namespace Framework.Editor
             if (sourceFieldInfo == null)
                 return false;
 
-            EnsureDrawerCacheCapacity();
+            if (s_drawerInstanceCache.TryGetValue(sourceFieldInfo, out drawer))
+                return true;
 
-            // 从后往前：与 Unity 多特性时取最后一个有 Drawer 的行为一致
-            var attributes = sourceFieldInfo.GetCustomAttributes<PropertyAttribute>(true).ToArray();
+            if (!TryGetFieldDrawerSpec(sourceFieldInfo, out var spec))
+                return false;
+
+            drawer = CreateDrawer(spec.DrawerType, sourceFieldInfo, spec.Attribute);
+            if (drawer == null)
+                return false;
+
+            s_drawerInstanceCache[sourceFieldInfo] = drawer;
+            return true;
+        }
+
+        private static bool TryGetFieldDrawerSpec(
+            FieldInfo sourceFieldInfo,
+            out FieldDrawerSpec spec)
+        {
+            if (s_fieldSpecCache.TryGetValue(sourceFieldInfo, out var cached))
+            {
+                if (cached.HasValue)
+                {
+                    spec = cached.Value;
+                    return true;
+                }
+
+                spec = default;
+                return false;
+            }
+
+            spec = default;
+            FieldDrawerSpec? resolved = null;
+            bool allAttributesResolved = true;
+            var attributes = sourceFieldInfo.GetCustomAttributes(typeof(PropertyAttribute), true);
             for (int i = attributes.Length - 1; i >= 0; i--)
             {
-                var attribute = attributes[i];
-                if (SkipAttributeTypes.Contains(attribute.GetType()))
+                var attribute = (PropertyAttribute)attributes[i];
+                var attrType = attribute.GetType();
+                if (SkipAttributeTypes.Contains(attrType))
                     continue;
 
-                var drawerType = GetDrawerType(property, attribute.GetType());
+                var drawerType = GetDrawerType(attrType);
                 if (drawerType == null)
+                {
+                    if (!s_drawerTypeByAttribute.ContainsKey(attrType))
+                        allAttributesResolved = false;
                     continue;
+                }
 
-                string cacheKey = MakeCacheKey(sourceFieldInfo, property, attribute.GetType());
-                if (s_drawerCache.TryGetValue(cacheKey, out drawer) && drawer != null)
-                    return true;
+                resolved = new FieldDrawerSpec
+                {
+                    DrawerType = drawerType,
+                    Attribute = attribute,
+                };
+                break;
+            }
 
-                drawer = (PropertyDrawer)Activator.CreateInstance(drawerType);
-                DrawerFieldInfoField?.SetValue(drawer, sourceFieldInfo);
-                DrawerAttributeField?.SetValue(drawer, attribute);
-                s_drawerCache[cacheKey] = drawer;
+            if (resolved.HasValue)
+            {
+                s_fieldSpecCache[sourceFieldInfo] = resolved;
+                spec = resolved.Value;
                 return true;
             }
+
+            if (allAttributesResolved)
+                s_fieldSpecCache[sourceFieldInfo] = null;
 
             return false;
         }
 
-        private static string MakeCacheKey(FieldInfo fieldInfo, SerializedProperty property, Type attributeType)
+        private static PropertyDrawer CreateDrawer(
+            Type drawerType,
+            FieldInfo sourceFieldInfo,
+            PropertyAttribute attribute)
         {
-            return string.Concat(
-                property.propertyPath, "\n",
-                fieldInfo.DeclaringType != null ? fieldInfo.DeclaringType.FullName : "",
-                ".", fieldInfo.Name, "\n",
-                attributeType.FullName);
+            if (!PropertyVariableAttributeNesting.IsUsableDrawerType(drawerType))
+                return null;
+
+            var drawer = (PropertyDrawer)Activator.CreateInstance(drawerType);
+            DrawerFieldInfoField?.SetValue(drawer, sourceFieldInfo);
+            DrawerAttributeField?.SetValue(drawer, attribute);
+            return drawer;
         }
 
-        private static Type GetDrawerType(SerializedProperty property, Type attributeType)
+        private static Type GetDrawerType(Type attributeType)
         {
-            // 优先使用安装器保存的原始 Drawer（避开嵌套代理，直接画 _value）
+            if (attributeType == null)
+                return null;
+
+            if (s_drawerTypeByAttribute.TryGetValue(attributeType, out var cached))
+                return cached;
+
             var original = PropertyVariableAttributeNesting.GetOriginalDrawerType(attributeType);
-            if (original != null && original != typeof(PropertyVariableAttributeNestingDrawer))
-                return original;
-
-            if (GetDrawerTypeForPropertyWithSerializedPropertyMethod != null)
-            {
-                var drawerType = GetDrawerTypeForPropertyWithSerializedPropertyMethod.Invoke(
-                    null,
-                    new object[] { property, attributeType }) as Type;
-                if (drawerType != null && drawerType != typeof(PropertyVariableAttributeNestingDrawer))
-                    return drawerType;
-                if (drawerType == typeof(PropertyVariableAttributeNestingDrawer))
-                {
-                    original = PropertyVariableAttributeNesting.GetOriginalDrawerType(attributeType);
-                    if (original != null)
-                        return original;
-                }
-            }
-
-            if (GetDrawerTypeForPropertyMethod != null)
-            {
-                var drawerType = GetDrawerTypeForPropertyMethod.Invoke(null, new object[] { attributeType }) as Type;
-                if (drawerType != null && drawerType != typeof(PropertyVariableAttributeNestingDrawer))
-                    return drawerType;
-            }
-
-            return FindDrawerType(attributeType);
-        }
-
-        private static Type FindDrawerType(Type attributeType)
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type[] types;
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    types = ex.Types;
-                }
-
-                if (types == null)
-                    continue;
-
-                foreach (var type in types)
-                {
-                    if (type == null || !typeof(PropertyDrawer).IsAssignableFrom(type))
-                        continue;
-
-                    var customDrawerAttributes = type.GetCustomAttributes(typeof(CustomPropertyDrawer), false);
-                    foreach (CustomPropertyDrawer customDrawer in customDrawerAttributes)
-                    {
-                        var drawerTarget = GetCustomPropertyDrawerType(customDrawer);
-                        if (drawerTarget == attributeType
-                            && type != typeof(PropertyVariableAttributeNestingDrawer))
-                            return type;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private static Type GetCustomPropertyDrawerType(CustomPropertyDrawer customDrawer)
-        {
-            var field = typeof(CustomPropertyDrawer).GetField(
-                "m_Type",
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            return field?.GetValue(customDrawer) as Type;
+            var usable = PropertyVariableAttributeNesting.IsUsableDrawerType(original) ? original : null;
+            s_drawerTypeByAttribute[attributeType] = usable;
+            return usable;
         }
     }
 }

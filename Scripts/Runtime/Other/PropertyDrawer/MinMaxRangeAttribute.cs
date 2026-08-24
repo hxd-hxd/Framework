@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Framework
 {
     /// <summary>
-    /// ¹¦ÄÜÀàËÆ <see cref="RangeAttribute"/>£¬Ö§³ÖÉè¶¨ <see cref="MinMax{T}"/> T Îª <see cref="float"/> ¡¢<see cref="int"/> µÈÊıÖµÀàĞÍµÄ´óĞ¡·¶Î§
+    /// åŠŸèƒ½ç±»ä¼¼ <see cref="RangeAttribute"/>ï¼Œæ”¯æŒè®¾å®š <see cref="MinMax{T}"/> T ä¸º <see cref="float"/> ã€<see cref="int"/> ç­‰æ•°å€¼ç±»å‹çš„å¤§å°èŒƒå›´
     /// </summary>
     [System.AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public class MinMaxRangeAttribute : PropertyAttribute

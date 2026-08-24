@@ -59,6 +59,7 @@ namespace Framework.Editor
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            lineCount = 0;
             propertyHeight = EditorGUI.GetPropertyHeight(property, label, true);
             //Debug.Log($"{property.displayName}\tph：{propertyHeight}，\totalHeight：{totalHeight}");
             return totalHeight;

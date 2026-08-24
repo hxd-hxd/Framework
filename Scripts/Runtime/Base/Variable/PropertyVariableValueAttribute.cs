@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Framework.Runtime
 {
-    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
     public class PropertyVariableValueAttribute : PropertyAttribute
     {
         private Type _propertyAttributeType;

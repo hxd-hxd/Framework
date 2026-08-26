@@ -22,6 +22,8 @@ namespace Framework
         static GameObjectPoolMonitor _monitor;
         static GameObjectPool _root;
         static GameObject _GOManager;
+        static bool _isQuitting;
+
         /// <summary>
         /// 监视器
         /// </summary>
@@ -60,36 +62,99 @@ namespace Framework
         //    InitStatic();
         //}
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            _monitor = null;
+            _GOManager = null;
+            _root = null;
+            _isQuitting = false;
+
+            Application.quitting -= OnApplicationQuitting;
+            Application.quitting += OnApplicationQuitting;
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+#endif
+        }
+
+        static void OnApplicationQuitting()
+        {
+            _isQuitting = true;
+        }
+
+#if UNITY_EDITOR
+        static void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
+        {
+            // 退出 Play 时 Application.isPlaying 在 OnDestroy 里仍为 true，必须在销毁前禁止再创建物体
+            if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode)
+                _isQuitting = true;
+        }
+#endif
+
+        internal static void NotifyQuitting()
+        {
+            _isQuitting = true;
+        }
+
+        internal static void NotifyMonitorDestroyed(GameObjectPoolMonitor monitor)
+        {
+            if (_monitor == monitor)
+            {
+                _monitor = null;
+                _GOManager = null;
+            }
+        }
+
+        /// <summary>
+        /// 退出 Play / 关场景时不可再 new GameObject，否则会触发
+        /// “Some objects were not cleaned up when closing the scene”
+        /// </summary>
+        static bool CanSpawnRuntimeObjects()
+        {
+            if (_isQuitting)
+                return false;
+            if (!Application.isPlaying)
+                return false;
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                return false;
+#endif
+            return true;
+        }
+
         // 不可以放在静态构造函数里执行，因为 Application.isPlaying 属性在静态构造函数之后更新
         protected static void InitStatic()
         {
+            if (!CanSpawnRuntimeObjects())
+                return;
+
             if (_monitor == null)
             {
                 try
                 {
-                    if (Application.isPlaying)
-                    {
-                        _monitor = new GameObject($"<{nameof(GameObjectPoolMonitor)}>").AddComponent<GameObjectPoolMonitor>();
-                        GameObject.DontDestroyOnLoad(_monitor.gameObject);
-                    }
+                    _monitor = new GameObject($"<{nameof(GameObjectPoolMonitor)}>").AddComponent<GameObjectPoolMonitor>();
+                    GameObject.DontDestroyOnLoad(_monitor.gameObject);
                 }
                 catch (Exception)
                 {
+                    return;
                 }
             }
+            if (_monitor == null)
+                return;
+
             if (_GOManager == null)
             {
                 try
                 {
-                    if (Application.isPlaying)
-                    {
-                        _GOManager = new GameObject("<GameObjectPool>");
-                        _GOManager.SetActive(false);
-                        _GOManager.transform.SetParent(_monitor.transform);
+                    _GOManager = new GameObject("<GameObjectPool>");
+                    _GOManager.SetActive(false);
+                    _GOManager.transform.SetParent(_monitor.transform);
 
-                        if (_GOManager.transform.root == _GOManager.transform)
-                            GameObject.DontDestroyOnLoad(_GOManager);
-                    }
+                    if (_GOManager.transform.root == _GOManager.transform)
+                        GameObject.DontDestroyOnLoad(_GOManager);
                 }
                 catch (Exception)
                 {
@@ -165,7 +230,8 @@ namespace Framework
             {
                 if (_returnParent == null)
                 {
-                    return GOManager.transform;
+                    var manager = GOManager;
+                    return manager != null ? manager.transform : null;
                 }
                 return _returnParent;
             }
@@ -271,7 +337,9 @@ namespace Framework
         /// <param name="num"></param>
         public virtual Coroutine PreCreateInstanceAsync(GameObject template, int num)
         {
-            var c = monitor.StartCoroutine(_PreCreateInstanceCoroutine(template, num));
+            var m = monitor;
+            if (m == null) return null;
+            var c = m.StartCoroutine(_PreCreateInstanceCoroutine(template, num));
             _preCreateInstanceCoroutines.Add(c);
             return c;
         }
@@ -290,10 +358,11 @@ namespace Framework
         /// </summary>
         public virtual void CancelPreCreateInstance()
         {
+            var m = monitor;
             foreach (var item in _preCreateInstanceCoroutines)
             {
-                if (item != null)
-                    monitor.StopCoroutine(item);
+                if (item != null && m != null)
+                    m.StopCoroutine(item);
             }
             _preCreateInstanceCoroutines.Clear();
         }
@@ -405,7 +474,8 @@ namespace Framework
             {
                 tPool.Add(obj);
                 obj.transform.SetParent(returnParent);
-                if (returnParent != GOManager.transform)
+                var manager = GOManager;
+                if (manager == null || returnParent != manager.transform)
                 {
                     obj.SetActive(false);
                 }

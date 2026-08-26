@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Framework
@@ -11,10 +8,15 @@ namespace Framework
     /// </summary>
     public class GameObjectPoolMonitor : MonoBehaviour
     {
-        //private void OnDestroy()
-        //{
+        private void OnApplicationQuit()
+        {
+            GameObjectPool.NotifyQuitting();
+        }
 
-        //}
+        private void OnDestroy()
+        {
+            GameObjectPool.NotifyMonitorDestroyed(this);
+        }
     }
 
 }

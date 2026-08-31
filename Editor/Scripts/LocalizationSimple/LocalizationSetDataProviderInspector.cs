@@ -117,7 +117,7 @@ namespace Framework.Editor
         /// </summary>
         static void CollectLocalizationObjects(ILocalization localization, HashSet<Object> objects)
         {
-            if (localization is not Object unityObj || !objects.Add(unityObj))
+            if (!(localization is Object unityObj) || !objects.Add(unityObj))
                 return;
 
             var so = new SerializedObject(unityObj);

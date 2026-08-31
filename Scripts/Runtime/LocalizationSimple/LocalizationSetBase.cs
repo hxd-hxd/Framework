@@ -96,7 +96,13 @@ namespace Framework.LocalizationSimple
                     //}
                     break;
                 case LocalizationSetMode.Provider:
-                    var provider = _langProviders.Find(d =>
+                    var langProviders = _langProviders;
+                    if (Application.isPlaying)
+                    {
+                        if (langProviders == null || langProviders.Count == 0) 
+                            langProviders = LocalizationSetManagerComp.Instance.defultLangProviders;
+                    }
+                    var provider = langProviders.Find(d =>
                     {
                         return d != null && d.IsLanguage(lang);
                     });

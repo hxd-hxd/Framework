@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -278,13 +278,19 @@ namespace Framework.Event
         /// <summary>发送消息</summary>
         public static void Send(TID id)
         {
-            SendInternal(id, null);
+            //SendInternal(id, null);
+
+            // 使用优化版替代
+            _eventManager.SendOptimizeInternal(id);
         }
         /// <summary>发送消息</summary>
         public static void Send<T1>(TID id, T1 msg1)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            _eventManager.SendOptimizeInternal(id, msg1);
         }
 
         #region 发送消息，多参数
@@ -408,7 +414,7 @@ namespace Framework.Event
         internal static void SendInternal(TID id, object[] args, bool returnPool)
         {
             _eventManager.SendInternal(id, args, returnPool);
-        } 
+        }
         #endregion
     }
 

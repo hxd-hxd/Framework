@@ -257,13 +257,19 @@ namespace Framework.Event
         /// <summary>发送消息</summary>
         public void Send(TID id)
         {
-            SendInternal(id, null);
+            //SendInternal(id, null);
+
+            // 使用优化版
+            SendOptimizeInternal(id);
         }
         /// <summary>发送消息</summary>
         public void Send<T1>(TID id, T1 msg1)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1);
+            //SendInternal(id, args);
+
+            // 使用优化版
+            SendOptimizeInternal(id, msg1);
         }
 
         #region 发送消息，多参数
@@ -407,6 +413,98 @@ namespace Framework.Event
                 TypePool.root.Return(args);
         }
 
+        /// <summary>发送消息
+        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
+        /// </summary>
+        internal void SendOptimizeInternal(TID id)
+        {
+            SendOptimizeInternal(id, d =>
+            {
+                if (d is Action ea)
+                    ea.Invoke();
+            });
+        }
+
+        /// <summary>发送消息
+        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
+        /// </summary>
+        internal void SendOptimizeInternal<T1>(TID id, T1 msg1)
+        {
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                var node = msgs.First;
+                while (node != null)
+                {
+                    if (node.Value is Action<T1> ea)
+                        ea.Invoke(msg1);
+
+                    node = node.Next;
+                }
+            }
+        }
+
+        /// <summary>发送消息
+        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
+        /// </summary>
+        internal void SendOptimizeInternal<T1, T2>(TID id, T1 msg1, T2 msg2)
+        {
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                var node = msgs.First;
+                while (node != null)
+                {
+                    if (node.Value is Action<T1, T2> ea)
+                        ea.Invoke(msg1, msg2);
+
+                    node = node.Next;
+                }
+            }
+        }
+
+        /// <summary>发送消息
+        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
+        /// </summary>
+        internal void SendOptimizeInternal<T1, T2, T3>(TID id, T1 msg1, T2 msg2, T3 msg3)
+        {
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                var node = msgs.First;
+                while (node != null)
+                {
+                    if (node.Value is Action<T1, T2, T3> ea)
+                        ea.Invoke(msg1, msg2, msg3);
+
+                    node = node.Next;
+                }
+            }
+        }
+
+        /// <summary>发送消息</summary>
+        internal void SendOptimizeInternal(TID id, Action<Delegate> d)
+        {
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                var node = msgs.First;
+                while (node != null)
+                {
+                    d(node.Value);
+
+                    node = node.Next;
+                }
+            }
+        }
         #endregion
 
 
@@ -470,6 +568,20 @@ namespace Framework.Event
         {
             if (id is TID tid)
                 Send(tid, args);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        void IEventManager.Send<TID1>(TID1 id)
+        {
+            if (id is TID tid)
+                Send(tid);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        void IEventManager.Send<TID1, T>(TID1 id, T msg)
+        {
+            if (id is TID tid)
+                Send(tid, msg);
             else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 

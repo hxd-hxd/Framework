@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2023/10/19 1:41:25
 // -------------------------
 
@@ -30,6 +30,12 @@ namespace Framework.Event
 
         /// <summary>发送消息</summary>
         void Send<TID>(TID id, params object[] args);
+
+        /// <summary>发送消息</summary>
+        void Send<TID>(TID id);
+
+        /// <summary>发送消息</summary>
+        void Send<TID, T>(TID id, T msg);
     }
     
     /// <summary>
@@ -49,6 +55,12 @@ namespace Framework.Event
 
         /// <summary>发送消息</summary>
         void Send(TID id, params object[] args);
+
+        /// <summary>发送消息</summary>
+        void Send(TID id);
+
+        /// <summary>发送消息</summary>
+        void Send<T>(TID id, T msg);
     }
 
 

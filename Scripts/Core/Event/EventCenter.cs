@@ -338,7 +338,10 @@ namespace Framework.Event
         public static void Send<TID>()
         {
             var id = typeof(TID);
-            SendInternal(id, null);
+            //SendInternal(id, null);
+
+            // 使用优化版替代
+            EventCenter<Type>.Send(id);
         }
 
         /// <summary>发送消息
@@ -346,7 +349,10 @@ namespace Framework.Event
         /// </summary>
         public static void Send<TID>(TID id)
         {
-            SendInternal(id, null);
+            //SendInternal(id, null);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id);
         }
 
         /// <summary>发送消息，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id
@@ -355,22 +361,30 @@ namespace Framework.Event
         public static void SendType<TID>(TID msg)
         {
             var id = typeof(TID);
-            Send(id, msg);
+
+            // 使用优化版替代
+            EventCenter<Type>.Send(id, msg);
         }
 
         /// <summary>发送消息，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id
         public static void Send<TID, T1>(T1 msg1)
         {
             var id = typeof(TID);
-            var args = TypePool.root.GetArrayE<object>(msg1);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<Type>.Send(id, msg1);
         }
 
         /// <summary>发送消息</summary>
         public static void Send<TID, T1>(TID id, T1 msg1)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1);
         }
 
         #region 发送消息，多参数

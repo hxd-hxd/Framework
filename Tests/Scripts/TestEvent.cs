@@ -25,17 +25,17 @@ namespace Framework.Test
 
         private void Start()
         {
-            Debug.Log("------------------------- Ìí¼ÓÕìÌı -------------------------");
+            Debug.Log("------------------------- æ·»åŠ ä¾¦å¬ -------------------------");
 
             /* 
-            Ìí¼Ó Í¨ÓÃ ÏûÏ¢´¦Àíº¯Êı£¨¾ÍÊÇÓĞ¶à¸öÖØÔØµÄ·½·¨£©£¬ĞèÒªÖ¸¶¨º¯Êı¶ÔÓ¦µÄÎ¯ÍĞÀàĞÍ¡£
-            Ìí¼Ó ×¨ÓÃ ÏûÏ¢´¦Àíº¯Êı£¨¾ÍÊÇÃ»ÓĞÖØÔØµÄ·½·¨£©£¬ĞèÒªÖ¸¶¨·ºĞÍ²ÎÊıÀàĞÍ£¬µ±È»Ò²¿ÉÒÔÖ¸¶¨º¯Êı¶ÔÓ¦µÄÎ¯ÍĞÀàĞÍ¡£
+            æ·»åŠ  é€šç”¨ æ¶ˆæ¯å¤„ç†å‡½æ•°ï¼ˆå°±æ˜¯æœ‰å¤šä¸ªé‡è½½çš„æ–¹æ³•ï¼‰ï¼Œéœ€è¦æŒ‡å®šå‡½æ•°å¯¹åº”çš„å§”æ‰˜ç±»å‹ã€‚
+            æ·»åŠ  ä¸“ç”¨ æ¶ˆæ¯å¤„ç†å‡½æ•°ï¼ˆå°±æ˜¯æ²¡æœ‰é‡è½½çš„æ–¹æ³•ï¼‰ï¼Œéœ€è¦æŒ‡å®šæ³›å‹å‚æ•°ç±»å‹ï¼Œå½“ç„¶ä¹Ÿå¯ä»¥æŒ‡å®šå‡½æ•°å¯¹åº”çš„å§”æ‰˜ç±»å‹ã€‚
 
             */
 
-            /// ²»Ö÷¶¯Ö¸¶¨ id £¬Ôò»áÒÔ Type Îª id
+            /// ä¸ä¸»åŠ¨æŒ‡å®š id ï¼Œåˆ™ä¼šä»¥ Type ä¸º id
 
-            EventCenter.AddListener<MsgNot>((Action)HandleEvent);// ÎŞ²ÎÏûÏ¢£¬Ö»Ê¹ÓÃÏûÏ¢ÀàĞÍ×÷Îª id
+            EventCenter.AddListener<MsgNot>((Action)HandleEvent);// æ— å‚æ¶ˆæ¯ï¼Œåªä½¿ç”¨æ¶ˆæ¯ç±»å‹ä½œä¸º id
             EventCenter.AddListener<MsgNot>(HandleEventNotMsg);
 
             EventCenter.AddListener((Action<Msg1>)HandleEvent);
@@ -43,30 +43,37 @@ namespace Framework.Test
 
             EventCenter.AddListener((Action<Msg2>)HandleEvent);
             EventCenter.AddListener<Msg2>(HandleMsg2);
-            // ²»¿ÉÖØ¸´Ìí¼Ó
+            // ä¸å¯é‡å¤æ·»åŠ 
             EventCenter.AddListener((Action<Msg2>)HandleEvent);
             EventCenter.AddListener<Msg2>(HandleMsg2);
 
-            /// Ö÷¶¯Ö¸¶¨ id
+            /// ä¸»åŠ¨æŒ‡å®š id
 
-            // ÒÔÏÂÁ½ÖÖĞ´·¨Ñ¡ÆäÒ»£¬×¢ÒâÍ¬Ò»¸öÕìÌı²»»á±»ÖØ¸´Ìí¼Ó
+            // ä»¥ä¸‹ä¸¤ç§å†™æ³•é€‰å…¶ä¸€ï¼Œæ³¨æ„åŒä¸€ä¸ªä¾¦å¬ä¸ä¼šè¢«é‡å¤æ·»åŠ 
             EventCenter.AddListener("ValueType", (Action<ValueType>)HandleEvent);
-            EventCenter.AddListener<ValueType>("ValueType", HandleEvent);
+            EventCenter.AddListener<string, ValueType>("ValueType", HandleEvent);
+            //EventCenter.AddListener<ValueType>("ValueType", HandleEvent);// ä¸æ”¯æŒ
 
-            EventCenter.AddListener<ValueType, ValueType>("ValueType2", HandleEvent);
+            EventCenter.AddListener<string, ValueType, ValueType>("ValueType2", HandleEvent);
+            // ä¸‹é¢çš„ id ç±»å‹å®é™…æ˜¯ objectï¼Œä¸æ˜¯æˆ‘ä»¬æƒ³è¦çš„æ•ˆæœï¼Œæ³¨å†Œçš„é‡è½½æ–¹æ³•æ˜¯ä¸€ä¸ªå‚æ•°çš„ï¼Œéœ€è¦æ³¨æ„
             EventCenter.AddListener<object, object>("object2", HandleEvent);
             EventCenter.AddListener<object, object>("string2", HandleEvent);
+            // ä¸‹é¢çš„ id ç±»å‹å®é™…æ˜¯ stringï¼Œæ˜ç¡®æŒ‡å®šï¼Œæ˜¯æˆ‘ä»¬æƒ³è¦çš„æ•ˆæœ
+            EventCenter.AddListener<string, object, object>("object2", HandleEvent);
+            EventCenter.AddListener<string, object, object>("string2", HandleEvent);
 
-            EventCenter.AddListener<Msg1, Msg2>("Msg1_Msg2", HandleEvent);
             EventCenter.AddListener<string, Msg1, Msg2>("Msg1_Msg2", HandleMsg1_2);
+            EventCenter.AddListener<string, Msg1, Msg2>("Msg1_Msg2", HandleEvent);
+            //EventCenter.AddListener<Msg1, Msg2>("Msg1_Msg2", HandleEvent);// ä¸æ”¯æŒ
 
-            EventCenter.AddListener<Msg2, Msg1>("Msg2_Msg1", HandleEvent);
             EventCenter.AddListener<string, Msg2, Msg1>("Msg2_Msg1", HandleMsg2_1);
+            EventCenter.AddListener<string, Msg2, Msg1>("Msg2_Msg1", HandleEvent);
+            //EventCenter.AddListener<Msg2, Msg1>("Msg2_Msg1", HandleEvent);// ä¸æ”¯æŒ
 
             EventCenter.AddListener<string, Msg1, Msg2, string>("Msg1_Msg2_Msg3", HandleEvent);
 
 
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.Send<MsgNot>();
             EventCenter.SendType(new Msg1());
             EventCenter.SendType(new Msg2());
@@ -82,34 +89,34 @@ namespace Framework.Test
             EventCenter.Send("ValueType2", new DateTime().AddDays(3), DateTime.Now);
             EventCenter.Send("object2", new DateTime().AddDays(3), DateTime.Now);
 
-            EventCenter.Send("string2", "ÄãºÃ", DateTime.Now.ToString());
-            // ´íÎó²ÎÊıÑİÊ¾
+            EventCenter.Send("string2", "ä½ å¥½", DateTime.Now.ToString());
+            // é”™è¯¯å‚æ•°æ¼”ç¤º
             //EventCenter.Send("string2", new DateTime().AddDays(3), DateTime.Now);
 
-            //Log.Error("------------------------- ·¢ËÍÎ´ÕìÌıµÄÏûÏ¢ -------------------------");
+            //Log.Error("------------------------- å‘é€æœªä¾¦å¬çš„æ¶ˆæ¯ -------------------------");
             //EventCenter.Send("Msg1_Msg1", new Msg1(), new Msg1());
 
 
-            Debug.Log("------------------------- ÒÆ³ıÕìÌı -------------------------");
+            Debug.Log("------------------------- ç§»é™¤ä¾¦å¬ -------------------------");
             EventCenter.RemoveListener((Action<Msg1>)HandleEvent);
             EventCenter.RemoveListener<Msg1>(HandleMsg1);
 
             EventCenter.RemoveListener((Action<Msg2>)HandleEvent);
             EventCenter.RemoveListener<Msg2>(HandleMsg2);
 
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.SendType(new Msg1());
             EventCenter.SendType(new Msg2());
             EventCenter.Send("Msg1_Msg2", new Msg1(), new Msg2());
             EventCenter.Send("Msg2_Msg1", new Msg2(), new Msg1());
 
 
-            //Log.Error("------------------------- ·¢ËÍÎ´ÕìÌıµÄÏûÏ¢ -------------------------");
+            //Log.Error("------------------------- å‘é€æœªä¾¦å¬çš„æ¶ˆæ¯ -------------------------");
             //EventCenter.Send("Msg1_Msg1", new Msg1(), new Msg1());
 
-            ////Log.Error("------------------------- ·¢ËÍ²ÎÊıÇ©Ãû²»ÕıÈ·µÄÏûÏ¢ -------------------------");
-            //// Èç¹ûÏûÏ¢½ÓÊÕ·½ÊÇ·¢ËÍ·½µÄ¸¸Àà£¬Ôò¿ÉÒÔÕı³£½ÓÊÕµ½ÏûÏ¢
-            //// ·´Ö®Òı·¢Òì³££ºArgumentException: Object of type 'Framework.Test.TestEvent+Msg2' cannot be converted to type 'Framework.Test.TestEvent+Msg1'.
+            ////Log.Error("------------------------- å‘é€å‚æ•°ç­¾åä¸æ­£ç¡®çš„æ¶ˆæ¯ -------------------------");
+            //// å¦‚æœæ¶ˆæ¯æ¥æ”¶æ–¹æ˜¯å‘é€æ–¹çš„çˆ¶ç±»ï¼Œåˆ™å¯ä»¥æ­£å¸¸æ¥æ”¶åˆ°æ¶ˆæ¯
+            //// åä¹‹å¼•å‘å¼‚å¸¸ï¼šArgumentException: Object of type 'Framework.Test.TestEvent+Msg2' cannot be converted to type 'Framework.Test.TestEvent+Msg1'.
             ////EventCenter.Send("Msg1_Msg2", new Msg2(), new Msg1());
 
 
@@ -117,10 +124,10 @@ namespace Framework.Test
 
             SendEventGroup();
 
-            Debug.Log("------------------------- Çå³ıËùÓĞÕìÌı -------------------------");
+            Debug.Log("------------------------- æ¸…é™¤æ‰€æœ‰ä¾¦å¬ -------------------------");
             EventCenter.Clear();
             //EventCenter.ClearAll();
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.Send("ValueType", 1);
             EventCenter.Send("ValueType", 0.5f);
             EventCenter.Send("ValueType", DateTime.Now);
@@ -130,25 +137,25 @@ namespace Framework.Test
             EventCenter.Send("ValueType2", new DateTime().AddDays(3), DateTime.Now);
             EventCenter.Send("object2", new DateTime().AddDays(3), DateTime.Now);
 
-            EventCenter.Send("string2", "ÄãºÃ", DateTime.Now.ToString());
+            EventCenter.Send("string2", "ä½ å¥½", DateTime.Now.ToString());
         }
 
         private void Send20()
         {
-            Debug.Log("------------------------- ³¬¶à²ÎÊıµÄÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- è¶…å¤šå‚æ•°çš„æ¶ˆæ¯ -------------------------");
 
-            // ·ºĞÍ²ÎÊıÀàĞÍÖÁ¶àÖ§³Ö 16 ¸ö£¬¶àÓà 16 ¸÷²ÎÊıµÄĞèÒª×Ô¶¨ÒåÎ¯ÍĞ
+            // æ³›å‹å‚æ•°ç±»å‹è‡³å¤šæ”¯æŒ 16 ä¸ªï¼Œå¤šä½™ 16 å„å‚æ•°çš„éœ€è¦è‡ªå®šä¹‰å§”æ‰˜
             EventCenter.AddListener("object 20", (CustomAction<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>)HandleEvent);
             EventCenter.AddListener("object 20", (CustomAction<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>)HandleEvent20);
 
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             //var msgs = new object[20] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
             var msgs = TypePool.root.GetArrayE<object>(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
             EventCenter.Send("object 20", msgs);
 
-            Debug.Log("------------------------- ÒÆ³ıÕìÌı -------------------------");
+            Debug.Log("------------------------- ç§»é™¤ä¾¦å¬ -------------------------");
             EventCenter.RemoveListener("object 20", (CustomAction<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>)HandleEvent);
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.Send("object 20", msgs);
 
             TypePool.root.Return(msgs);
@@ -156,119 +163,119 @@ namespace Framework.Test
 
         private void SendEventGroup()
         {
-            Debug.Log("------------------------- ÊÂ¼ş×éµÄÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- äº‹ä»¶ç»„çš„æ¶ˆæ¯ -------------------------");
             _eventGroup.AddListener("eg", HandleEG);
             _eventGroup.AddListener<string, Msg1>("eg_1", HandleEG_1);
             _eventGroup.AddListener<string, string>("eg_2", HandleEG_2);
 
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.Send("eg");
             EventCenter.Send("eg_1", new Msg1());
-            EventCenter.Send("eg_2", "ÊÂ¼ş×éÏûÏ¢");
+            EventCenter.Send("eg_2", "äº‹ä»¶ç»„æ¶ˆæ¯");
 
-            Debug.Log("------------------------- Çå³ıÕìÌı -------------------------");
+            Debug.Log("------------------------- æ¸…é™¤ä¾¦å¬ -------------------------");
             _eventGroup.Clear();
 
-            Debug.Log("------------------------- ·¢ËÍÏûÏ¢ -------------------------");
+            Debug.Log("------------------------- å‘é€æ¶ˆæ¯ -------------------------");
             EventCenter.Send("eg");
             EventCenter.Send("eg_1", new Msg1());
-            EventCenter.Send("eg_2", "ÊÂ¼ş×éÏûÏ¢");
+            EventCenter.Send("eg_2", "äº‹ä»¶ç»„æ¶ˆæ¯");
 
         }
 
         public void HandleEvent(IEventMessage msg)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨IEventMessage£© ´¦Àí£º{msg}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆIEventMessageï¼‰ å¤„ç†ï¼š{msg}");
         }
         public void HandleEvent(IEventMessage msg1, IEventMessage msg2)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨IEventMessage¡¢IEventMessage£© ´¦Àí£º{msg1}£¬{msg2}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆIEventMessageã€IEventMessageï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         }
         //public void HandleEvent(Msg1 msg1, Msg2 msg2)
         //{
-        //    Debug.Log($"×¨ÓÃ ÏûÏ¢£¨Msg1¡¢Msg2£© ´¦Àí£º{msg1}£¬{msg2}");
+        //    Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆMsg1ã€Msg2ï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         //}
 
         public void HandleEvent()
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨ÎŞ²Î£© ´¦Àí");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆæ— å‚ï¼‰ å¤„ç†");
         }
         public void HandleEventNotMsg()
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨ÎŞ²Î£© ´¦Àí");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆæ— å‚ï¼‰ å¤„ç†");
         }
         public void HandleEvent(object msg)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨object£© ´¦Àí£º{msg}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆobjectï¼‰ å¤„ç†ï¼š{msg}");
         }
         public void HandleEvent(object msg1, object msg2)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨object¡¢object£© ´¦Àí£º{msg1}£¬{msg2}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆobjectã€objectï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         }
         public void HandleEvent(object msg1, object msg2, object msg3)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨object¡¢object£© ´¦Àí£º{msg1}£¬{msg2}£¬{msg3}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆobjectã€objectï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}ï¼Œ{msg3}");
         }
         public void HandleEvent(string msg1, string msg2)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨string¡¢string£© ´¦Àí£º{msg1}£¬{msg2}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆstringã€stringï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         }
 
         public void HandleEvent(ValueType msg)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨ValueTuple£© ´¦Àí£º{msg}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆValueTupleï¼‰ å¤„ç†ï¼š{msg}");
         }
         public void HandleEvent(ValueType msg1, ValueType msg2)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨ValueTuple¡¢ValueTuple£© ´¦Àí£º{msg1}£¬{msg2}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆValueTupleã€ValueTupleï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         }
 
-        // ³¬ 16 ¸ö²ÎÊıµÄÏûÏ¢£¬Ğè×Ô¶¨ÒåÎ¯ÍĞÀàĞÍ
+        // è¶… 16 ä¸ªå‚æ•°çš„æ¶ˆæ¯ï¼Œéœ€è‡ªå®šä¹‰å§”æ‰˜ç±»å‹
         public void HandleEvent(
             object msg1, object msg2, object msg3, object msg4, object msg5, object msg6, object msg7, object msg8, object msg9, object msg10,
             object msg11, object msg12, object msg13, object msg14, object msg15, object msg16, object msg17, object msg18, object msg19, object msg20)
         {
-            Debug.Log($"Í¨ÓÃ ÏûÏ¢£¨object 20£© ´¦Àí£º{msg1}£¬{msg2}£¬{msg3}£¬{msg4}£¬{msg5}£¬{msg6}£¬{msg7}£¬{msg8}£¬{msg9}£¬{msg10}£¬{msg11}£¬{msg12}£¬{msg13}£¬{msg14}£¬{msg15}£¬{msg16}£¬{msg17}£¬{msg18}£¬{msg19}£¬{msg20}");
+            Debug.Log($"é€šç”¨ æ¶ˆæ¯ï¼ˆobject 20ï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}ï¼Œ{msg3}ï¼Œ{msg4}ï¼Œ{msg5}ï¼Œ{msg6}ï¼Œ{msg7}ï¼Œ{msg8}ï¼Œ{msg9}ï¼Œ{msg10}ï¼Œ{msg11}ï¼Œ{msg12}ï¼Œ{msg13}ï¼Œ{msg14}ï¼Œ{msg15}ï¼Œ{msg16}ï¼Œ{msg17}ï¼Œ{msg18}ï¼Œ{msg19}ï¼Œ{msg20}");
         }
         public void HandleEvent20(
             object msg1, object msg2, object msg3, object msg4, object msg5, object msg6, object msg7, object msg8, object msg9, object msg10,
             object msg11, object msg12, object msg13, object msg14, object msg15, object msg16, object msg17, object msg18, object msg19, object msg20)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨object 20£© ´¦Àí£º{msg1}£¬{msg2}£¬{msg3}£¬{msg4}£¬{msg5}£¬{msg6}£¬{msg7}£¬{msg8}£¬{msg9}£¬{msg10}£¬{msg11}£¬{msg12}£¬{msg13}£¬{msg14}£¬{msg15}£¬{msg16}£¬{msg17}£¬{msg18}£¬{msg19}£¬{msg20}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆobject 20ï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}ï¼Œ{msg3}ï¼Œ{msg4}ï¼Œ{msg5}ï¼Œ{msg6}ï¼Œ{msg7}ï¼Œ{msg8}ï¼Œ{msg9}ï¼Œ{msg10}ï¼Œ{msg11}ï¼Œ{msg12}ï¼Œ{msg13}ï¼Œ{msg14}ï¼Œ{msg15}ï¼Œ{msg16}ï¼Œ{msg17}ï¼Œ{msg18}ï¼Œ{msg19}ï¼Œ{msg20}");
         }
         /// <summary>
-        /// ×Ô¶¨Òå¶à²ÎÊıÎ¯ÍĞ
+        /// è‡ªå®šä¹‰å¤šå‚æ•°å§”æ‰˜
         /// </summary>
         public delegate void CustomAction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(T1 ags1, T2 ags2, T3 ags3, T4 ags4, T5 ags5, T6 ags6, T7 ags7, T8 ags8, T9 ags9, T10 ags10, T11 ags11, T12 ags12, T13 ags13, T14 ags14, T15 ags15, T16 ags16, T17 ags17, T18 ags18, T19 ags19, T20 ags20);
 
         public void HandleMsg1(Msg1 msg)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨Msg1£© ´¦Àí£º{msg}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆMsg1ï¼‰ å¤„ç†ï¼š{msg}");
         }
         public void HandleMsg2(Msg2 msg)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨Msg2£© ´¦Àí£º{msg}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆMsg2ï¼‰ å¤„ç†ï¼š{msg}");
         }
         public void HandleMsg1_2(Msg1 msg1, Msg2 msg2)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨Msg1¡¢Msg2£© ´¦Àí£º{msg1}£¬{msg2}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆMsg1ã€Msg2ï¼‰ å¤„ç†ï¼š{msg1}ï¼Œ{msg2}");
         }
         public void HandleMsg2_1(Msg2 msg2, Msg1 msg1)
         {
-            Debug.Log($"×¨ÓÃ ÏûÏ¢£¨Msg2¡¢Msg1£© ´¦Àí£º{msg2}£¬{msg1}");
+            Debug.Log($"ä¸“ç”¨ æ¶ˆæ¯ï¼ˆMsg2ã€Msg1ï¼‰ å¤„ç†ï¼š{msg2}ï¼Œ{msg1}");
         }
 
         public void HandleEG()
         {
-            Debug.Log($"×é ÏûÏ¢£¨ÎŞ²Î£© ´¦Àí");
+            Debug.Log($"ç»„ æ¶ˆæ¯ï¼ˆæ— å‚ï¼‰ å¤„ç†");
         }
         public void HandleEG_1(Msg1 msg1)
         {
-            Debug.Log($"×é ÏûÏ¢£¨Msg1£© ´¦Àí£º{msg1}");
+            Debug.Log($"ç»„ æ¶ˆæ¯ï¼ˆMsg1ï¼‰ å¤„ç†ï¼š{msg1}");
         }
         public void HandleEG_2(string msg1)
         {
-            Debug.Log($"×é ÏûÏ¢£¨string£© ´¦Àí£º{msg1}");
+            Debug.Log($"ç»„ æ¶ˆæ¯ï¼ˆstringï¼‰ å¤„ç†ï¼š{msg1}");
         }
 
         public void Send()
@@ -280,13 +287,13 @@ namespace Framework.Test
         {
             public TestEventString()
             {
-                // ´íÎóÓÃ·¨£¬²»ÄÜÊ¹ÓÃÏµÍ³ÀàĞÍ×÷ÎªÊÂ¼ş id
+                // é”™è¯¯ç”¨æ³•ï¼Œä¸èƒ½ä½¿ç”¨ç³»ç»Ÿç±»å‹ä½œä¸ºäº‹ä»¶ id
                 EventCenter.AddListener<string>(Event);
 
-                // ¿ÉÒÔÍÆ¶Ï³ö
+                // å¯ä»¥æ¨æ–­å‡º
                 EventCenter.AddListener("0", Event);
 
-                // ÓĞ²ÎÊıÔòÎŞ·¨ÍÆ¶Ï³ö·ºĞÍÀàĞÍ£¬Ö»ÄÜ×Ô¼ºÖ¸¶¨·ºĞÍ²ÎÊı
+                // æœ‰å‚æ•°åˆ™æ— æ³•æ¨æ–­å‡ºæ³›å‹ç±»å‹ï¼Œåªèƒ½è‡ªå·±æŒ‡å®šæ³›å‹å‚æ•°
                 EventCenter.AddListener("1", (Action<int>)Event1);
                 EventCenter.AddListener<string, int>("1", Event1);
 
@@ -314,13 +321,13 @@ namespace Framework.Test
         {
             public TestEventInt()
             {
-                // ´íÎóÓÃ·¨£¬²»ÄÜÊ¹ÓÃÏµÍ³ÀàĞÍ×÷ÎªÊÂ¼ş id
+                // é”™è¯¯ç”¨æ³•ï¼Œä¸èƒ½ä½¿ç”¨ç³»ç»Ÿç±»å‹ä½œä¸ºäº‹ä»¶ id
                 EventCenter.AddListener<int>(Event);
 
-                // ¿ÉÒÔÍÆ¶Ï³ö
+                // å¯ä»¥æ¨æ–­å‡º
                 EventCenter.AddListener(0, Event);
 
-                // ÓĞ²ÎÊıÔòÎŞ·¨ÍÆ¶Ï³ö·ºĞÍÀàĞÍ£¬Ö»ÄÜ×Ô¼ºÖ¸¶¨·ºĞÍ²ÎÊı
+                // æœ‰å‚æ•°åˆ™æ— æ³•æ¨æ–­å‡ºæ³›å‹ç±»å‹ï¼Œåªèƒ½è‡ªå·±æŒ‡å®šæ³›å‹å‚æ•°
                 EventCenter.AddListener(1, (Action<int>)Event1);
                 EventCenter.AddListener<int, int>(1, Event1);
 
@@ -345,15 +352,15 @@ namespace Framework.Test
         {
             public TestEventEnum()
             {
-                // ´íÎóÓÃ·¨£¬Í¬Ò» id ÊÂ¼şµÄÇ©Ãû±ØĞëÒ»ÖÂ
+                // é”™è¯¯ç”¨æ³•ï¼ŒåŒä¸€ id äº‹ä»¶çš„ç­¾åå¿…é¡»ä¸€è‡´
                 EventCenter.AddListener<MsgType>(Event);
                 EventCenter.AddListener<MsgType>(Event1);
                 EventCenter.AddListener<Type>(typeof(MsgType), (Action<string>)Event);
 
-                // ¿ÉÒÔÍÆ¶Ï³ö
+                // å¯ä»¥æ¨æ–­å‡º
                 EventCenter.AddListener(MsgType.None, Event);
 
-                // ÓĞ²ÎÊıÔòÎŞ·¨ÍÆ¶Ï³ö·ºĞÍÀàĞÍ£¬Ö»ÄÜ×Ô¼ºÖ¸¶¨·ºĞÍ²ÎÊı
+                // æœ‰å‚æ•°åˆ™æ— æ³•æ¨æ–­å‡ºæ³›å‹ç±»å‹ï¼Œåªèƒ½è‡ªå·±æŒ‡å®šæ³›å‹å‚æ•°
                 EventCenter.AddListener(MsgType.A, (Action<int>)Event1);
                 EventCenter.AddListener<MsgType, int>(MsgType.A, Event1);
 
@@ -396,22 +403,22 @@ namespace Framework.Test
         {
             public TestEventMsg()
             {
-                // ÕıÈ·ÓÃ·¨£¬Ê¹ÓÃ×Ô¶¨ÒåÀàĞÍ×÷ÎªÊÂ¼ş id
+                // æ­£ç¡®ç”¨æ³•ï¼Œä½¿ç”¨è‡ªå®šä¹‰ç±»å‹ä½œä¸ºäº‹ä»¶ id
                 EventCenter.AddListener<MsgID>(Event);
-                // ´íÎóÓÃ·¨£¬Í¬Ò» id ÊÂ¼şµÄÇ©Ãû±ØĞëÒ»ÖÂ
+                // é”™è¯¯ç”¨æ³•ï¼ŒåŒä¸€ id äº‹ä»¶çš„ç­¾åå¿…é¡»ä¸€è‡´
                 EventCenter.AddListener<MsgID>(Event1);
 
-                // ´íÎóÓÃ·¨£¬Ç©Ãû²»Ò»ÖÂ
+                // é”™è¯¯ç”¨æ³•ï¼Œç­¾åä¸ä¸€è‡´
                 EventCenter.Send<MsgID>();
 
 
-                /// ÍÆ¼öÓÃ·¨
-                // ÕâÁ½ÖÖÓÃ·¨ÊÇÒ»ÑùµÄ
-                // ²ÎÊıÀàĞÍÖ§³ÖÃæÏò¶ÔÏóÌØĞÔ£¬¿É½ÓÊÜ×ÓÀà×÷Îª²ÎÊı
+                /// æ¨èç”¨æ³•
+                // è¿™ä¸¤ç§ç”¨æ³•æ˜¯ä¸€æ ·çš„
+                // å‚æ•°ç±»å‹æ”¯æŒé¢å‘å¯¹è±¡ç‰¹æ€§ï¼Œå¯æ¥å—å­ç±»ä½œä¸ºå‚æ•°
                 EventCenter.AddListener<Msg>(Event1);
                 EventCenter.AddListener<Type, Msg>(typeof(Msg), Event1);
 
-                // ÕâÁ½ÖÖÓÃ·¨ÊÇÒ»ÑùµÄ£¬µ±ÓĞ²»Í¬Ç©ÃûµÄÍ¬Ãûº¯ÊıÊ±ĞèÏÔÊ¾Ö¸³ö
+                // è¿™ä¸¤ç§ç”¨æ³•æ˜¯ä¸€æ ·çš„ï¼Œå½“æœ‰ä¸åŒç­¾åçš„åŒåå‡½æ•°æ—¶éœ€æ˜¾ç¤ºæŒ‡å‡º
                 EventCenter.AddListener<Msg>((Action<IEventMessage>)Event1);
                 EventCenter.AddListener<Type, IEventMessage>(typeof(Msg), Event1);
 
@@ -420,12 +427,12 @@ namespace Framework.Test
                 EventCenter.AddListener<Type, Msg>(typeof(IEventMessage), Event1);
                 EventCenter.AddListener<Type, IEventMessage>(typeof(IEventMessage), Event1);
 
-                // ÕıÈ·ÓÃ·¨
+                // æ­£ç¡®ç”¨æ³•
                 EventCenter.SendType(new Msg());
                 EventCenter.Send<Msg, Msg1>(new Msg1());
                 EventCenter.SendType(new Msg1());
                 EventCenter.Send<IEventMessage, Msg>(new Msg());
-                // ´íÎóÓÃ·¨£¬Ç©Ãû²»Ò»ÖÂ
+                // é”™è¯¯ç”¨æ³•ï¼Œç­¾åä¸ä¸€è‡´
                 EventCenter.Send<Msg>();
                 EventCenter.Send<IEventMessage>();
 
@@ -441,11 +448,11 @@ namespace Framework.Test
             }
             void Event1(IEventMessage a1)
             {
-                Debug.Log($"Event1£¨IEventMessage£©£º{a1}");
+                Debug.Log($"Event1ï¼ˆIEventMessageï¼‰ï¼š{a1}");
             }
             void Event1(Msg a1)
             {
-                Debug.Log($"Event1£¨Msg£©£º{a1}");
+                Debug.Log($"Event1ï¼ˆMsgï¼‰ï¼š{a1}");
             }
             void Event2(Msg a1, Msg a2)
             {

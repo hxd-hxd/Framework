@@ -641,6 +641,19 @@ namespace Framework.Event
         #endregion
 
 
+        public bool IsListening(TID id)
+        {
+            return _entrepot.ContainsKey(id) && _entrepot[id].Count > 0;
+        }
+
+        public bool IsListening(TID id, Delegate listener)
+        {
+            if (_entrepot.ContainsKey(id))
+                return _entrepot[id].Contains(listener);
+            return false;
+        }
+
+
         #region 显式实现
         void IEventManager.Clear<TID1>(TID1 id)
         {
@@ -688,6 +701,20 @@ namespace Framework.Event
         {
             if (id is TID tid)
                 Send(tid, msg);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        bool IEventManager.IsListening<TID1>(TID1 id)
+        {
+            if (id is TID tid)
+                return IsListening(tid);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        bool IEventManager.IsListening<TID1>(TID1 id, Delegate listener)
+        {
+            if (id is TID tid)
+                return IsListening(tid, listener);
             else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 

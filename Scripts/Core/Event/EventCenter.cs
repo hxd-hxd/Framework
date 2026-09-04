@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Framework.Event
 {
@@ -550,6 +551,33 @@ namespace Framework.Event
             EventCenter<TID>.SendInternal(id, args, true);
         }
         #endregion
+
+
+        /// <summary>检查指定 id 是否在监听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public static bool IsListening<TID>()
+        {
+            var id = typeof(TID);
+            return EventCenter<Type>.IsListening(id);
+        }
+
+        /// <summary>检查指定 id 是否在监听，以 <typeparamref name="TID"/> 的 <see cref="Type"/> 为 id</summary>
+        public static bool IsListening<TID>(Delegate listener)
+        {
+            var id = typeof(TID);
+            return EventCenter<Type>.IsListening(id, listener);
+        }
+
+        /// <summary>检查指定 id 是否在监听</summary>
+        public static bool IsListening<TID>(TID id)
+        {
+            return EventCenter<TID>.IsListening(id);
+        }
+
+        /// <summary>检查指定事件是否在监听</summary>
+        public static bool IsListening<TID>(TID id, Delegate listener)
+        {
+            return EventCenter<TID>.IsListening(id, listener);
+        }
 
 
         static Type[] _tempTypes = new Type[1];

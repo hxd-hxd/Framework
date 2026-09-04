@@ -394,6 +394,19 @@ namespace Framework.Event
             _eventManager.SendInternal(id, args, returnPool);
         }
         #endregion
-    }
 
+
+        /// <summary>检查指定 id 是否在监听</summary>
+        public static bool IsListening(TID id)
+        {
+            return _eventManager.IsListening(id);
+        }
+
+        /// <summary>检查指定事件是否在监听</summary>
+        public static bool IsListening(TID id, Delegate listener)
+        {
+            return _eventManager.IsListening(id, listener);
+        }
+
+    }
 }

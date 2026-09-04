@@ -97,12 +97,23 @@ namespace Framework.Test
             //EventCenter.Send("Msg1_Msg1", new Msg1(), new Msg1());
 
 
-            Debug.Log("------------------------- 移除侦听 -------------------------");
-            EventCenter.RemoveListener((Action<Msg1>)HandleEvent);
-            EventCenter.RemoveListener<Msg1>(HandleMsg1);
+            Debug.Log("------------------------- 检查侦听 -------------------------");
+            Debug.Log($"Msg1 是否在监听: {EventCenter.IsListening<Msg1>()}");
+            Debug.Log($"Msg1 是否在监听 HandleMsg1: {EventCenter.IsListening<Msg1>((Action<Msg1>)HandleMsg1)}");
+            Debug.Log($"Msg2 是否在监听: {EventCenter.IsListening<Msg2>()}");
+            Debug.Log($"Msg2 是否在监听 HandleMsg2: {EventCenter.IsListening<Msg2>((Action<Msg2>)HandleMsg2)}");
 
-            EventCenter.RemoveListener((Action<Msg2>)HandleEvent);
+            Debug.Log("------------------------- 移除侦听 -------------------------");
+            EventCenter.RemoveListener<Msg1>(HandleMsg1);
+            Debug.Log($"Msg1 是否在监听: {EventCenter.IsListening<Msg1>()}");
+            Debug.Log($"Msg1 是否在监听 HandleMsg1: {EventCenter.IsListening<Msg1>((Action<Msg1>)HandleMsg1)}");
+            EventCenter.RemoveListener((Action<Msg1>)HandleEvent);
+
             EventCenter.RemoveListener<Msg2>(HandleMsg2);
+            Debug.Log($"Msg2 是否在监听: {EventCenter.IsListening<Msg2>()}");
+            Debug.Log($"Msg2 是否在监听 HandleMsg2: {EventCenter.IsListening<Msg2>((Action<Msg2>)HandleMsg2)}");
+            EventCenter.RemoveListener((Action<Msg2>)HandleEvent);
+
 
             Debug.Log("------------------------- 发送消息 -------------------------");
             EventCenter.SendType(new Msg1());

@@ -189,7 +189,7 @@ namespace Framework
 
         /// <summary>从对象池获取
         /// </summary>
-        public virtual bool TryGet<T>(int length, out T[] obj)
+        public virtual bool TryGetArray<T>(int length, out T[] obj)
         {
             obj = GetArray<T>(length);
             return obj != null;
@@ -197,7 +197,7 @@ namespace Framework
 
         /// <summary>从对象池获取
         /// </summary>
-        public virtual bool TryGet(int length, out object[] obj)
+        public virtual bool TryGetArray(int length, out object[] obj)
         {
             obj = GetArray(length);
             return obj != null;
@@ -206,7 +206,7 @@ namespace Framework
         /// <summary>从对象池获取
         /// <para><paramref name="ctorArgs"/>：仅用于创建对象实例时，向构造函数传递的参数</para>
         /// </summary>
-        public virtual bool TryGet(Type type, int length, out Array obj)
+        public virtual bool TryGetArray(Type type, int length, out Array obj)
         {
             obj = GetArray(type, length);
             return obj != null;
@@ -289,7 +289,7 @@ namespace Framework
         public Array GetArray(Type elementType, int length)
         {
             if (elementType == null) throw new ArgumentNullException("元素类型为空");
-            if (length < 0) throw new IndexOutOfRangeException("索引小于 0");
+            if (length < 0) throw new IndexOutOfRangeException("数组长度小于 0");
 
             object obj = null;
 

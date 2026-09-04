@@ -391,105 +391,150 @@ namespace Framework.Event
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2>(TID id, T1 msg1, T2 msg2)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3>(TID id, T1 msg1, T2 msg2, T3 msg3)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14, T15 msg15)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
         }
         /// <summary>发送消息</summary>
         public static void Send<TID, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14, T15 msg15, T16 msg16)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
-            SendInternal(id, args);
+            //var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
+            //SendInternal(id, args);
+
+            // 使用优化版替代
+            EventCenter<TID>.Send(id, msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
         }
 
         #endregion
@@ -497,18 +542,13 @@ namespace Framework.Event
         /// <summary>发送消息</summary>
         public static void Send<TID>(TID id, params object[] args)
         {
-            SendInternal(id, args, false);
+            EventCenter<TID>.SendInternal(id, args, false);
         }
         /// <summary>发送消息</summary>
         internal static void SendInternal<TID>(TID id, object[] args)
         {
-            SendInternal(id, args, true);
+            EventCenter<TID>.SendInternal(id, args, true);
         }
-        /// <summary>发送消息</summary>
-        internal static void SendInternal<TID>(TID id, object[] args, bool returnPool)
-        {
-            EventCenter<TID>.SendInternal(id, args, returnPool);
-        } 
         #endregion
 
 

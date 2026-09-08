@@ -43,7 +43,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -93,7 +105,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -146,7 +170,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -202,7 +238,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -261,7 +309,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -323,7 +383,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -388,7 +460,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -456,7 +540,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -527,7 +623,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -601,7 +709,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -678,7 +798,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -758,7 +890,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -841,7 +985,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -927,7 +1083,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -1016,7 +1184,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -1108,7 +1288,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()
@@ -1203,7 +1395,19 @@ namespace Framework.Event
         /// <summary>清除所有监听</summary>
         public static void ClearListener()
         {
-            EventCenter.Clear<T>();
+            EventCenter.Clear(typeof(T));
+        }
+
+        /// <summary>是否有监听</summary>
+        public static bool IsListening()
+        {
+            return EventCenter.IsListening<T>();
+        }
+
+        /// <summary>是否有指定监听</summary>
+        public static bool IsListening(Action<T> listener)
+        {
+            return EventCenter.IsListening<T>(listener);
         }
 
         public virtual void Clear()

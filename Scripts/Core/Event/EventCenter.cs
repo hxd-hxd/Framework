@@ -12,7 +12,7 @@ namespace Framework.Event
     /// <summary>
     /// 事件处理中心
     /// <para>事件消息支持所有类型的参数，并且参数支持面向对象特性，
-    /// 推荐的用法是消息继承 <see cref="IEventMessage"/></para>
+    /// 推荐的用法是消息实现接口 <see cref="IEventMessage"/></para>
     /// <code>
     /// public class Msg1 : IEventMessage { }
     /// public class Msg2 : IEventMessage { }

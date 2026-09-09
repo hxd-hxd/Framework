@@ -160,8 +160,9 @@ namespace Framework.Test
             EventCenter.AddListener("object 20", (CustomAction<object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object, object>)HandleEvent20);
 
             Debug.Log("------------------------- 发送消息 -------------------------");
-            //var msgs = new object[20] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-            var msgs = TypePool.root.GetArrayE<object>(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+            var msgs = TypePool.root.GetArray<object>(20);
+            for (int i = 0; i < msgs.Length; i++)
+                msgs[i] = i + 1;
             EventCenter.Send("object 20", msgs);
 
             Debug.Log("------------------------- 移除侦听 -------------------------");

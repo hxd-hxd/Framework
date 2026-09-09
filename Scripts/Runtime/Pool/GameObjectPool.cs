@@ -485,53 +485,6 @@ namespace Framework
             }
         }
 
-        /// <summary>
-        /// 清理 <see cref="ITypePoolObject.Clear()"/>
-        /// </summary>
-        /// <param name="obj"></param>
-        protected virtual void CleanupObject(GameObject obj)
-        {
-            var tpos = TypePool.root.GetList<ITypePoolObject>();
-            obj.GetComponents(tpos);
-            if (tpos != null)
-            {
-                foreach (var tpo in tpos)
-                {
-                    tpo.Clear();
-                }
-            }
-            TypePool.root.Return(tpos);
-        }
-        /// <summary>
-        /// 初始 <see cref="ITypePoolObjectInit.Init()"/>
-        /// </summary>
-        /// <param name="obj"></param>
-        protected virtual void InitializeObject(GameObject obj)
-        {
-            var tpos = TypePool.root.GetList<ITypePoolObjectInit>();
-            obj.GetComponents(tpos);
-            if (tpos != null)
-            {
-                foreach (var tpo in tpos)
-                {
-                    tpo.Init();
-                }
-            }
-            TypePool.root.Return(tpos);
-        }
-
-        protected GameObject FetchLast(List<GameObject> objs)
-        {
-            GameObject obj = null;
-            if (objs.Count > 0)
-            {
-                int i = objs.Count - 1;
-                obj = objs[i];
-                objs.RemoveAt(i);
-            }
-            return obj;
-        }
-
         /// <summary>清理对应模板的池</summary>
         public virtual void Clear(GameObject template)
         {
@@ -581,6 +534,54 @@ namespace Framework
         protected static List<GameObject> CreatePool()
         {
             return new List<GameObject>(1);
+        }
+
+        /// <summary>
+        /// 清理 <see cref="ITypePoolObject.Clear()"/>
+        /// </summary>
+        /// <param name="obj"></param>
+        protected virtual void CleanupObject(GameObject obj)
+        {
+            var tpos = TypePool.root.GetList<ITypePoolObject>();
+            obj.GetComponents(tpos);
+            if (tpos != null)
+            {
+                foreach (var tpo in tpos)
+                {
+                    tpo.Clear();
+                }
+            }
+            TypePool.root.Return(tpos);
+        }
+
+        /// <summary>
+        /// 初始 <see cref="ITypePoolObjectInit.Init()"/>
+        /// </summary>
+        /// <param name="obj"></param>
+        protected virtual void InitializeObject(GameObject obj)
+        {
+            var tpos = TypePool.root.GetList<ITypePoolObjectInit>();
+            obj.GetComponents(tpos);
+            if (tpos != null)
+            {
+                foreach (var tpo in tpos)
+                {
+                    tpo.Init();
+                }
+            }
+            TypePool.root.Return(tpos);
+        }
+
+        protected GameObject FetchLast(List<GameObject> objs)
+        {
+            GameObject obj = null;
+            if (objs.Count > 0)
+            {
+                int i = objs.Count - 1;
+                obj = objs[i];
+                objs.RemoveAt(i);
+            }
+            return obj;
         }
     }
 

@@ -13,11 +13,11 @@ namespace Framework.Event
     /// </summary>
     public partial class EventManager<TID> : IEventManager<TID>, ITypePoolObject
     {
-        private Dictionary<TID, LinkedList<Delegate>> _entrepot;
+        private Dictionary<TID, List<Delegate>> _entrepot;
 
         public EventManager()
         {
-            _entrepot = new Dictionary<TID, LinkedList<Delegate>>(20);
+            _entrepot = new Dictionary<TID, List<Delegate>>(20);
         }
 
         #region 添加侦听
@@ -130,9 +130,9 @@ namespace Framework.Event
             if (listener == null) return;
 
             if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
-                _entrepot[id] = new LinkedList<Delegate>();
+                _entrepot[id] = new List<Delegate>();
             if (!_entrepot[id].Contains(listener))
-                _entrepot[id].AddLast(listener);
+                _entrepot[id].Add(listener);
         }
         #endregion
 
@@ -262,13 +262,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action ea)
+                    if (msgs[i] is Action ea)
                         ea.Invoke();
-
-                    node = node.Next;
                 }
             }
         }
@@ -280,13 +277,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1> ea)
+                    if (msgs[i] is Action<T1> ea)
                         ea.Invoke(msg1);
-
-                    node = node.Next;
                 }
             }
         }
@@ -300,13 +294,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2> ea)
+                    if (msgs[i] is Action<T1, T2> ea)
                         ea.Invoke(msg1, msg2);
-
-                    node = node.Next;
                 }
             }
         }
@@ -318,13 +309,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3> ea)
+                    if (msgs[i] is Action<T1, T2, T3> ea)
                         ea.Invoke(msg1, msg2, msg3);
-
-                    node = node.Next;
                 }
             }
         }
@@ -337,13 +325,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4);
-
-                    node = node.Next;
                 }
             }
         }
@@ -356,13 +341,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5);
-
-                    node = node.Next;
                 }
             }
         }
@@ -375,13 +357,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6);
-
-                    node = node.Next;
                 }
             }
         }
@@ -394,13 +373,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
-
-                    node = node.Next;
                 }
             }
         }
@@ -413,13 +389,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
-
-                    node = node.Next;
                 }
             }
         }
@@ -432,13 +405,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
-
-                    node = node.Next;
                 }
             }
         }
@@ -451,13 +421,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
-
-                    node = node.Next;
                 }
             }
         }
@@ -470,13 +437,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
-
-                    node = node.Next;
                 }
             }
         }
@@ -489,13 +453,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12);
-
-                    node = node.Next;
                 }
             }
         }
@@ -508,13 +469,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
-
-                    node = node.Next;
                 }
             }
         }
@@ -527,13 +485,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
-
-                    node = node.Next;
                 }
             }
         }
@@ -546,13 +501,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
-
-                    node = node.Next;
                 }
             }
         }
@@ -565,13 +517,10 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (node.Value is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ea)
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
-
-                    node = node.Next;
                 }
             }
         }
@@ -596,15 +545,9 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    //if (e.Value is Action<T> ea)
-                    //    ea.Invoke(msg);
-
-                    node.Value.DynamicInvoke(args);
-
-                    node = node.Next;
+                    msgs[i].DynamicInvoke(args);
                 }
             }
 

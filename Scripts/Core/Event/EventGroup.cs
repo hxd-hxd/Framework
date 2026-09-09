@@ -283,7 +283,6 @@ namespace Framework.Event
             if (_entrepot.ContainsKey(t))
             {
                 (_entrepot[t] as EventGroup<TID>)?.RemoveListener(id, listener);
-                EventCenter<TID>.RemoveListener(id, listener);
             }
         }
         #endregion

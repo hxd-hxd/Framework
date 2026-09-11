@@ -27,5 +27,8 @@ namespace Framework.Core
 
         /// <summary>清理</summary>
         void Clear();
+
+        /// <summary>复位</summary>
+        void Reset();
     }
 }

@@ -47,7 +47,7 @@ namespace Framework
             _pools.Add(this);
         }
 
-        public Dictionary<Type, List<object>> pool => _pool;
+        public IReadOnlyDictionary<Type, List<object>> pool => _pool;
 
         /// <summary>数组池</summary>
         public ArrayPool arrayPool => _arrayPool;
@@ -513,13 +513,15 @@ namespace Framework
         /// <summary>将元素返回对象池
         /// <para>会清空</para>
         /// </summary>
-        public void ReturnE<TKey, TValue>(Dictionary<TKey, TValue> v)
+        public void ReturnE<TKey, TValue>(Dictionary<TKey, TValue> v, bool returnKey = false) 
+            where TKey : class where TValue : class
         {
             if (v == null) return;
-            foreach (var item in v.Keys)
-            {
-                Return(item);
-            }
+            if (returnKey)
+                foreach (var item in v.Keys)
+                {
+                    Return(item);
+                }
             foreach (var item in v.Values)
             {
                 Return(item);
@@ -664,13 +666,14 @@ namespace Framework
         /// <summary>将元素返回对象池
         /// <para>会清空</para>
         /// </summary>
-        public void ReturnE(IDictionary v)
+        public void ReturnE(IDictionary v, bool returnKey = true)
         {
             if (v == null) return;
-            foreach (var item in v.Keys)
-            {
-                Return(item);
-            }
+            if (returnKey)
+                foreach (var item in v.Keys)
+                {
+                    Return(item);
+                }
             foreach (var item in v.Values)
             {
                 Return(item);
@@ -715,6 +718,27 @@ namespace Framework
             return count;
         }
 
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove<T>(int count) => Remove(typeof(T), count);
+
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove(Type type, int count)
+        {
+            if (count < 0) return;
+            if (type == null) return;
+
+            if (type.IsArray)
+            {
+                _arrayPool.Remove(type, count);
+                return;
+            }
+
+            if (!_pool.TryGetValue(type, out var tPool)) return;
+            if (tPool.Count <= 0) return;
+
+            Remove(tPool, count);
+        }
+
         /// <summary>清除对象池</summary>
         public virtual void Clear()
         {
@@ -733,6 +757,19 @@ namespace Framework
             _pools.Remove(this);
         }
 
+
+        private void Remove<T>(List<T> values, int count)
+        {
+            // 指定移除的剩余数量
+            var surplus = count;
+            int valuesCount = values.Count;
+            while (surplus > 0)
+            {
+                if (valuesCount <= 0) return;
+                values.RemoveAt(valuesCount -= 1);
+                surplus -= 1;
+            }
+        }
 
         /// <summary>取出最后一个元素，避免中间的元素挪动影响性能，取出的元素会被移除</summary>
         protected T Fetch<T>(List<T> tPool)

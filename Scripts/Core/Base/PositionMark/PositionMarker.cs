@@ -6,7 +6,7 @@ namespace Framework.Core
     // 用于处理位标法采样
     /// <summary>位标器</summary>
     [Serializable]
-    public class PositionMarker : IPositionMarker
+    public class PositionMarker : IPositionMarker, ITypePoolObject
     {
         private float _clearTime = 10 * 60;// 清理周期，默认10分钟
         private float _sampleTime = 1;// 采样时间
@@ -51,10 +51,27 @@ namespace Framework.Core
             onSample?.Invoke();
         }
 
+        public virtual void Reset()
+        {
+            _sampleCount = 0;
+            _clearTimeer = _sampleTimeer = 0;
+        }
+
         public virtual void Clear()
         {
             _sampleCount = 0;
             onClear?.Invoke();
+        }
+
+        void ITypePoolObject.Clear()
+        {
+            _clearTime = 10 * 60;
+            _sampleTime = 1;
+
+            _sampleCount = 0;
+            _clearTimeer = _sampleTimeer = 0;
+            onSample = null;
+            onClear = null;
         }
     }
 }

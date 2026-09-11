@@ -1,24 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Framework.ObjectPool
 {
     /// <summary>对象池管理器</summary>
-    public class ObjectPoolManager : Singleton<ObjectPoolManager>
+    public class ObjectPoolManager : MonoSingleton<ObjectPoolManager>
     {
-        private TypePoolMarker _typePoolMarker = new TypePoolMarker();
+        [SerializeField]
+        private TypePoolPosMarker _typePoolMarker = new TypePoolPosMarker();
 
-        public void Update(float elapseTime, float realElapseTime)
+        private void Start()
         {
-            _typePoolMarker.Update(elapseTime, realElapseTime);
+            _typePoolMarker.pool = TypePool.root;
+            _typePoolMarker.Init();
+        }
+
+        private void Update()
+        {
+            _typePoolMarker.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
 
     }
 
-    public class TypePoolMarker
-    {
-        public void Update(float elapseTime, float realElapseTime)
-        {
-        }
-    }
 }

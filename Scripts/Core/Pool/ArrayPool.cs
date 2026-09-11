@@ -178,7 +178,8 @@ namespace Framework
 
             if (!tPool.TryGetValue(length, out var aPool))
             {
-                aPool = new List<Array>();
+                //aPool = new List<Array>();
+                aPool = TypePool.root.GetList<Array>();
                 tPool[length] = aPool;
             }
 
@@ -196,10 +197,12 @@ namespace Framework
         /// <summary>获取池中指定类型实例的可用数量
         /// <para><typeparamref name="T"/>：数组类型，而非元素类型，例如：typeof(int[])，而非 typeof(int)</para>
         /// </summary>
-        public int GetFreeCount<T>()
-        {
-            return GetFreeCount(typeof(T));
-        }
+        public int GetFreeCount<T>() => GetFreeCount(typeof(T));
+
+        /// <summary>获取池中指定类型实例的可用数量
+        /// <para><typeparamref name="T"/>：数组类型，而非元素类型，例如：typeof(int[])，而非 typeof(int)</para>
+        /// </summary>
+        public int GetFreeCount<T>(int length) => GetFreeCount(typeof(T), length);
 
         /// <summary>获取池中指定类型实例的可用数量
         /// <para><paramref name="type"/>：数组类型，而非元素类型，例如：typeof(int[])，而非 typeof(int)</para>
@@ -218,6 +221,85 @@ namespace Framework
             return count;
         }
 
+        /// <summary>获取池中指定类型实例的可用数量
+        /// <para><paramref name="type"/>：数组类型，而非元素类型，例如：typeof(int[])，而非 typeof(int)</para>
+        /// </summary>
+        public int GetFreeCount(Type type, int length)
+        {
+            if (!_pool.TryGetValue(type, out var tPool)) return 0;
+            if (tPool.TryGetValue(length, out var aPool)) return aPool.Count;
+            return 0;
+        }
+
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove<T>(int count) => Remove(typeof(T), count);
+
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove<T>(int length, int count) => Remove(typeof(T), length, count);
+
+        /// <summary>移除指定数量的对象
+        /// <para><paramref name="type"/>：数组类型，而非元素类型，例如：typeof(int[])，而非 typeof(int)</para>
+        /// </summary>
+        public void Remove(Type type, int count)
+        {
+            if (count <= 0) return;
+            if (type == null) return;
+            if (!_pool.TryGetValue(type, out var tPool)) return;
+            if (tPool.Count <= 0) return;
+
+            // 池中对象总数
+            int objCount = GetFreeCount(type);
+            if (objCount <= 0) return;
+
+            // 指定移除的剩余数量
+            int surplus = count;
+
+            while (surplus > 0)
+            {
+                // 方案一：轮流
+                foreach (var aPool in tPool.Values)
+                {
+                    if (surplus <= 0) return;
+                    if (objCount <= 0) return;
+                    if (aPool.Count <= 0) continue;
+
+                    var a = aPool[aPool.Count - 1];
+                    _queryCache.Remove(a);
+                    aPool.RemoveAt(aPool.Count - 1);
+                    surplus -= 1;
+                    objCount -= 1;
+                }
+
+                //// 方案二：削平
+                //List<Array> arrays = null;
+                //if (objCount <= 0) return;
+                //foreach (var aPool in tPool.Values)
+                //{
+                //    if (aPool.Count <= 0) continue;
+
+                //    if (arrays == null || arrays.Count < aPool.Count)
+                //        arrays = aPool;
+                //}
+                //if (arrays == null || arrays.Count <= 0) return;
+                //arrays.RemoveAt(arrays.Count - 1);
+                //surplus -= 1;
+                //objCount -= 1;
+            }
+        }
+
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove(Type type, int length, int count)
+        {
+            if (count <= 0) return;
+            if (type == null) return;
+            if (!_pool.TryGetValue(type, out var tPool)) return;
+            if (tPool.Count <= 0) return;
+            if (!tPool.TryGetValue(length, out var aPool)) return;
+            if (aPool.Count <= 0) return;
+
+            Remove(aPool, count);
+        }
+
         /// <summary>清除对象池</summary>
         public void Clear()
         {
@@ -229,6 +311,20 @@ namespace Framework
             _queryCache.Clear();
         }
 
+        private void Remove<T>(List<T> values, int count)
+        {
+            // 指定移除的剩余数量
+            var surplus = count;
+            int valuesCount = values.Count;
+            while (surplus > 0)
+            {
+                if (valuesCount <= 0) return;
+                var v = values[values.Count - 1];
+                if(v is Array a) _queryCache.Remove(a);
+                values.RemoveAt(valuesCount -= 1);
+                surplus -= 1;
+            }
+        }
 
         /// <summary>取出最后一个元素，避免中间的元素挪动影响性能，取出的元素会被移除</summary>
         private T Fetch<T>(List<T> tPool)
@@ -249,7 +345,8 @@ namespace Framework
 
         private Dictionary<int, List<Array>> CreatePool()
         {
-            return new Dictionary<int, List<Array>>(5);
+            //return new Dictionary<int, List<Array>>(5);
+            return TypePool.root.GetDic<int, List<Array>>();
         }
 
         private void CleanupObject(Array v)

@@ -17,6 +17,7 @@ namespace Framework.ObjectPool
 
         private Dictionary<Type, PosMarker> _poolMarkers = new Dictionary<Type, PosMarker>();
         private Dictionary<Type, Dictionary<int, PosMarker>> _arrayPoolMarkers = new Dictionary<Type, Dictionary<int, PosMarker>>();
+
         // 专用位标器信息
         private Dictionary<Type, PositionMarkerInfo> _markerInfos = new Dictionary<Type, PositionMarkerInfo>();
         private Dictionary<Type, Dictionary<int, PositionMarkerInfo>> _arrayMarkerInfos = new Dictionary<Type, Dictionary<int, PositionMarkerInfo>>();
@@ -60,6 +61,19 @@ namespace Framework.ObjectPool
             if (_pool == null) return;
 
             _marker.Update(elapseTime, realElapseTime);
+
+            // 轮询专用位标器
+            foreach (var item in _poolMarkers)
+            {
+                item.Value.marker?.Update(elapseTime, realElapseTime);
+            }
+            foreach (var item in _arrayPoolMarkers)
+            {
+                foreach (var aMarker in item.Value)
+                {
+                    aMarker.Value.marker?.Update(elapseTime, realElapseTime);
+                }
+            }
         }
 
         public void Clear()
@@ -82,20 +96,52 @@ namespace Framework.ObjectPool
         }
 
         /// <summary>添加专用位标器</summary>
-        public void AddMarker(Type type, PositionMarkerInfo marker)
+        public void AddMarker(Type type, PositionMarkerInfo info)
         {
-            _markerInfos[type] = marker;
+            _markerInfos[type] = info;
+
+            // 立马创建位标器
+            if (_poolMarkers.TryGetValue(type, out var posMarker))
+            {
+                var marker = posMarker.marker;
+                if (marker == null)
+                {
+                    InternalTypePool.root.TryGet(out marker);
+                    posMarker.marker = marker;
+
+                    // 绑定事件
+                    marker.onSample.AddListener((_) =>
+                    {
+                        // 对池类型对象采样
+                        var count = _pool.GetFreeCount(type);
+                        posMarker.sampler.Sample(count);
+                    });
+                    marker.onClear.AddListener((_) =>
+                    {
+                        var sampler = posMarker.sampler;
+                        if (!sampler._hasSample) return;
+                        var pos = sampler._minPos.pos;
+                        _pool.Remove(type, pos);
+                        sampler.Clear();
+                    });
+                }
+
+                marker.overrideInfo = info;
+            }
         }
 
-        /// <summary>添加专用位标器</summary>
-        public void AddMarker(Type type, int length, PositionMarkerInfo marker)
+        /// <summary>添加数组池专用位标器</summary>
+        public void AddMarker(Type type, int length, PositionMarkerInfo info)
         {
             if (!_arrayMarkerInfos.TryGetValue(type, out var aInfos))
             {
                 InternalTypePool.root.TryGet(out aInfos);
                 _arrayMarkerInfos[type] = aInfos;
             }
-            aInfos[length] = marker;
+            aInfos[length] = info;
+
+            // TODO：待实现。立马创建位标器
+
         }
 
         /// <summary>移除专用位标器</summary>
@@ -103,15 +149,14 @@ namespace Framework.ObjectPool
         {
             // 移除信息
             _markerInfos.Remove(type);
-            // 移除位标器
+            // 立马移除位标器
             if (_poolMarkers.TryGetValue(type, out var marker))
                 marker.Clear();
         }
 
-        /// <summary>移除专用位标器</summary>
+        /// <summary>移除数组池专用位标器</summary>
         public void RemoveMarker(Type type, int length)
         {
-            // TODO：待实现
             // 移除信息
             if (_arrayMarkerInfos.TryGetValue(type, out var tInfos))
             {
@@ -122,7 +167,7 @@ namespace Framework.ObjectPool
                     InternalTypePool.root.Return(tInfos);
                 }
             }
-            // 移除位标器
+            // 立马移除位标器
             if (_arrayPoolMarkers.TryGetValue(type, out var tMarker))
                 if (tMarker.TryGetValue(length, out var aMarker))
                     aMarker.RemoveMarker();
@@ -137,6 +182,9 @@ namespace Framework.ObjectPool
                 if (!_poolMarkers.ContainsKey(kvp.Key))
                 {
                     _poolMarkers.Add(kvp.Key, Create());
+
+                    // TODO：待实现。有专用位标器配置信息，则创建位标器
+
                 }
             }
 
@@ -156,6 +204,9 @@ namespace Framework.ObjectPool
                     if (!tMarker.ContainsKey(aItem.Key))
                     {
                         tMarker.Add(aItem.Key, Create());
+
+                        // TODO：待实现。有专用位标器配置信息，则创建位标器
+
                     }
                 }
             }
@@ -279,8 +330,9 @@ namespace Framework.ObjectPool
                     if (aItem.Value.marker == null)
                     {
                         var type = item.Key;
+                        var length = aItem.Key;
                         // 对池类型对象采样
-                        var count = _pool.arrayPool.GetFreeCount(type, aItem.Key);
+                        var count = _pool.arrayPool.GetFreeCount(type, length);
                         aItem.Value.sampler.Sample(count);
                     }
                 }
@@ -296,10 +348,11 @@ namespace Framework.ObjectPool
                 // 检查没有专用位标器的
                 if (item.Value.marker == null)
                 {
+                    var type = item.Key;
                     var sampler = item.Value.sampler;
                     if (!sampler._hasSample) continue;
                     var pos = sampler._minPos.pos;
-                    _pool.Remove(item.Key, pos);
+                    _pool.Remove(type, pos);
                     sampler.Clear();
                 }
             }
@@ -311,11 +364,13 @@ namespace Framework.ObjectPool
                     // 检查没有专用位标器的
                     if (aItem.Value.marker == null)
                     {
+                        var type = item.Key;
+                        var length = aItem.Key;
                         var sampler = aItem.Value.sampler;
                         if (!sampler._hasSample) continue;
                         var pos = sampler._minPos.pos;
 
-                        _pool.arrayPool.Remove(item.Key, aItem.Key, pos);
+                        _pool.arrayPool.Remove(type, length, pos);
                         sampler.Clear();
                     }
                 }
@@ -356,114 +411,6 @@ namespace Framework.ObjectPool
                 RemoveMarker();
 
                 sampler.Clear();
-            }
-        }
-
-        /// <summary>简化版的 <see cref="TypePool"/>，只用于内部，避免监视根池时污染被监视对象。</summary>
-        private class InternalTypePool
-        {
-            public static InternalTypePool root { get; } = new InternalTypePool();
-
-            private readonly Dictionary<Type, List<object>> _pool = new Dictionary<Type, List<object>>(8);
-
-            /// <summary>从对象池获取</summary>
-            public T Get<T>()
-            {
-                TryGet(typeof(T), out var obj);
-                return (T)obj;
-            }
-
-            /// <summary>获取 <see cref="List{T}"/></summary>
-            public List<T> GetList<T>() => Get<List<T>>();
-
-            /// <summary>获取 <see cref="Dictionary{TKey, TValue}"/></summary>
-            public Dictionary<TKey, TValue> GetDic<TKey, TValue>() => Get<Dictionary<TKey, TValue>>();
-
-            /// <summary>从对象池获取</summary>
-            public bool TryGet<T>(out T obj)
-            {
-                bool r = TryGet(typeof(T), out var o);
-                obj = (T)o;
-                return r;
-            }
-
-            /// <summary>从对象池获取</summary>
-            public bool TryGet(Type type, out object obj)
-            {
-                obj = null;
-                if (type == null) return false;
-
-                if (_pool.TryGetValue(type, out var tPool) && tPool.Count > 0)
-                {
-                    obj = Fetch(tPool);
-                }
-
-                if (obj == null)
-                {
-                    obj = Activator.CreateInstance(type, true);
-                }
-
-                InitializeObject(obj);
-                return true;
-            }
-
-            /// <summary>返回对象池</summary>
-            /// <remarks>对于 <see cref="ITypePoolObject"/> 对象会做清理工作</remarks>
-            public void Return<T>(T obj) where T : class
-            {
-                if (obj == null) return;
-
-                var target = obj.GetType();
-                if (!_pool.TryGetValue(target, out var tPool))
-                {
-                    tPool = new List<object>(4);
-                    _pool[target] = tPool;
-                }
-
-                if (!tPool.Contains(obj))
-                {
-                    tPool.Add(obj);
-                    CleanupObject(obj);
-                }
-            }
-
-            /// <summary>返回对象池</summary>
-            /// <remarks>会清空</remarks>
-            public void Return<T>(List<T> v)
-            {
-                if (v == null) return;
-                v.Clear();
-                Return<List<T>>(v);
-            }
-
-            /// <summary>返回对象池</summary>
-            /// <remarks>会清空</remarks>
-            public void Return<TKey, TValue>(Dictionary<TKey, TValue> v)
-            {
-                if (v == null) return;
-                v.Clear();
-                Return<Dictionary<TKey, TValue>>(v);
-            }
-
-            /// <summary>取出最后一个元素，取出的元素会被移除</summary>
-            private static object Fetch(List<object> tPool)
-            {
-                int index = tPool.Count - 1;
-                var obj = tPool[index];
-                tPool.RemoveAt(index);
-                return obj;
-            }
-
-            /// <summary>清理 <see cref="ITypePoolObject.Clear()"/></summary>
-            private static void CleanupObject(object obj)
-            {
-                if (obj is ITypePoolObject tpo) tpo.Clear();
-            }
-
-            /// <summary>初始 <see cref="ITypePoolObjectInit.Init()"/></summary>
-            private static void InitializeObject(object obj)
-            {
-                if (obj is ITypePoolObjectInit tpo) tpo.Init();
             }
         }
     }

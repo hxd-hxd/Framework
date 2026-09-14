@@ -31,6 +31,7 @@ namespace Framework.Runtime
         public float sampleTime { get => GetInfo().sampleTime; set => GetInfo().sampleTime = value; }
 
         public int sampleCount { get => _sampleCount; set => _sampleCount = value; }
+        public PositionMarkerInfo overrideInfo { get => _overrideInfo; set => _overrideInfo = value; }
 
         public virtual void Update(float elapseTime, float realElapseTime)
         {

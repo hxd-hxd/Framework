@@ -12,7 +12,8 @@ using UnityEngine;
 namespace Framework.Editor
 {
     /// <summary>
-    /// <see cref="ObjectPoolManager"/> 检视面板：保持默认绘制，并显示 <see cref="TypePool"/> 中各类型的对象数量。
+    /// <see cref="ObjectPoolManager"/> 检视面板：保持默认绘制，
+    /// 并显示 <see cref="TypePool"/>、<see cref="GameObjectPool"/> 中各池的对象信息。
     /// </summary>
     [CustomEditor(typeof(ObjectPoolManager))]
     public class ObjectPoolManagerInspector : UnityEditor.Editor
@@ -21,12 +22,15 @@ namespace Framework.Editor
 
         readonly List<KeyValuePair<Type, int>> _typeCounts = new List<KeyValuePair<Type, int>>();
         readonly List<KeyValuePair<int, int>> _arrayLengthCounts = new List<KeyValuePair<int, int>>();
+        readonly List<KeyValuePair<GameObject, List<GameObject>>> _goPools = new List<KeyValuePair<GameObject, List<GameObject>>>();
+        readonly Dictionary<int, bool> _goInstanceFoldouts = new Dictionary<int, bool>();
         readonly StringBuilder _typeNameBuilder = new StringBuilder(64);
 
-        Vector2 _scroll;
         string _filter = "";
+        string _goFilter = "";
         bool _objectPoolFoldout = true;
         bool _arrayPoolFoldout = true;
+        bool _goPoolFoldout = true;
 
         public override bool RequiresConstantRepaint() => Application.isPlaying;
 
@@ -34,10 +38,12 @@ namespace Framework.Editor
         {
             DrawDefaultInspector();
 
-            EditorGUILayout.Space();
             EditorGUILayout.LabelField("TypePool", EditorStyles.boldLabel);
-
             DrawTypePool(TypePool.root);
+
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("GameObjectPool", EditorStyles.boldLabel);
+            DrawGameObjectPool(GameObjectPool.root);
         }
 
         void DrawTypePool(TypePool pool)
@@ -56,13 +62,8 @@ namespace Framework.Editor
 
             _filter = EditorGUILayout.TextField("筛选", _filter);
 
-            using (var scroll = new EditorGUILayout.ScrollViewScope(_scroll, GUILayout.MaxHeight(420)))
-            {
-                _scroll = scroll.scrollPosition;
-
-                DrawObjectPool(pool);
-                DrawArrayPool(pool.arrayPool);
-            }
+            DrawObjectPool(pool);
+            DrawArrayPool(pool.arrayPool);
         }
 
         void DrawObjectPool(TypePool pool)
@@ -145,6 +146,129 @@ namespace Framework.Editor
                 DrawArrayLengthRows(dict, item.Key);
             }
             EditorGUI.indentLevel--;
+        }
+
+        void DrawGameObjectPool(GameObjectPool pool)
+        {
+            if (pool == null)
+            {
+                EditorGUILayout.HelpBox("GameObjectPool 为空", MessageType.Info);
+                return;
+            }
+
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.IntField("池数量", pool.poolCount);
+                EditorGUILayout.IntField("对象总数", pool.itemSize);
+                EditorGUILayout.ObjectField("默认模板", pool.template, typeof(GameObject), true);
+                EditorGUILayout.ObjectField("回收父节点", pool.returnParent, typeof(Transform), true);
+                EditorGUILayout.IntField("预创建协程", pool.preCreateInstanceCoroutineNum);
+            }
+
+            _goFilter = EditorGUILayout.TextField("筛选", _goFilter);
+
+            IReadOnlyDictionary<GameObject, List<GameObject>> dict = pool.pool;
+            int poolCount = dict != null ? dict.Count : 0;
+
+            _goPoolFoldout = EditorGUILayout.Foldout(_goPoolFoldout, $"模板池（{poolCount}）", true);
+            if (!_goPoolFoldout)
+                return;
+
+            if (dict == null || poolCount == 0)
+            {
+                EditorGUILayout.LabelField("（空）");
+                return;
+            }
+
+            _goPools.Clear();
+            try
+            {
+                foreach (var kv in dict)
+                {
+                    if (!MatchGoFilter(kv.Key))
+                        continue;
+                    _goPools.Add(kv);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                EditorGUILayout.HelpBox("GameObject 池正在变化，稍后刷新。", MessageType.None);
+                Repaint();
+                return;
+            }
+
+            _goPools.Sort(CompareGoPool);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("模板", EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField("数量", EditorStyles.miniBoldLabel, CountWidth);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUI.indentLevel++;
+            for (int i = 0; i < _goPools.Count; i++)
+                DrawGoPoolRow(_goPools[i].Key, _goPools[i].Value);
+            EditorGUI.indentLevel--;
+        }
+
+        void DrawGoPoolRow(GameObject template, List<GameObject> items)
+        {
+            int count = items != null ? items.Count : 0;
+            int id = template != null ? template.GetInstanceID() : 0;
+            if (!_goInstanceFoldouts.TryGetValue(id, out bool foldout))
+                foldout = false;
+
+            EditorGUILayout.BeginHorizontal();
+            foldout = EditorGUILayout.Foldout(foldout, GUIContent.none, true);
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.ObjectField(template, typeof(GameObject), true);
+                EditorGUILayout.LabelField(count.ToString(), CountWidth);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            _goInstanceFoldouts[id] = foldout;
+            if (!foldout)
+                return;
+
+            EditorGUI.indentLevel++;
+            if (items == null || items.Count == 0)
+            {
+                EditorGUILayout.LabelField("（空）");
+            }
+            else
+            {
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var instance = items[i];
+                        var label = new GUIContent($"[{i}]", instance ? instance.name : "(已销毁)");
+                        EditorGUILayout.ObjectField(label, instance, typeof(GameObject), true);
+                    }
+                }
+            }
+            EditorGUI.indentLevel--;
+        }
+
+        bool MatchGoFilter(GameObject template)
+        {
+            if (string.IsNullOrEmpty(_goFilter))
+                return true;
+            if (template == null)
+                return false;
+            return template.name.IndexOf(_goFilter, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static int CompareGoPool(KeyValuePair<GameObject, List<GameObject>> a, KeyValuePair<GameObject, List<GameObject>> b)
+        {
+            string nameA = a.Key != null ? a.Key.name : "";
+            string nameB = b.Key != null ? b.Key.name : "";
+            int nameCompare = string.Compare(nameA, nameB, StringComparison.Ordinal);
+            if (nameCompare != 0)
+                return nameCompare;
+            int idA = a.Key != null ? a.Key.GetInstanceID() : 0;
+            int idB = b.Key != null ? b.Key.GetInstanceID() : 0;
+            return idA.CompareTo(idB);
         }
 
         void DrawArrayLengthRows(IReadOnlyDictionary<Type, Dictionary<int, List<Array>>> dict, Type type)

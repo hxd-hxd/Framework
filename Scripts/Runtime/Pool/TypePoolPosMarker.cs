@@ -5,20 +5,19 @@ using UnityEngine;
 
 namespace Framework.ObjectPool
 {
-    /// <summary>类型池位标器</summary>
+    /// <summary><see cref="TypePool"/> 池位标器</summary>
     [Serializable]
     public class TypePoolPosMarker
     {
         private TypePool _pool;
 
-        // 公用位标器
         [SerializeField]
         private PositionMarker _marker = new PositionMarker();
 
-        private Dictionary<Type, PosMarker> _poolMarkers = new Dictionary<Type, PosMarker>();
-        private Dictionary<Type, Dictionary<int, PosMarker>> _arrayPoolMarkers = new Dictionary<Type, Dictionary<int, PosMarker>>();
+        private Dictionary<Type, PoolPosMarker> _poolMarkers = new Dictionary<Type, PoolPosMarker>();
+        private Dictionary<Type, Dictionary<int, PoolPosMarker>> _arrayPoolMarkers = new Dictionary<Type, Dictionary<int, PoolPosMarker>>();
 
-        // 专用位标器信息
+        // 专用位标器信息配置
         private Dictionary<Type, PositionMarkerInfo> _markerInfos = new Dictionary<Type, PositionMarkerInfo>();
         private Dictionary<Type, Dictionary<int, PositionMarkerInfo>> _arrayMarkerInfos = new Dictionary<Type, Dictionary<int, PositionMarkerInfo>>();
 
@@ -32,6 +31,34 @@ namespace Framework.ObjectPool
             this.pool = pool;
 
             Init();
+        }
+
+        /// <summary>公用位标器</summary>
+        public PositionMarker marker
+        {
+            get => _marker;
+            set
+            {
+                if (_marker != null && _marker != value)
+                {
+                    foreach (var item in _poolMarkers)
+                    {
+                        if (item.Value.marker == null)
+                            item.Value.Reset();
+                    }
+                    foreach (var item in _arrayPoolMarkers)
+                    {
+                        foreach (var aItem in item.Value)
+                        {
+                            if (aItem.Value.marker == null)
+                                aItem.Value.Reset();
+                        }
+                    }
+                    _marker.RemoveListeners();
+                }
+                _marker = value;
+                Init();
+            }
         }
 
         public TypePool pool
@@ -49,10 +76,13 @@ namespace Framework.ObjectPool
 
         public void Init()
         {
-            _marker.onSample.RemoveListener(OnSample);
-            _marker.onClear.RemoveListener(OnClear);
-            _marker.onSample.AddListener(OnSample);
-            _marker.onClear.AddListener(OnClear);
+            if (_marker != null)
+            {
+                _marker.onSample.RemoveListener(OnSample);
+                _marker.onClear.RemoveListener(OnClear);
+                _marker.onSample.AddListener(OnSample);
+                _marker.onClear.AddListener(OnClear);
+            }
         }
 
         /// <summary>更新位标器</summary>
@@ -60,7 +90,9 @@ namespace Framework.ObjectPool
         {
             if (_pool == null) return;
 
-            _marker.Update(elapseTime, realElapseTime);
+            UpdateMarkerAdd();
+
+            _marker?.Update(elapseTime, realElapseTime);
 
             // 轮询专用位标器
             foreach (var item in _poolMarkers)
@@ -93,41 +125,29 @@ namespace Framework.ObjectPool
                 InternalTypePool.root.Return(item.Value);
             }
             _arrayPoolMarkers.Clear();
+
+            // 专用位标器信息
+            _markerInfos.Clear();
+
+            foreach (var item in _arrayMarkerInfos)
+            {
+                InternalTypePool.root.Return(item.Value);
+            }
+            _arrayMarkerInfos.Clear();
         }
 
         /// <summary>添加专用位标器</summary>
         public void AddMarker(Type type, PositionMarkerInfo info)
         {
+            if (type.IsArray)
+            {
+                throw new ArrayTypeMismatchException("不支持数组类型");
+            }
+
             _markerInfos[type] = info;
 
-            // 立马创建位标器
-            if (_poolMarkers.TryGetValue(type, out var posMarker))
-            {
-                var marker = posMarker.marker;
-                if (marker == null)
-                {
-                    InternalTypePool.root.TryGet(out marker);
-                    posMarker.marker = marker;
-
-                    // 绑定事件
-                    marker.onSample.AddListener((_) =>
-                    {
-                        // 对池类型对象采样
-                        var count = _pool.GetFreeCount(type);
-                        posMarker.sampler.Sample(count);
-                    });
-                    marker.onClear.AddListener((_) =>
-                    {
-                        var sampler = posMarker.sampler;
-                        if (!sampler._hasSample) return;
-                        var pos = sampler._minPos.pos;
-                        _pool.Remove(type, pos);
-                        sampler.Clear();
-                    });
-                }
-
-                marker.overrideInfo = info;
-            }
+            // 立马尝试添加对应的池，并创建位标器
+            AddAndCreateMarker(type, info);
         }
 
         /// <summary>添加数组池专用位标器</summary>
@@ -140,8 +160,8 @@ namespace Framework.ObjectPool
             }
             aInfos[length] = info;
 
-            // TODO：待实现。立马创建位标器
-
+            // 立马尝试添加对应的池，并创建位标器
+            AddAndCreateMarker(type, length, info);
         }
 
         /// <summary>移除专用位标器</summary>
@@ -151,7 +171,10 @@ namespace Framework.ObjectPool
             _markerInfos.Remove(type);
             // 立马移除位标器
             if (_poolMarkers.TryGetValue(type, out var marker))
-                marker.Clear();
+            {
+                marker.RemoveMarker();
+                marker.sampler.Clear();
+            }
         }
 
         /// <summary>移除数组池专用位标器</summary>
@@ -169,50 +192,74 @@ namespace Framework.ObjectPool
             }
             // 立马移除位标器
             if (_arrayPoolMarkers.TryGetValue(type, out var tMarker))
-                if (tMarker.TryGetValue(length, out var aMarker))
-                    aMarker.RemoveMarker();
+                if (tMarker.TryGetValue(length, out var marker))
+                {
+                    marker.RemoveMarker();
+                    marker.sampler.Clear();
+                }
         }
 
-        // 添加
+        // 添加位标器
+        private void UpdateMarkerAdd()
+        {
+            foreach (var item in _markerInfos)
+            {
+                var type = item.Key;
+                var info = item.Value;
+                AddAndCreateMarker(type, info);
+            }
+
+            foreach (var item in _arrayMarkerInfos)
+            {
+                var type = item.Key;
+                foreach (var aInfos in item.Value)
+                {
+                    var length = aInfos.Key;
+                    var info = aInfos.Value;
+                    AddAndCreateMarker(type, length, info);
+                }
+            }
+        }
+
+        // 添加池
         private void UpdatePoolAdd()
         {
+            // 扫描所有池并添加
+
             // 通用池
             foreach (var kvp in _pool.pool)
             {
-                if (!_poolMarkers.ContainsKey(kvp.Key))
+                var type = kvp.Key;
+                if (!_poolMarkers.ContainsKey(type))
                 {
-                    _poolMarkers.Add(kvp.Key, Create());
-
-                    // TODO：待实现。有专用位标器配置信息，则创建位标器
-
+                    _poolMarkers.Add(type, Create());
                 }
             }
 
             // 数组池
             foreach (var kvp in _pool.arrayPool.pool)
             {
+                var type = kvp.Key;
                 // 类型
-                if (!_arrayPoolMarkers.TryGetValue(kvp.Key, out var tMarker))
+                if (!_arrayPoolMarkers.TryGetValue(type, out var tMarker))
                 {
-                    tMarker = InternalTypePool.root.GetDic<int, PosMarker>();
-                    _arrayPoolMarkers.Add(kvp.Key, tMarker);
+                    tMarker = InternalTypePool.root.GetDic<int, PoolPosMarker>();
+                    _arrayPoolMarkers.Add(type, tMarker);
                 }
 
                 // 数量
                 foreach (var aItem in kvp.Value)
                 {
-                    if (!tMarker.ContainsKey(aItem.Key))
+                    var length = aItem.Key;
+                    if (!tMarker.ContainsKey(length))
                     {
-                        tMarker.Add(aItem.Key, Create());
-
-                        // TODO：待实现。有专用位标器配置信息，则创建位标器
-
+                        tMarker.Add(length, Create());
                     }
                 }
             }
         }
 
-        // 回收
+        // 回收池
         private void UpdatePoolRemove()
         {
             /* 回收条件
@@ -379,39 +426,140 @@ namespace Framework.ObjectPool
             UpdatePoolRemove();
         }
 
-        private PosMarker Create()
+        /// <summary>尝试添加并创建专用位标器</summary>
+        private void AddAndCreateMarker(Type type, PositionMarkerInfo info)
         {
-            return InternalTypePool.root.Get<PosMarker>();
+            if (_pool == null) return;
+
+            // 添加对应的池
+            if (_pool.pool.ContainsKey(type)
+                && !_poolMarkers.ContainsKey(type))
+            {
+                _poolMarkers.Add(type, Create());
+            }
+
+            // 创建位标器
+            CreateMarker(type, info);
         }
 
-        private void Destroy(PosMarker marker)
+        /// <summary>尝试添加并创建专用位标器</summary>
+        private void AddAndCreateMarker(Type type, int length, PositionMarkerInfo info)
+        {
+            if (_pool == null) return;
+
+            Dictionary<int, PoolPosMarker> tMarker = null;
+            // 添加对应的池
+            if (_pool.arrayPool.pool.TryGetValue(type, out var aPool)
+                && !_arrayPoolMarkers.TryGetValue(type, out tMarker))
+            {
+                tMarker = InternalTypePool.root.GetDic<int, PoolPosMarker>();
+                _arrayPoolMarkers.Add(type, tMarker);
+            }
+            if (tMarker != null
+                && aPool.ContainsKey(length)
+                && !tMarker.ContainsKey(length))
+            {
+                tMarker.Add(length, Create());
+            }
+
+            // 立马创建位标器
+            CreateMarker(type, length, info);
+        }
+
+        /// <summary>创建专用位标器</summary>
+        private void CreateMarker(Type type, PositionMarkerInfo info)
+        {
+            if (_poolMarkers.TryGetValue(type, out var posMarker))
+            {
+                var marker = posMarker.marker;
+                if (marker == null)
+                {
+                    posMarker.sampler.Clear();
+
+                    InternalTypePool.root.TryGet(out marker);
+                    posMarker.marker = marker;
+
+                    // 绑定事件
+                    marker.onSample.AddListener((_) =>
+                    {
+                        // 对池类型对象采样
+                        var count = _pool.GetFreeCount(type);
+                        posMarker.sampler.Sample(count);
+                        posMarker.marker?.overrideInfo?.onSample?.Invoke(type);
+                    });
+                    marker.onClear.AddListener((_) =>
+                    {
+                        var sampler = posMarker.sampler;
+                        if (!sampler._hasSample) return;
+                        var pos = sampler._minPos.pos;
+                        _pool.Remove(type, pos);
+                        sampler.Clear();
+                        posMarker.marker?.overrideInfo?.onClear?.Invoke(type);
+                    });
+                }
+                else
+                {
+                    if (marker.overrideInfo != info)
+                        posMarker.Reset();
+                }
+
+                marker.overrideInfo = info;
+            }
+        }
+
+        /// <summary>创建专用位标器</summary>
+        private void CreateMarker(Type type, int length, PositionMarkerInfo info)
+        {
+            if (_arrayPoolMarkers.TryGetValue(type, out var aMarker))
+            {
+                if (!aMarker.TryGetValue(length, out var posMarker)) return;
+                var marker = posMarker.marker;
+                if (marker == null)
+                {
+                    posMarker.sampler.Clear();
+
+                    InternalTypePool.root.TryGet(out marker);
+                    posMarker.marker = marker;
+
+                    // 绑定事件
+                    marker.onSample.AddListener((_) =>
+                    {
+                        // 对池类型对象采样
+                        var count = _pool.arrayPool.GetFreeCount(type, length);
+                        posMarker.sampler.Sample(count);
+                        posMarker.marker?.overrideInfo?.onSampleArray?.Invoke(type, length);
+                    });
+                    marker.onClear.AddListener((_) =>
+                    {
+                        var sampler = posMarker.sampler;
+                        if (!sampler._hasSample) return;
+                        var pos = sampler._minPos.pos;
+                        _pool.arrayPool.Remove(type, length, pos);
+                        sampler.Clear();
+                        posMarker.marker?.overrideInfo?.onClearArray?.Invoke(type, length);
+                    });
+                }
+                else
+                {
+                    if (marker.overrideInfo != info)
+                    {
+                        posMarker.Reset();
+                    }
+                }
+
+                marker.overrideInfo = info;
+            }
+        }
+
+        private PoolPosMarker Create()
+        {
+            return InternalTypePool.root.Get<PoolPosMarker>();
+        }
+
+        private void Destroy(PoolPosMarker marker)
         {
             InternalTypePool.root.Return(marker);
         }
 
-        private class PosMarker : ITypePoolObject
-        {
-            /// <summary>专用位标器</summary>
-            public PositionMarker marker;
-
-            /// <summary>采样器</summary>
-            public PoolPosMarkSampler sampler = new PoolPosMarkSampler();
-
-            public void RemoveMarker()
-            {
-                if (marker != null)
-                {
-                    InternalTypePool.root.Return(marker);
-                    marker = null;
-                }
-            }
-
-            public void Clear()
-            {
-                RemoveMarker();
-
-                sampler.Clear();
-            }
-        }
     }
 }

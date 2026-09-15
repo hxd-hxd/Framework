@@ -17,9 +17,9 @@ namespace Framework.Runtime
         private int _sampleCount;// 采样次数
 
         [SerializeField]
-        private float _clearTimeer;// 清理周期计时器
+        private float _clearTimer;// 清理周期计时器
         [SerializeField]
-        private float _sampleTimeer;// 采样时间计时器
+        private float _sampleTimer;// 采样时间计时器
 
         /// <summary>采样事件</summary>
         public UnityEvent<PositionMarker> onSample = new UnityEvent<PositionMarker>();
@@ -35,18 +35,18 @@ namespace Framework.Runtime
 
         public virtual void Update(float elapseTime, float realElapseTime)
         {
-            _clearTimeer += realElapseTime;
-            _sampleTimeer += realElapseTime;
+            _clearTimer += realElapseTime;
+            _sampleTimer += realElapseTime;
 
-            if (_sampleTimeer >= sampleTime)
+            if (_sampleTimer >= sampleTime)
             {
-                _sampleTimeer = 0;
+                _sampleTimer -= sampleTime;
                 Sample();
             }
 
-            if (_clearTimeer >= clearTime)
+            if (_clearTimer >= clearTime)
             {
-                _clearTimeer = 0;
+                _clearTimer -= clearTime;
                 Clear();
             }
         }
@@ -60,13 +60,19 @@ namespace Framework.Runtime
         public virtual void Reset()
         {
             _sampleCount = 0;
-            _clearTimeer = _sampleTimeer = 0;
+            _clearTimer = _sampleTimer = 0;
         }
 
         public virtual void Clear()
         {
             _sampleCount = 0;
             onClear?.Invoke(this);
+        }
+
+        public virtual void RemoveListeners()
+        {
+            onSample?.RemoveAllListeners();
+            onClear?.RemoveAllListeners();
         }
 
         private PositionMarkerInfo GetInfo()
@@ -80,9 +86,8 @@ namespace Framework.Runtime
             _overrideInfo = null;
 
             _sampleCount = 0;
-            _clearTimeer = _sampleTimeer = 0;
-            onSample?.RemoveAllListeners();
-            onClear?.RemoveAllListeners();
+            _clearTimer = _sampleTimer = 0;
+            RemoveListeners();
         }
     }
 }

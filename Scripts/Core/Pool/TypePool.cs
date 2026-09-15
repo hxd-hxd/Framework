@@ -697,7 +697,7 @@ namespace Framework
         #endregion
 
         /// <summary>获取池中指定类型实例的可用数量</summary>
-        public virtual int GetFreeCount<T>()
+        public int GetFreeCount<T>()
         {
             return GetFreeCount(typeof(T));
         }
@@ -758,7 +758,7 @@ namespace Framework
         }
 
 
-        private void Remove<T>(List<T> values, int count)
+        private static void Remove<T>(List<T> values, int count)
         {
             // 指定移除的剩余数量
             var surplus = count;

@@ -9,7 +9,7 @@ namespace Framework.ObjectPool
     {
         public static InternalTypePool root { get; } = new InternalTypePool();
 
-        private readonly Dictionary<Type, List<object>> _pool = new Dictionary<Type, List<object>>(8);
+        private readonly Dictionary<Type, List<object>> _pool = new Dictionary<Type, List<object>>(4);
 
         /// <summary>从对象池获取</summary>
         public T Get<T>()

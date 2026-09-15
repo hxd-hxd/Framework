@@ -2,7 +2,7 @@
 namespace Framework.ObjectPool
 {
     /// <summary>池采样方式</summary>
-    public enum PoolPosMarkSampleMode
+    public enum PoolSampleMode
     {
         /// <summary>默认</summary>
         Default = 0,

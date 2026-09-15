@@ -164,9 +164,7 @@ namespace Framework
             //Debug.Log($"{nameof(GameObjectPool)} 静态初始化");
         }
 
-        /// <summary>
-        /// 清理所有对象池
-        /// </summary>
+        /// <summary>清理所有对象池</summary>
         public static void ClearAllPool()
         {
             foreach (var pool in _pools)
@@ -182,6 +180,7 @@ namespace Framework
         Transform _returnParent;
         Dictionary<GameObject, List<GameObject>> _pool;
         List<Coroutine> _preCreateInstanceCoroutines = new List<Coroutine>();
+
         ///// <summary>
         ///// 实例化事件
         ///// </summary>
@@ -214,18 +213,15 @@ namespace Framework
             _pools.Add(this);
         }
 
-        /// <summary>
-        /// 模板池
-        /// </summary>
-        public Dictionary<GameObject, List<GameObject>> pool => _pool;
-        /// <summary>
-        /// 默认模板
-        /// </summary>
+        /// <summary>模板池</summary>
+        public IReadOnlyDictionary<GameObject, List<GameObject>> pool => _pool;
+
+        /// <summary>默认模板</summary>
         public GameObject template { get => _template; set => _template = value; }
-        /// <summary>
-        /// 池中物体的父节点
-        /// </summary>
-        public Transform returnParent {
+
+        /// <summary>池中物体的父节点</summary>
+        public Transform returnParent
+        {
             get
             {
                 if (_returnParent == null)
@@ -235,16 +231,13 @@ namespace Framework
                 }
                 return _returnParent;
             }
-            set => _returnParent = value; 
+            set => _returnParent = value;
         }
 
-        /// <summary>
-        /// 池子的数量
-        /// </summary>
+        /// <summary>池子的数量</summary>
         public virtual int poolCount => _pool.Count;
-        /// <summary>
-        /// 池子里包含的对象数量
-        /// </summary>
+
+        /// <summary>池子里包含的对象数量</summary>
         public virtual int itemSize
         {
             get
@@ -257,24 +250,14 @@ namespace Framework
                 return sum;
             }
         }
-        /// <summary>
-        /// 预创建的异步协程列表
-        /// </summary>
+
+        /// <summary>预创建的异步协程列表</summary>
         public List<Coroutine> preCreateInstanceCoroutines { get => _preCreateInstanceCoroutines; set => _preCreateInstanceCoroutines = value; }
-        /// <summary>
-        /// 预创建实例的协程数量
-        /// </summary>
+
+        /// <summary>预创建实例的协程数量</summary>
         public int preCreateInstanceCoroutineNum => _preCreateInstanceCoroutines.Count;
 
-        //protected void Init(string name)
-        //{
-        //    var goRoot = new GameObject($"<>");
-        //}
-
-        /// <summary>
-        /// 创建实例
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>创建实例</summary>
         protected virtual GameObject CreateInstance(GameObject template)
         {
             if (template == null)
@@ -289,10 +272,7 @@ namespace Framework
             return GameObject.Instantiate(template);
         }
 
-        /// <summary>
-        /// 创建实例
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>创建实例</summary>
         protected virtual GameObject CreateInstance(GameObject template, Transform parent)
         {
             if (template == null)
@@ -307,55 +287,55 @@ namespace Framework
             return GameObject.Instantiate(template, parent);
         }
 
-        /// <summary>
-        /// 预先为默认模板创建指定数量的实例
-        /// </summary>
-        public virtual void PreCreateInstance(int num) => PreCreateInstance(_template, num);
-        /// <summary>
-        /// 预先为对应模板创建指定数量的实例
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="num"></param>
-        public virtual void PreCreateInstance(GameObject template, int num)
+        #region 预创建
+        /// <summary>预先为默认模板创建指定数量的实例</summary>
+        public void PreCreateInstance(int num)
+            => PreCreateInstance(_template, num);
+
+        /// <summary>预先为对应模板创建指定数量的实例</summary>
+        public void PreCreateInstance(GameObject template, int num)
+            => PreCreateInstance(template, num, returnParent);
+
+        /// <summary>预先为对应模板创建指定数量的实例</summary>
+        public virtual void PreCreateInstance(GameObject template, int num, Transform parent)
         {
             for (int i = 1; i <= num; i++)
             {
-                var go = CreateInstance(template, returnParent);
+                var go = CreateInstance(template, parent);
                 Return(go, template);
             }
         }
-        /// <summary>
-        /// 预先为对应模板创建指定数量的实例，该操作是异步的
-        /// </summary>
-        /// <param name="num"></param>
-        /// <returns></returns>
-        public virtual Coroutine PreCreateInstanceAsync(int num) => PreCreateInstanceAsync(_template, num);
-        /// <summary>
-        /// 预先为对应模板创建指定数量的实例，该操作是异步的
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="num"></param>
-        public virtual Coroutine PreCreateInstanceAsync(GameObject template, int num)
+
+        /// <summary>预先为对应模板创建指定数量的实例，该操作是异步的</summary>
+        public Coroutine PreCreateInstanceAsync(int num)
+            => PreCreateInstanceAsync(_template, num, returnParent);
+
+        /// <summary>预先为对应模板创建指定数量的实例，该操作是异步的</summary>
+        public Coroutine PreCreateInstanceAsync(GameObject template, int num)
+            => PreCreateInstanceAsync(template, num, returnParent);
+
+        /// <summary>预先为对应模板创建指定数量的实例，该操作是异步的</summary>
+        public virtual Coroutine PreCreateInstanceAsync(GameObject template, int num, Transform parent)
         {
             var m = monitor;
             if (m == null) return null;
-            var c = m.StartCoroutine(_PreCreateInstanceCoroutine(template, num));
+            var c = m.StartCoroutine(_PreCreateInstanceCoroutine(template, num, parent));
             _preCreateInstanceCoroutines.Add(c);
             return c;
         }
-        protected IEnumerator _PreCreateInstanceCoroutine(GameObject template, int num)
+
+        protected IEnumerator _PreCreateInstanceCoroutine(GameObject template, int num, Transform parent)
         {
             for (int i = 1; i <= num; i++)
             {
-                var go = CreateInstance(template, returnParent);
-                Return(go, template);
+                var go = CreateInstance(template, parent);
+                Return(go, template, parent);
                 yield return null;
             }
             yield break;
         }
-        /// <summary>
-        /// 取消所有预创建，仅取消任务，已创建的实例将保留
-        /// </summary>
+
+        /// <summary>取消所有预创建，仅取消任务，已创建的实例将保留</summary>
         public virtual void CancelPreCreateInstance()
         {
             var m = monitor;
@@ -366,24 +346,20 @@ namespace Framework
             }
             _preCreateInstanceCoroutines.Clear();
         }
+        #endregion
 
         /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
-        public virtual GameObject Get()
-        {
-            return Get(_template, null);
-        }
+        public GameObject Get()
+            => Get(_template, null);
 
         /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
-        public virtual GameObject Get(GameObject template)
-        {
-            return Get(template, null);
-        }
+        public GameObject Get(GameObject template)
+            => Get(template, null);
+
         /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
-        public virtual GameObject Get(Transform parent)
-        {
-            var obj = Get(_template, parent);
-            return obj;
-        }
+        public GameObject Get(Transform parent)
+            => Get(_template, parent);
+
         /// <summary>从对象池获取</summary>
         public virtual GameObject Get(GameObject template, Transform parent)
         {
@@ -411,13 +387,14 @@ namespace Framework
                 pool[target] = tPool;
             }
             if (!obj) obj = CreateInstance(target, parent);
-            if (obj != null)
+            if (obj.transform.parent != parent)
                 obj.transform.SetParent(parent);
 
             var prc = obj.GetComponent<PoolRecordComponent>();
             if (!prc) prc = obj.AddComponent<PoolRecordComponent>();
             prc.record.pool = this;
             prc.record.template = template;
+            prc.record.parent = parent;
             prc.record.instance = obj;
 
             InitializeObject(obj);
@@ -426,14 +403,15 @@ namespace Framework
         }
 
         /// <summary>从对象池获取，从默认模板 <see cref="template"/> 对应的池子里取</summary>
-        public virtual GameObject Get(Vector3 position, Quaternion rotation)
+        public GameObject Get(Vector3 position, Quaternion rotation)
         {
             var obj = Get();
             obj.transform.SetPositionAndRotation(position, rotation);
             return obj;
         }
+
         /// <summary>从对象池获取</summary>
-        public virtual GameObject Get(GameObject template, Vector3 position, Quaternion rotation)
+        public GameObject Get(GameObject template, Vector3 position, Quaternion rotation)
         {
             var obj = Get(template);
             obj.transform.SetPositionAndRotation(position, rotation);
@@ -442,19 +420,19 @@ namespace Framework
 
         /// <summary>返回对象池，默认返回到 <see cref="template"/> 对应的池子，如果不确定请使用 <see cref="Return(GameObject, GameObject)"/> 已指定返回到哪个池子</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
-        public virtual void Return(GameObject obj) => Return(obj, _template, returnParent);
+        public void Return(GameObject obj)
+            => Return(obj, _template, returnParent);
+
         /// <summary>返回对象池</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
-        public virtual void Return(GameObject obj, GameObject template)
-        {
-            Return(obj, template, returnParent);
-        }
+        public void Return(GameObject obj, GameObject template)
+            => Return(obj, template, returnParent);
+
         /// <summary>返回对象池</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
-        public virtual void Return(GameObject obj, Transform returnParent)
-        {
-            Return(obj, _template, returnParent);
-        }
+        public void Return(GameObject obj, Transform returnParent)
+            => Return(obj, _template, returnParent);
+
         /// <summary>返回对象池</summary>
         /// <remarks>和 <see cref="TypePool.Return{T}(T)"/> 一样，会执行 <see cref="ITypePoolObject.Clear"/> 的清理操作，清理操作会在其他操作之后进行。</remarks>
         public virtual void Return(GameObject obj, GameObject template, Transform returnParent)
@@ -473,7 +451,8 @@ namespace Framework
             if (!tPool.Contains(obj))
             {
                 tPool.Add(obj);
-                obj.transform.SetParent(returnParent);
+                if (obj.transform.parent != returnParent)
+                    obj.transform.SetParent(returnParent);
                 var manager = GOManager;
                 if (manager == null || returnParent != manager.transform)
                 {
@@ -485,6 +464,40 @@ namespace Framework
             }
         }
 
+        /// <summary>获取池中指定类型实例的可用数量</summary>
+        public virtual int GetFreeCount(GameObject template)
+        {
+            if (template == null) return 0;
+
+            int count = 0;
+            var has = _pool.TryGetValue(template, out var tPool);
+
+            if (has)
+            {
+                count = tPool.Count;
+            }
+            return count;
+        }
+
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove(GameObject template, int count)
+        {
+            if (count < 0) return;
+            if (template == null) return;
+
+            if (!_pool.TryGetValue(template, out var tPool)) return;
+            if (tPool.Count <= 0) return;
+
+            // 指定移除的剩余数量
+            var surplus = count;
+            while (tPool.Count > 0 && surplus > 0)
+            {
+                var _go = FetchLast(tPool);
+                GameObject.Destroy(_go);
+                surplus -= 1;
+            }
+        }
+
         /// <summary>清理对应模板的池</summary>
         public virtual void Clear(GameObject template)
         {
@@ -493,7 +506,6 @@ namespace Framework
 
             if (has)
             {
-                //tPool = new Queue<GameObject>();
                 while (tPool.Count > 0)
                 {
                     var _go = FetchLast(tPool);
@@ -536,10 +548,7 @@ namespace Framework
             return new List<GameObject>(1);
         }
 
-        /// <summary>
-        /// 清理 <see cref="ITypePoolObject.Clear()"/>
-        /// </summary>
-        /// <param name="obj"></param>
+        /// <summary>清理 <see cref="ITypePoolObject.Clear()"/></summary>
         protected virtual void CleanupObject(GameObject obj)
         {
             var tpos = TypePool.root.GetList<ITypePoolObject>();
@@ -554,10 +563,7 @@ namespace Framework
             TypePool.root.Return(tpos);
         }
 
-        /// <summary>
-        /// 初始 <see cref="ITypePoolObjectInit.Init()"/>
-        /// </summary>
-        /// <param name="obj"></param>
+        /// <summary>初始 <see cref="ITypePoolObjectInit.Init()"/></summary>
         protected virtual void InitializeObject(GameObject obj)
         {
             var tpos = TypePool.root.GetList<ITypePoolObjectInit>();
@@ -583,6 +589,7 @@ namespace Framework
             }
             return obj;
         }
+
     }
 
     /// <summary>
@@ -594,10 +601,9 @@ namespace Framework
         [NonSerialized]
         public GameObjectPool pool;
         public GameObject template;
-        /// <summary>
-        /// 通过 <see cref="template"/> 实例化的实例，可选，视自己的使用方式而定
-        /// </summary>
+        /// <summary>通过 <see cref="template"/> 实例化的实例，可选，视自己的使用方式而定</summary>
         public GameObject instance;
+        public Transform parent;
 
         public GameObjectPoolRecord()
         {
@@ -614,6 +620,13 @@ namespace Framework
             this.template = template;
             this.instance = instance;
         }
+        public GameObjectPoolRecord(GameObjectPool pool, GameObject template, GameObject instance, Transform parent)
+        {
+            this.pool = pool;
+            this.template = template;
+            this.instance = instance;
+            this.parent = parent;
+        }
 
         /// <summary>
         /// 是否有效记录
@@ -629,16 +642,17 @@ namespace Framework
         /// 返回对象池
         /// </summary>
         /// <returns></returns>
-        public bool Return() => Return(instance);
+        public bool Return() => Return(parent);
+
         /// <summary>
         /// 返回对象池
         /// </summary>
         /// <returns></returns>
-        public bool Return(GameObject instance)
+        public bool Return(Transform parent)
         {
             if (IsValid() && instance)
             {
-                pool.Return(instance, template);
+                pool.Return(instance, template, parent);
                 return true;
             }
             return false;

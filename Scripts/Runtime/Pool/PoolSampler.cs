@@ -5,10 +5,10 @@ namespace Framework.ObjectPool
 {
     /// <summary>池位标采样器</summary>
     [Serializable]
-    public class PoolPosMarkSampler
+    public class PoolSampler
     {
         /// <summary>采样方式</summary>
-        public PoolPosMarkSampleMode _sampleMode = PoolPosMarkSampleMode.Min;
+        public PoolSampleMode _sampleMode = PoolSampleMode.Min;
 
         /// <summary>最小位置</summary>
         public Data _minPos = new()
@@ -37,7 +37,7 @@ namespace Framework.ObjectPool
             };
 
             if (_minPos.pos > pos || !_hasSample) _minPos = curData;
-            if (_sampleMode == PoolPosMarkSampleMode.Full)
+            if (_sampleMode == PoolSampleMode.Full)
             {
                 _datas.Add(curData);
             }

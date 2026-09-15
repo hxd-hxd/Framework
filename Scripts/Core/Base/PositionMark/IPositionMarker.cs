@@ -18,7 +18,7 @@ namespace Framework.Core
 
         /// <summary>更新
         /// <para></para><paramref name="elapseTime"/>：流逝的时间
-        /// <para></para><paramref name="realElapseTime"/>：真实流失的时间
+        /// <para></para><paramref name="realElapseTime"/>：真实流逝的时间
         /// </summary>
         void Update(float elapseTime, float realElapseTime);
 

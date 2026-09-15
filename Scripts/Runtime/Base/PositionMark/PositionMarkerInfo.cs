@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace Framework.Runtime
@@ -14,10 +15,13 @@ namespace Framework.Runtime
         /// <summary>采样时间</summary>
         public float sampleTime = 1;
 
-        public UnityEvent<Type> onSample;
-        public UnityEvent<Type> onClear;
-        public UnityEvent<Type, int> onSampleArray;
-        public UnityEvent<Type, int> onClearArray;
+        public UnityEvent<Type> onSample = new UnityEvent<Type>();
+        public UnityEvent<Type> onClear = new UnityEvent<Type>();
+        public UnityEvent<Type, int> onSampleArray = new UnityEvent<Type, int>();
+        public UnityEvent<Type, int> onClearArray = new UnityEvent<Type, int>();
+
+        public UnityEvent<GameObject> onSampleGO = new UnityEvent<GameObject>();
+        public UnityEvent<GameObject> onClearGO = new UnityEvent<GameObject>();
 
         public void Clear()
         {
@@ -28,6 +32,9 @@ namespace Framework.Runtime
             onClear?.RemoveAllListeners();
             onSampleArray?.RemoveAllListeners();
             onClearArray?.RemoveAllListeners();
+
+            onSampleGO?.RemoveAllListeners();
+            onClearGO?.RemoveAllListeners();
         }
     }
 }

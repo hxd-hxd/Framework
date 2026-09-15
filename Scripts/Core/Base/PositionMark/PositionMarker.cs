@@ -13,8 +13,8 @@ namespace Framework.Core
 
         private int _sampleCount;// 采样次数
 
-        private float _clearTimeer;// 清理周期计时器
-        private float _sampleTimeer;// 采样时间计时器
+        private float _clearTimer;// 清理周期计时器
+        private float _sampleTimer;// 采样时间计时器
 
         /// <summary>采样事件</summary>
         public event Action onSample;
@@ -29,18 +29,18 @@ namespace Framework.Core
 
         public virtual void Update(float elapseTime, float realElapseTime)
         {
-            _clearTimeer += realElapseTime;
-            _sampleTimeer += realElapseTime;
+            _clearTimer += realElapseTime;
+            _sampleTimer += realElapseTime;
 
-            if (_sampleTimeer >= _sampleTime)
+            if (_sampleTimer >= sampleTime)
             {
-                _sampleTimeer = 0;
+                _sampleTimer -= sampleTime;
                 Sample();
             }
 
-            if (_clearTimeer >= _clearTime)
+            if (_clearTimer >= clearTime)
             {
-                _clearTimeer = 0;
+                _clearTimer -= clearTime;
                 Clear();
             }
         }
@@ -54,7 +54,7 @@ namespace Framework.Core
         public virtual void Reset()
         {
             _sampleCount = 0;
-            _clearTimeer = _sampleTimeer = 0;
+            _clearTimer = _sampleTimer = 0;
         }
 
         public virtual void Clear()
@@ -69,7 +69,7 @@ namespace Framework.Core
             _sampleTime = 1;
 
             _sampleCount = 0;
-            _clearTimeer = _sampleTimeer = 0;
+            _clearTimer = _sampleTimer = 0;
             onSample = null;
             onClear = null;
         }

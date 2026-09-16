@@ -91,6 +91,13 @@ namespace Framework.Editor
                 return true;
             }
 
+            if (type.IsGenericTypeDefinition)
+            {
+                message = "不能使用开放泛型，请指定类型参数";
+                messageType = MessageType.Error;
+                return true;
+            }
+
             if (arrayOnly && !type.IsArray)
             {
                 message = "需要数组类型全名，当前为：" + type.FullName;

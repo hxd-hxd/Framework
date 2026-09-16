@@ -26,6 +26,8 @@ namespace Framework.Editor
         bool _excludeReferenceTypes;
         bool _excludeValueTypes;
         bool _excludeAbstractClasses;
+        Type _constraintParam;
+        bool _allowGenericDefinitions = true;
         int _idSeed = 1;
 
         public TypeSelectTreeView(TreeViewState state, bool showSystemTypes, Action<Type> onPicked, Action<Type> onConfirmed)
@@ -64,10 +66,29 @@ namespace Framework.Editor
 
         public void SetFilters(bool showSystemTypes, bool excludeReferenceTypes, bool excludeValueTypes, bool excludeAbstractClasses)
         {
+            ApplyViewSettings(
+                showSystemTypes,
+                excludeReferenceTypes,
+                excludeValueTypes,
+                excludeAbstractClasses,
+                _constraintParam,
+                _allowGenericDefinitions);
+        }
+
+        public void ApplyViewSettings(
+            bool showSystemTypes,
+            bool excludeReferenceTypes,
+            bool excludeValueTypes,
+            bool excludeAbstractClasses,
+            Type constraintParam,
+            bool allowGenericDefinitions)
+        {
             bool changed = _showSystemTypes != showSystemTypes
                 || _excludeReferenceTypes != excludeReferenceTypes
                 || _excludeValueTypes != excludeValueTypes
-                || _excludeAbstractClasses != excludeAbstractClasses;
+                || _excludeAbstractClasses != excludeAbstractClasses
+                || _constraintParam != constraintParam
+                || _allowGenericDefinitions != allowGenericDefinitions;
             if (!changed)
                 return;
 
@@ -75,6 +96,8 @@ namespace Framework.Editor
             _excludeReferenceTypes = excludeReferenceTypes;
             _excludeValueTypes = excludeValueTypes;
             _excludeAbstractClasses = excludeAbstractClasses;
+            _constraintParam = constraintParam;
+            _allowGenericDefinitions = allowGenericDefinitions;
             Reload();
         }
 
@@ -191,6 +214,10 @@ namespace Framework.Editor
                 return false;
             if (_excludeAbstractClasses && IsAbstractClass(type))
                 return false;
+            if (!_allowGenericDefinitions && type.IsGenericTypeDefinition)
+                return false;
+            if (_constraintParam != null && !TypeSelectCache.MatchesGenericParameter(type, _constraintParam))
+                return false;
             return true;
         }
 
@@ -272,7 +299,7 @@ namespace Framework.Editor
             var item = new Item
             {
                 id = _idSeed++,
-                displayName = GetTypeDisplayName(type),
+                displayName = TypeSelectCache.GetDisplayName(type),
                 type = type,
                 fullName = fullName,
                 searchText = string.IsNullOrEmpty(entry.name)
@@ -299,15 +326,6 @@ namespace Framework.Editor
             parent.AddChild(node);
             folders[path] = node;
             return node;
-        }
-
-        static string GetTypeDisplayName(Type type)
-        {
-            string name = type.Name;
-            int tick = name.IndexOf('`');
-            if (tick < 0)
-                return name;
-            return name.Substring(0, tick) + "<>";
         }
 
         static string BuildSearchText(TypeSelectCache.Entry entry)

@@ -14,7 +14,7 @@ namespace Framework.ObjectPool
         [SerializeField]
         private PositionMarker _marker = new PositionMarker();
 
-        private Dictionary<GameObject, PoolPosMarker> _poolMarkers = new Dictionary<GameObject, PoolPosMarker>();
+        private Dictionary<GameObject, PoolPosMarkerItem> _poolMarkers = new Dictionary<GameObject, PoolPosMarkerItem>();
 
         // 专用位标器信息配置
         private Dictionary<GameObject, PositionMarkerInfo> _markerInfos = new Dictionary<GameObject, PositionMarkerInfo>();
@@ -277,12 +277,12 @@ namespace Framework.ObjectPool
             }
         }
 
-        private PoolPosMarker Create()
+        private PoolPosMarkerItem Create()
         {
-            return InternalTypePool.root.Get<PoolPosMarker>();
+            return InternalTypePool.root.Get<PoolPosMarkerItem>();
         }
 
-        private void Destroy(PoolPosMarker marker)
+        private void Destroy(PoolPosMarkerItem marker)
         {
             InternalTypePool.root.Return(marker);
         }

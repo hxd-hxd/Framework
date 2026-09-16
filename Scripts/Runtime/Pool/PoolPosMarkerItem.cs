@@ -4,7 +4,7 @@ using Framework.Runtime;
 namespace Framework.ObjectPool
 {
     /// <summary>内部位标器定义</summary>
-    internal class PoolPosMarker : ITypePoolObject
+    internal class PoolPosMarkerItem : ITypePoolObject
     {
         /// <summary>专用位标器</summary>
         public PositionMarker marker;

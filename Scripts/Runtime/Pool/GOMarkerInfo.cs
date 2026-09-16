@@ -8,7 +8,7 @@ namespace Framework.ObjectPool
 {
 
     [Serializable]
-    public class GOInfo
+    public class GOMarkerInfo
     {
         public GameObject template;
 

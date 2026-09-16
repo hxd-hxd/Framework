@@ -788,9 +788,54 @@ MonoBehaviour:
       onClear:
         m_PersistentCalls:
           m_Calls: []
-  typeInfos: []
-  arrayInfos: []
-  gOInfos: []
+  typeMarkerInfos:
+  - typeName: System.Collections.Generic.List`1[[System.Collections.Generic.List`1[[System.Int32,mscorlib,Version=4.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089]],mscorlib,Version=4.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089]]
+    info:
+      clearTime: 0
+      sampleTime: 0
+      onSample:
+        m_PersistentCalls:
+          m_Calls: []
+      onClear:
+        m_PersistentCalls:
+          m_Calls: []
+      onSampleArray:
+        m_PersistentCalls:
+          m_Calls: []
+      onClearArray:
+        m_PersistentCalls:
+          m_Calls: []
+      onSampleGO:
+        m_PersistentCalls:
+          m_Calls: []
+      onClearGO:
+        m_PersistentCalls:
+          m_Calls: []
+  arrayMarkerInfos:
+  - typeName: 
+    length: 0
+    info:
+      clearTime: 0
+      sampleTime: 0
+      onSample:
+        m_PersistentCalls:
+          m_Calls: []
+      onClear:
+        m_PersistentCalls:
+          m_Calls: []
+      onSampleArray:
+        m_PersistentCalls:
+          m_Calls: []
+      onClearArray:
+        m_PersistentCalls:
+          m_Calls: []
+      onSampleGO:
+        m_PersistentCalls:
+          m_Calls: []
+      onClearGO:
+        m_PersistentCalls:
+          m_Calls: []
+  gOMarkerInfos: []
   references:
     version: 2
     RefIds:

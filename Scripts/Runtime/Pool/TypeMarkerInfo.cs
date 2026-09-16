@@ -3,18 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using Framework;
 using Framework.Runtime;
+using UnityEngine;
 
 namespace Framework.ObjectPool
 {
 
     [Serializable]
-    public class ArrayInfo
+    public class TypeMarkerInfo
     {
-        /// <summary><see cref="Array"/> 类型名</summary>
-        [TypeNameSelect(true)]
-        public string typeName = typeof(object[]).FullName;
-
-        public int length;
+        [TypeNameSelect]
+        public string typeName = typeof(object).FullName;
 
         public PositionMarkerInfo info;
     }

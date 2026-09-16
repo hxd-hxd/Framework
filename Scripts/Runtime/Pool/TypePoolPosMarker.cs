@@ -14,8 +14,8 @@ namespace Framework.ObjectPool
         [SerializeField]
         private PositionMarker _marker = new PositionMarker();
 
-        private Dictionary<Type, PoolPosMarker> _poolMarkers = new Dictionary<Type, PoolPosMarker>();
-        private Dictionary<Type, Dictionary<int, PoolPosMarker>> _arrayPoolMarkers = new Dictionary<Type, Dictionary<int, PoolPosMarker>>();
+        private Dictionary<Type, PoolPosMarkerItem> _poolMarkers = new Dictionary<Type, PoolPosMarkerItem>();
+        private Dictionary<Type, Dictionary<int, PoolPosMarkerItem>> _arrayPoolMarkers = new Dictionary<Type, Dictionary<int, PoolPosMarkerItem>>();
 
         // 专用位标器信息配置
         private Dictionary<Type, PositionMarkerInfo> _markerInfos = new Dictionary<Type, PositionMarkerInfo>();
@@ -243,7 +243,7 @@ namespace Framework.ObjectPool
                 // 类型
                 if (!_arrayPoolMarkers.TryGetValue(type, out var tMarker))
                 {
-                    tMarker = InternalTypePool.root.GetDic<int, PoolPosMarker>();
+                    tMarker = InternalTypePool.root.GetDic<int, PoolPosMarkerItem>();
                     _arrayPoolMarkers.Add(type, tMarker);
                 }
 
@@ -447,12 +447,12 @@ namespace Framework.ObjectPool
         {
             if (_pool == null) return;
 
-            Dictionary<int, PoolPosMarker> tMarker = null;
+            Dictionary<int, PoolPosMarkerItem> tMarker = null;
             // 添加对应的池
             if (_pool.arrayPool.pool.TryGetValue(type, out var aPool)
                 && !_arrayPoolMarkers.TryGetValue(type, out tMarker))
             {
-                tMarker = InternalTypePool.root.GetDic<int, PoolPosMarker>();
+                tMarker = InternalTypePool.root.GetDic<int, PoolPosMarkerItem>();
                 _arrayPoolMarkers.Add(type, tMarker);
             }
             if (tMarker != null
@@ -551,12 +551,12 @@ namespace Framework.ObjectPool
             }
         }
 
-        private PoolPosMarker Create()
+        private PoolPosMarkerItem Create()
         {
-            return InternalTypePool.root.Get<PoolPosMarker>();
+            return InternalTypePool.root.Get<PoolPosMarkerItem>();
         }
 
-        private void Destroy(PoolPosMarker marker)
+        private void Destroy(PoolPosMarkerItem marker)
         {
             InternalTypePool.root.Return(marker);
         }

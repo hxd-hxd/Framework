@@ -16,6 +16,14 @@ namespace Framework.Editor
         {
             DrawDefaultInspector();
 
+            var setBase = ((LocalizationSetRegister)target).GetComponent<LocalizationSetBase>();
+            if (setBase != null && setBase._isGolbalSetter)
+            {
+                EditorGUILayout.HelpBox(
+                    "同对象上的 LocalizationSet 为全局设置器，不会注册到管理器。",
+                    MessageType.Warning);
+            }
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("LocalizationSetManager", EditorStyles.boldLabel);
 

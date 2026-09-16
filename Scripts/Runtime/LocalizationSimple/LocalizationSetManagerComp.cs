@@ -20,6 +20,10 @@ namespace Framework.LocalizationSimple
         /// <summary>语言提供者列表</summary>
         public List<LanguageProviderComponentBase> defultLangProviders { get => _defultLangProviders; set => _defultLangProviders = value; }
 
-
+        /// <summary>设置本地化</summary>
+        public void Set()
+        {
+            LocalizationSetManager.Instance.Set();
+        }
     }
 }

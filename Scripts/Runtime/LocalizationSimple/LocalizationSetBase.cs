@@ -10,6 +10,8 @@ namespace Framework.LocalizationSimple
     /// <summary>设置本地化语言基类</summary>
     public abstract class LocalizationSetBase : MonoBehaviour, ILocalizationSet
     {
+        [Tooltip("是否全局设置器。\r\n注意：全局设置器不能注册到管理器，而是控制管理器的设置")]
+        public bool _isGolbalSetter;
         public LocalizationSetMode _setMode;
         //[SerializeField]
         //private bool _isSendSetEventInform;
@@ -93,6 +95,12 @@ namespace Framework.LocalizationSimple
         /// <summary>按指定语言和设置方式设置</summary>
         public virtual void Set<T>(T lang, LocalizationSetMode setMode)
         {
+            if (_isGolbalSetter)
+            {
+                LocalizationSetManager.Instance.Set();
+                return;
+            }
+
             switch (setMode)
             {
                 case LocalizationSetMode.Type:

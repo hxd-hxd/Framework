@@ -62,6 +62,7 @@ namespace Framework.LocalizationSimple
         public void Register()
         {
             if (ObjectUtility.IsNull(_set)) _set = GetComponent<ILocalizationSet>();
+            if (_set is LocalizationSetBase setBase && setBase._isGolbalSetter) return;
             LocalizationSetManager.Instance.RegisterSet(_set);
         }
 

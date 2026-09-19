@@ -9,6 +9,10 @@ namespace Framework.ObjectPool
     [Serializable]
     public class GOPoolPosMarker
     {
+        [Tooltip("空池保留轮数，例如：1，清理时检测到空池则保留 1 轮，下一轮如果仍为空池则销毁，否则重置")]
+        [SerializeField]
+        private int _nullPoolReserveNum = 1;
+
         private GameObjectPool _pool;
 
         [SerializeField]
@@ -19,16 +23,20 @@ namespace Framework.ObjectPool
         // 专用位标器信息配置
         private Dictionary<GameObject, PositionMarkerInfo> _markerInfos = new Dictionary<GameObject, PositionMarkerInfo>();
 
-        public GOPoolPosMarker()
-        {
-            Init();
-        }
+        // 标记需要移除
+        private bool _needPoolRemove;
 
-        public GOPoolPosMarker(GameObjectPool pool)
+        public GameObjectPool pool
         {
-            this.pool = pool;
-
-            Init();
+            get => _pool;
+            set
+            {
+                if (_pool != null && _pool != value)
+                {
+                    Clear();
+                }
+                _pool = value;
+            }
         }
 
         /// <summary>公用位标器</summary>
@@ -51,17 +59,19 @@ namespace Framework.ObjectPool
             }
         }
 
-        public GameObjectPool pool
+        /// <summary>空池保留轮数</summary>
+        public int nullPoolReserveNum { get => _nullPoolReserveNum; set => _nullPoolReserveNum = value; }
+
+        public GOPoolPosMarker()
         {
-            get => _pool;
-            set
-            {
-                if (_pool != null && _pool != value)
-                {
-                    Clear();
-                }
-                _pool = value;
-            }
+            Init();
+        }
+
+        public GOPoolPosMarker(GameObjectPool pool)
+        {
+            this.pool = pool;
+
+            Init();
         }
 
         public void Init()
@@ -90,6 +100,12 @@ namespace Framework.ObjectPool
                 if (item.Key == null) continue;// 死键不更新
                 item.Value.marker?.Update(elapseTime, realElapseTime);
             }
+
+            if (_needPoolRemove)
+            {
+                UpdatePoolRemove();
+                _needPoolRemove = false;
+            }
         }
 
         public void Clear()
@@ -102,6 +118,8 @@ namespace Framework.ObjectPool
 
             // 专用位标器信息
             _markerInfos.Clear();
+
+            _needPoolRemove = false;
         }
 
         /// <summary>添加专用位标器</summary>
@@ -161,7 +179,6 @@ namespace Framework.ObjectPool
             /* 回收条件
             模板键被销毁
             没有对应的键
-            空池暂留，TODO：一定时间后将空池一并清理掉
              */
 
             var tempGOs = InternalTypePool.root.GetList<GameObject>();
@@ -211,6 +228,31 @@ namespace Framework.ObjectPool
             InternalTypePool.root.Return(tempGOs);
         }
 
+        // 空池处理
+        private void NullPoolHandle(PoolSampler sampler, out bool isNullPool, out bool isDestroy, Func<bool> handle)
+        {
+            isDestroy = false;
+            // 记录空池
+            isNullPool = sampler.IsNullPool();
+            if (isNullPool)
+            {
+                if (sampler._nullPoolCount < nullPoolReserveNum)
+                {
+                    sampler._nullPoolCount += 1;
+                }
+                else
+                {
+                    isDestroy = handle();
+                    sampler._nullPoolCount = 0;
+                }
+            }
+            else
+            {
+                // 空池计数期间任何一次非空池都会重置
+                sampler._nullPoolCount = 0;
+            }
+        }
+
         private void OnSample(PositionMarker marker)
         {
             if (_pool == null) return;
@@ -246,8 +288,24 @@ namespace Framework.ObjectPool
                     if (template == null) continue;// 死键不按采样清理
                     var sampler = item.Value.sampler;
                     if (!sampler._hasSample) continue;
-                    var pos = sampler._minPos.pos;
-                    _pool.Remove(template, pos);
+
+                    NullPoolHandle(sampler, out var isNullPool, out _, () =>
+                    {
+                        if (_pool.GetFreeCount(template) > 0)
+                        {
+                            return false;
+                        }
+                        // 达到保留轮数则销毁空池
+                        _pool.Destroy(template);
+                        return true;
+                    });
+
+                    if (!isNullPool)
+                    {
+                        var pos = sampler._minPos.pos;
+                        _pool.Remove(template, pos);
+                    }
+
                     sampler.ClearSample();
                 }
             }
@@ -298,10 +356,31 @@ namespace Framework.ObjectPool
                         if (template == null) return;
                         var sampler = posMarker.sampler;
                         if (!sampler._hasSample) return;
-                        var pos = sampler._minPos.pos;
-                        _pool.Remove(template, pos);
+
+                        NullPoolHandle(sampler, out var isNullPool, out var isDestroy, () =>
+                        {
+                            if (_pool.GetFreeCount(template) > 0)
+                            {
+                                return false;
+                            }
+                            // 达到保留轮数则销毁空池
+                            _pool.Destroy(template);
+                            return true;
+                        });
+
+                        if (!isNullPool)
+                        {
+                            var pos = sampler._minPos.pos;
+                            _pool.Remove(template, pos);
+                        }
+
                         sampler.ClearSample();
                         posMarker.marker?.overrideInfo?.onClearGO?.Invoke(template);
+
+                        if (isDestroy)
+                        {
+                            _needPoolRemove = true;
+                        }
                     });
                 }
                 else

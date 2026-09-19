@@ -28,18 +28,6 @@ namespace Framework.ObjectPool
         // 标记需要移除
         private bool _needPoolRemove;
 
-        public TypePoolPosMarker()
-        {
-            Init();
-        }
-
-        public TypePoolPosMarker(TypePool pool)
-        {
-            this.pool = pool;
-
-            Init();
-        }
-
         public TypePool pool
         {
             get => _pool;
@@ -83,6 +71,18 @@ namespace Framework.ObjectPool
 
         /// <summary>空池保留轮数</summary>
         public int nullPoolReserveNum { get => _nullPoolReserveNum; set => _nullPoolReserveNum = value; }
+
+        public TypePoolPosMarker()
+        {
+            Init();
+        }
+
+        public TypePoolPosMarker(TypePool pool)
+        {
+            this.pool = pool;
+
+            Init();
+        }
 
         public void Init()
         {

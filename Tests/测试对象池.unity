@@ -721,6 +721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _typePoolMarker:
+    _nullPoolReserveNum: 1
     _marker:
       _info:
         clearTime: 600
@@ -755,6 +756,7 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   _GOPoolMarker:
+    _nullPoolReserveNum: 1
     _marker:
       _info:
         clearTime: 600
@@ -812,11 +814,11 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   arrayMarkerInfos:
-  - typeName: 
+  - typeName: System.Object[]
     length: 0
     info:
-      clearTime: 0
-      sampleTime: 0
+      clearTime: 300
+      sampleTime: 1
       onSample:
         m_PersistentCalls:
           m_Calls: []

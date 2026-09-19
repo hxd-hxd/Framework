@@ -7,8 +7,12 @@ namespace Framework.ObjectPool
 {
     /// <summary><see cref="TypePool"/> 池位标器</summary>
     [Serializable]
-    public class TypePoolPosMarker
+    public sealed class TypePoolPosMarker
     {
+        [Tooltip("空池保留轮数，例如：1，清理时检测到空池则保留 1 轮，下一轮如果仍为空池则销毁，否则重置")]
+        [SerializeField]
+        private int _nullPoolReserveNum = 1;
+
         private TypePool _pool;
 
         [SerializeField]
@@ -21,6 +25,9 @@ namespace Framework.ObjectPool
         private Dictionary<Type, PositionMarkerInfo> _markerInfos = new Dictionary<Type, PositionMarkerInfo>();
         private Dictionary<Type, Dictionary<int, PositionMarkerInfo>> _arrayMarkerInfos = new Dictionary<Type, Dictionary<int, PositionMarkerInfo>>();
 
+        // 标记需要移除
+        private bool _needPoolRemove;
+
         public TypePoolPosMarker()
         {
             Init();
@@ -31,6 +38,19 @@ namespace Framework.ObjectPool
             this.pool = pool;
 
             Init();
+        }
+
+        public TypePool pool
+        {
+            get => _pool;
+            set
+            {
+                if (_pool != null && _pool != value)
+                {
+                    Clear();
+                }
+                _pool = value;
+            }
         }
 
         /// <summary>公用位标器</summary>
@@ -61,18 +81,8 @@ namespace Framework.ObjectPool
             }
         }
 
-        public TypePool pool
-        {
-            get => _pool;
-            set
-            {
-                if (_pool != null && _pool != value)
-                {
-                    Clear();
-                }
-                _pool = value;
-            }
-        }
+        /// <summary>空池保留轮数</summary>
+        public int nullPoolReserveNum { get => _nullPoolReserveNum; set => _nullPoolReserveNum = value; }
 
         public void Init()
         {
@@ -106,6 +116,12 @@ namespace Framework.ObjectPool
                     aMarker.Value.marker?.Update(elapseTime, realElapseTime);
                 }
             }
+
+            if (_needPoolRemove)
+            {
+                UpdatePoolRemove();
+                _needPoolRemove = false;
+            }
         }
 
         public void Clear()
@@ -134,6 +150,8 @@ namespace Framework.ObjectPool
                 InternalTypePool.root.Return(item.Value);
             }
             _arrayMarkerInfos.Clear();
+
+            _needPoolRemove = false;
         }
 
         /// <summary>添加专用位标器</summary>
@@ -173,7 +191,7 @@ namespace Framework.ObjectPool
             if (_poolMarkers.TryGetValue(type, out var marker))
             {
                 marker.RemoveMarker();
-                marker.sampler.Clear();
+                marker.sampler.ClearSample();
             }
         }
 
@@ -195,7 +213,7 @@ namespace Framework.ObjectPool
                 if (tMarker.TryGetValue(length, out var marker))
                 {
                     marker.RemoveMarker();
-                    marker.sampler.Clear();
+                    marker.sampler.ClearSample();
                 }
         }
 
@@ -263,8 +281,7 @@ namespace Framework.ObjectPool
         private void UpdatePoolRemove()
         {
             /* 回收条件
-            1、没有对应的类型
-            2、空池暂留，TODO：一定时间后将空池一并清理掉
+            没有对应的类型
              */
 
             var tempTypes = InternalTypePool.root.GetList<Type>();
@@ -351,6 +368,31 @@ namespace Framework.ObjectPool
             InternalTypePool.root.Return(tempInts);
         }
 
+        // 空池处理
+        private void NullPoolHandle(PoolSampler sampler, out bool isNullPool, out bool isDestroy, Func<bool> handle)
+        {
+            isDestroy = false;
+            // 记录空池
+            isNullPool = sampler.IsNullPool();
+            if (isNullPool)
+            {
+                if (sampler._nullPoolCount < nullPoolReserveNum)
+                {
+                    sampler._nullPoolCount += 1;
+                }
+                else
+                {
+                    isDestroy = handle();
+                    sampler._nullPoolCount = 0;
+                }
+            }
+            else
+            {
+                // 空池计数期间任何一次非空池都会重置
+                sampler._nullPoolCount = 0;
+            }
+        }
+
         private void OnSample(PositionMarker marker)
         {
             if (_pool == null) return;
@@ -398,9 +440,25 @@ namespace Framework.ObjectPool
                     var type = item.Key;
                     var sampler = item.Value.sampler;
                     if (!sampler._hasSample) continue;
-                    var pos = sampler._minPos.pos;
-                    _pool.Remove(type, pos);
-                    sampler.Clear();
+
+                    NullPoolHandle(sampler, out var isNullPool, out _, () =>
+                    {
+                        if (_pool.GetFreeCount(type) > 0)
+                        {
+                            return false;
+                        }
+                        // 达到保留轮数则销毁空池
+                        _pool.Destroy(type);
+                        return true;
+                    });
+
+                    if (!isNullPool)
+                    {
+                        var pos = sampler._minPos.pos;
+                        _pool.Remove(type, pos);
+                    }
+
+                    sampler.ClearSample();
                 }
             }
 
@@ -415,10 +473,25 @@ namespace Framework.ObjectPool
                         var length = aItem.Key;
                         var sampler = aItem.Value.sampler;
                         if (!sampler._hasSample) continue;
-                        var pos = sampler._minPos.pos;
 
-                        _pool.arrayPool.Remove(type, length, pos);
-                        sampler.Clear();
+                        NullPoolHandle(sampler, out var isNullPool, out _, () =>
+                        {
+                            if (_pool.arrayPool.GetFreeCount(type, length) > 0)
+                            {
+                                return false;
+                            }
+                            // 达到保留轮数则销毁空池
+                            _pool.arrayPool.Destroy(item.Key, length);
+                            return true;
+                        });
+
+                        if (!isNullPool)
+                        {
+                            var pos = sampler._minPos.pos;
+                            _pool.arrayPool.Remove(type, length, pos);
+                        }
+
+                        sampler.ClearSample();
                     }
                 }
             }
@@ -474,7 +547,7 @@ namespace Framework.ObjectPool
                 var marker = posMarker.marker;
                 if (marker == null)
                 {
-                    posMarker.sampler.Clear();
+                    posMarker.sampler.ClearSample();
 
                     InternalTypePool.root.TryGet(out marker);
                     posMarker.marker = marker;
@@ -491,10 +564,31 @@ namespace Framework.ObjectPool
                     {
                         var sampler = posMarker.sampler;
                         if (!sampler._hasSample) return;
-                        var pos = sampler._minPos.pos;
-                        _pool.Remove(type, pos);
-                        sampler.Clear();
+
+                        NullPoolHandle(sampler, out var isNullPool, out var isDestroy, () =>
+                        {
+                            if (_pool.GetFreeCount(type) > 0)
+                            {
+                                return false;
+                            }
+                            // 达到保留轮数则销毁空池
+                            _pool.Destroy(type);
+                            return true;
+                        });
+
+                        if (!isNullPool)
+                        {
+                            var pos = sampler._minPos.pos;
+                            _pool.Remove(type, pos);
+                        }
+
+                        sampler.ClearSample();
                         posMarker.marker?.overrideInfo?.onClear?.Invoke(type);
+
+                        if (isDestroy)
+                        {
+                            _needPoolRemove = true;
+                        }
                     });
                 }
                 else
@@ -516,7 +610,7 @@ namespace Framework.ObjectPool
                 var marker = posMarker.marker;
                 if (marker == null)
                 {
-                    posMarker.sampler.Clear();
+                    posMarker.sampler.ClearSample();
 
                     InternalTypePool.root.TryGet(out marker);
                     posMarker.marker = marker;
@@ -533,10 +627,31 @@ namespace Framework.ObjectPool
                     {
                         var sampler = posMarker.sampler;
                         if (!sampler._hasSample) return;
-                        var pos = sampler._minPos.pos;
-                        _pool.arrayPool.Remove(type, length, pos);
-                        sampler.Clear();
+
+                        NullPoolHandle(sampler, out var isNullPool, out var isDestroy, () =>
+                        {
+                            if (_pool.arrayPool.GetFreeCount(type, length) > 0)
+                            {
+                                return false;
+                            }
+                            // 达到保留轮数则销毁空池
+                            _pool.arrayPool.Destroy(type, length);
+                            return true;
+                        });
+
+                        if (!isNullPool)
+                        {
+                            var pos = sampler._minPos.pos;
+                            _pool.arrayPool.Remove(type, length, pos);
+                        }
+
+                        sampler.ClearSample();
                         posMarker.marker?.overrideInfo?.onClearArray?.Invoke(type, length);
+
+                        if (isDestroy)
+                        {
+                            _needPoolRemove = true;
+                        }
                     });
                 }
                 else

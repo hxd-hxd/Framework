@@ -513,7 +513,7 @@ namespace Framework
         /// <summary>将元素返回对象池
         /// <para>会清空</para>
         /// </summary>
-        public void ReturnE<TKey, TValue>(Dictionary<TKey, TValue> v, bool returnKey = false) 
+        public void ReturnE<TKey, TValue>(Dictionary<TKey, TValue> v, bool returnKey = false)
             where TKey : class where TValue : class
         {
             if (v == null) return;
@@ -718,13 +718,21 @@ namespace Framework
             return count;
         }
 
+        /// <summary>获取数组池中指定类型实例的可用数量</summary>
+        public virtual int GetFreeCount(Type type, int length)
+        {
+            if (type == null) return 0;
+            if (type.IsArray) return _arrayPool.GetFreeCount(type, length);
+            return 0;
+        }
+
         /// <summary>移除指定数量的对象</summary>
         public void Remove<T>(int count) => Remove(typeof(T), count);
 
         /// <summary>移除指定数量的对象</summary>
         public void Remove(Type type, int count)
         {
-            if (count < 0) return;
+            if (count <= 0) return;
             if (type == null) return;
 
             if (type.IsArray)
@@ -739,6 +747,19 @@ namespace Framework
             Remove(tPool, count);
         }
 
+        /// <summary>移除指定数量的对象</summary>
+        public void Remove(Type type, int length, int count)
+        {
+            if (count <= 0) return;
+            if (type == null) return;
+
+            if (type.IsArray)
+            {
+                _arrayPool.Remove(type, length, count);
+                return;
+            }
+        }
+
         /// <summary>清除对象池</summary>
         public virtual void Clear()
         {
@@ -746,17 +767,67 @@ namespace Framework
             {
                 item.Value?.Clear();
             }
-            _pool.Clear();
             _arrayPool.Clear();
         }
 
+        // 清除只清理内容
+        /// <summary>清除对应类型池</summary>
+        public void Clear(Type type)
+        {
+            if (type.IsArray)
+            {
+                _arrayPool.Clear(type);
+                return;
+            }
+
+            if (_pool.TryGetValue(type, out var objs))
+            {
+                objs.Clear();
+            }
+        }
+
+        /// <summary>清除数组池</summary>
+        public void Clear(Type type, int length)
+        {
+            if (type.IsArray)
+            {
+                _arrayPool.Clear(type, length);
+                return;
+            }
+        }
+
+        // 销毁移除容器
         /// <summary>销毁</summary>
-        public void Destroy()
+        public virtual void Destroy()
         {
             Clear();
+            _pool.Clear();
+            _arrayPool.Destroy();
             _pools.Remove(this);
         }
 
+        /// <summary>销毁对应类型池</summary>
+        public void Destroy(Type type)
+        {
+            if (type.IsArray)
+            {
+                _arrayPool.Destroy(type);
+            }
+            else
+            {
+                Clear(type);
+                _pool.Remove(type);
+            }
+        }
+
+        /// <summary>销毁数组池</summary>
+        public void Destroy(Type type, int length)
+        {
+            if (type.IsArray)
+            {
+                _arrayPool.Destroy(type, length);
+            }
+        }
 
         private static void Remove<T>(List<T> values, int count)
         {

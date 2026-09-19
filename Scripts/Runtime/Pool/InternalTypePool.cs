@@ -24,6 +24,9 @@ namespace Framework.ObjectPool
         /// <summary>获取 <see cref="Dictionary{TKey, TValue}"/></summary>
         public Dictionary<TKey, TValue> GetDic<TKey, TValue>() => Get<Dictionary<TKey, TValue>>();
 
+        /// <summary>获取 <see cref="HashSet{T}"/></summary>
+        public HashSet<T> GetHashSet<T>() => Get<HashSet<T>>();
+
         /// <summary>从对象池获取</summary>
         public bool TryGet<T>(out T obj)
         {
@@ -79,6 +82,15 @@ namespace Framework.ObjectPool
             if (v == null) return;
             v.Clear();
             Return<List<T>>(v);
+        }
+
+        /// <summary>返回对象池</summary>
+        /// <remarks>会清空</remarks>
+        public void Return<T>(HashSet<T> v)
+        {
+            if (v == null) return;
+            v.Clear();
+            Return<HashSet<T>>(v);
         }
 
         /// <summary>返回对象池</summary>

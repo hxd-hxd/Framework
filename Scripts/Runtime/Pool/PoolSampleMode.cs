@@ -7,10 +7,10 @@ namespace Framework.ObjectPool
         /// <summary>默认</summary>
         Default = 0,
 
-        /// <summary>只记录最小值</summary>
+        /// <summary>最小采样，只记录最小值</summary>
         Min,
 
-        /// <summary>记录每次采样的值</summary>
+        /// <summary>全量采样，记录每次采样的值</summary>
         Full,
     }
 }

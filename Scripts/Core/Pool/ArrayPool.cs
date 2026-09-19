@@ -305,10 +305,68 @@ namespace Framework
         {
             foreach (var item in _pool)
             {
-                item.Value?.Clear();
+                foreach (var aPool in item.Value)
+                {
+                    aPool.Value.Clear();
+                }
             }
+            _queryCache.Clear();
+        }
+
+        /// <summary>清除对应类型对象池</summary>8/sx5dsss8s8s8
+        public void Clear(Type type)
+        {
+            if (_pool.TryGetValue(type, out var aPool))
+            {
+                foreach (var item in aPool)
+                {
+                    foreach (var array in item.Value)
+                    {
+                        _queryCache.Remove(array);
+                    }
+                    item.Value.Clear();
+                }
+            }
+        }
+
+        /// <summary>清除对应类型大小对象池</summary>
+        public void Clear(Type type, int length)
+        {
+            if (_pool.TryGetValue(type, out var aPool))
+            {
+                if(aPool.TryGetValue(length, out var arrays))
+                {
+                    foreach (var array in arrays)
+                    {
+                        _queryCache.Remove(array);
+                    }
+                    arrays.Clear();
+                }
+            }
+        }
+
+        /// <summary>销毁对象池</summary>
+        public void Destroy()
+        {
             _pool.Clear();
             _queryCache.Clear();
+        }
+
+        /// <summary>销毁对应类型对象池</summary>
+        public void Destroy(Type type)
+        {
+            Clear(type);
+            _pool.Remove(type);
+        }
+
+        /// <summary>销毁对应类型大小对象池</summary>
+        public void Destroy(Type type, int length)
+        {
+            Clear(type, length);
+            if (_pool.TryGetValue(type, out var aPool))
+            {
+                aPool.Remove(length);
+            }
         }
 
         private void Remove<T>(List<T> values, int count)
@@ -320,7 +378,7 @@ namespace Framework
             {
                 if (valuesCount <= 0) return;
                 var v = values[values.Count - 1];
-                if(v is Array a) _queryCache.Remove(a);
+                if (v is Array a) _queryCache.Remove(a);
                 values.RemoveAt(valuesCount -= 1);
                 surplus -= 1;
             }

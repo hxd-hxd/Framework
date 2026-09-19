@@ -15,7 +15,7 @@ namespace Framework.ObjectPool
         public void Reset()
         {
             if (marker != null) marker.Reset();
-            sampler.Clear();
+            sampler.ClearSample();
         }
 
         public void RemoveMarker()

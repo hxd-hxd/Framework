@@ -87,6 +87,7 @@ namespace Framework.ObjectPool
             // 轮询专用位标器
             foreach (var item in _poolMarkers)
             {
+                if (item.Key == null) continue;// 死键不更新
                 item.Value.marker?.Update(elapseTime, realElapseTime);
             }
         }
@@ -106,6 +107,8 @@ namespace Framework.ObjectPool
         /// <summary>添加专用位标器</summary>
         public void AddMarker(GameObject template, PositionMarkerInfo info)
         {
+            if (template == null) return;
+
             _markerInfos[template] = info;
 
             // 立马尝试添加对应的池，并创建位标器
@@ -121,7 +124,7 @@ namespace Framework.ObjectPool
             if (_poolMarkers.TryGetValue(template, out var marker))
             {
                 marker.RemoveMarker();
-                marker.sampler.Clear();
+                marker.sampler.ClearSample();
             }
         }
 
@@ -131,6 +134,7 @@ namespace Framework.ObjectPool
             foreach (var item in _markerInfos)
             {
                 var template = item.Key;
+                if (template == null) continue;
                 var info = item.Value;
                 AddAndCreateMarker(template, info);
             }
@@ -140,11 +144,10 @@ namespace Framework.ObjectPool
         private void UpdatePoolAdd()
         {
             // 扫描所有池并添加
-
-            // 通用池
             foreach (var kvp in _pool.pool)
             {
                 var template = kvp.Key;
+                if (template == null) continue;
                 if (!_poolMarkers.ContainsKey(template))
                 {
                     _poolMarkers.Add(template, Create());
@@ -156,25 +159,53 @@ namespace Framework.ObjectPool
         private void UpdatePoolRemove()
         {
             /* 回收条件
-            1、没有对应的类型
-            2、空池暂留，TODO：一定时间后将空池一并清理掉
+            模板键被销毁
+            没有对应的键
+            空池暂留，TODO：一定时间后将空池一并清理掉
              */
 
             var tempGOs = InternalTypePool.root.GetList<GameObject>();
 
-            // 通用池
+            // 扫描池中死键
+            foreach (var item in _pool.pool)
+            {
+                var template = item.Key;
+                if (template == null) tempGOs.Add(template);
+            }
+
+            // 扫描位标无效键
             foreach (var item in _poolMarkers)
             {
                 var template = item.Key;
-                if (!_pool.pool.ContainsKey(template))
+                if (template == null || !_pool.pool.ContainsKey(template))
                 {
                     tempGOs.Add(template);
                 }
             }
+
+            foreach (var item in _markerInfos)
+            {
+                var template = item.Key;
+                // 移除死键专用位标器
+                if (template == null)
+                    tempGOs.Add(template);
+            }
+
+            // 统一销毁
             foreach (var template in tempGOs)
             {
-                Destroy(_poolMarkers[template]);
-                _poolMarkers.Remove(template);
+                // 销毁死键池
+                _pool.Destroy(template);
+
+                // 回收位标器
+                if (_poolMarkers.TryGetValue(template, out var marker))
+                {
+                    Destroy(marker);
+                    _poolMarkers.Remove(template);
+                }
+
+                // 移除死键专用位标器
+                if (template == null) _markerInfos.Remove(template);
             }
 
             InternalTypePool.root.Return(tempGOs);
@@ -193,7 +224,10 @@ namespace Framework.ObjectPool
                 {
                     var template = item.Key;
                     // 对池类型对象采样
-                    var count = _pool.GetFreeCount(template);
+                    // 如果模板被销毁，特别是有多个模板被销毁，采样可能得到的都是第一个空模板的
+                    // 死键不采样
+                    if (template == null) continue;
+                    int count = _pool.GetFreeCount(template);
                     item.Value.sampler.Sample(count);
                 }
             }
@@ -209,11 +243,12 @@ namespace Framework.ObjectPool
                 if (item.Value.marker == null)
                 {
                     var template = item.Key;
+                    if (template == null) continue;// 死键不按采样清理
                     var sampler = item.Value.sampler;
                     if (!sampler._hasSample) continue;
                     var pos = sampler._minPos.pos;
                     _pool.Remove(template, pos);
-                    sampler.Clear();
+                    sampler.ClearSample();
                 }
             }
 
@@ -223,7 +258,7 @@ namespace Framework.ObjectPool
         /// <summary>尝试添加并创建专用位标器</summary>
         private void AddAndCreateMarker(GameObject template, PositionMarkerInfo info)
         {
-            if (_pool == null) return;
+            if (_pool == null || template == null) return;
 
             // 添加对应的池
             if (_pool.pool.ContainsKey(template)
@@ -244,7 +279,7 @@ namespace Framework.ObjectPool
                 var marker = posMarker.marker;
                 if (marker == null)
                 {
-                    posMarker.sampler.Clear();
+                    posMarker.sampler.ClearSample();
 
                     InternalTypePool.root.TryGet(out marker);
                     posMarker.marker = marker;
@@ -253,17 +288,19 @@ namespace Framework.ObjectPool
                     marker.onSample.AddListener((_) =>
                     {
                         // 对池类型对象采样
+                        if (template == null) return;
                         var count = _pool.GetFreeCount(template);
                         posMarker.sampler.Sample(count);
                         posMarker.marker?.overrideInfo?.onSampleGO?.Invoke(template);
                     });
                     marker.onClear.AddListener((_) =>
                     {
+                        if (template == null) return;
                         var sampler = posMarker.sampler;
                         if (!sampler._hasSample) return;
                         var pos = sampler._minPos.pos;
                         _pool.Remove(template, pos);
-                        sampler.Clear();
+                        sampler.ClearSample();
                         posMarker.marker?.overrideInfo?.onClearGO?.Invoke(template);
                     });
                 }

@@ -1,5 +1,127 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &574965029034757506
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7850936864882492167}
+  - component: {fileID: 8072062740608596348}
+  m_Layer: 0
+  m_Name: "\u5BF9\u8C61\u6C60"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7850936864882492167
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574965029034757506}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9038994987835382997}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8072062740608596348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574965029034757506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a699d0b0f7dde354c86ba389933d573c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _typePoolMarker:
+    _nullPoolReserveNum: 1
+    _marker:
+      _info:
+        clearTime: 600
+        sampleTime: 1
+        onSample:
+          m_PersistentCalls:
+            m_Calls: []
+        onClear:
+          m_PersistentCalls:
+            m_Calls: []
+        onSampleArray:
+          m_PersistentCalls:
+            m_Calls: []
+        onClearArray:
+          m_PersistentCalls:
+            m_Calls: []
+        onSampleGO:
+          m_PersistentCalls:
+            m_Calls: []
+        onClearGO:
+          m_PersistentCalls:
+            m_Calls: []
+      _overrideInfo:
+        rid: -2
+      _sampleCount: 0
+      _clearTimer: 0
+      _sampleTimer: 0
+      onSample:
+        m_PersistentCalls:
+          m_Calls: []
+      onClear:
+        m_PersistentCalls:
+          m_Calls: []
+  _GOPoolMarker:
+    _nullPoolReserveNum: 1
+    _marker:
+      _info:
+        clearTime: 600
+        sampleTime: 1
+        onSample:
+          m_PersistentCalls:
+            m_Calls: []
+        onClear:
+          m_PersistentCalls:
+            m_Calls: []
+        onSampleArray:
+          m_PersistentCalls:
+            m_Calls: []
+        onClearArray:
+          m_PersistentCalls:
+            m_Calls: []
+        onSampleGO:
+          m_PersistentCalls:
+            m_Calls: []
+        onClearGO:
+          m_PersistentCalls:
+            m_Calls: []
+      _overrideInfo:
+        rid: -2
+      _sampleCount: 0
+      _clearTimer: 0
+      _sampleTimer: 0
+      onSample:
+        m_PersistentCalls:
+          m_Calls: []
+      onClear:
+        m_PersistentCalls:
+          m_Calls: []
+  typeMarkerInfos: []
+  arrayMarkerInfos: []
+  gOMarkerInfos: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!1 &1799195056026919336
 GameObject:
   m_ObjectHideFlags: 0
@@ -63,7 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _language: 
   _langProvider: {fileID: 0}
-  _localizationSet: {fileID: 0}
+  _localizationSet: {fileID: 8991426529849534263}
   _awakeAutoSetToGlobal: 1
   _awakeAutoSetToLocal: 0
 --- !u!114 &8991426529849534263
@@ -172,5 +294,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2299681866170978275}
+  - {fileID: 7850936864882492167}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

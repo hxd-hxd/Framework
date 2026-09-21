@@ -12,10 +12,10 @@ using UnityEngine;
 namespace Framework.Editor
 {
     /// <summary>
-    /// <see cref="ObjectPoolManager"/> 检视面板：保持默认绘制，
+    /// <see cref="ObjectPoolMoniter"/> 检视面板：保持默认绘制，
     /// 并显示 <see cref="TypePool"/>、<see cref="GameObjectPool"/> 中各池的对象信息。
     /// </summary>
-    [CustomEditor(typeof(ObjectPoolManager))]
+    [CustomEditor(typeof(ObjectPoolMoniter))]
     public class ObjectPoolManagerInspector : UnityEditor.Editor
     {
         static readonly GUILayoutOption CountWidth = GUILayout.Width(64);

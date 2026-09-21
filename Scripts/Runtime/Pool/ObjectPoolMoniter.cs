@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace Framework.ObjectPool
 {
-    /// <summary>对象池管理器</summary>
-    public class ObjectPoolManager : MonoSingleton<ObjectPoolManager>
+    /// <summary>对象池监视器</summary>
+    public class ObjectPoolMoniter : MonoSingleton<ObjectPoolMoniter>
     {
         [SerializeField]
         private TypePoolPosMarker _typePoolMarker = new TypePoolPosMarker();

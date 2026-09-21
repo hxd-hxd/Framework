@@ -7,7 +7,7 @@ namespace Framework.ObjectPool
 {
     /// <summary><see cref="GameObjectPool"/> 池位标器</summary>
     [Serializable]
-    public class GOPoolPosMarker
+    public sealed class GOPoolPosMarker
     {
         [Tooltip("空池保留轮数，例如：1，清理时检测到空池则保留 1 轮，下一轮如果仍为空池则销毁，否则重置")]
         [SerializeField]

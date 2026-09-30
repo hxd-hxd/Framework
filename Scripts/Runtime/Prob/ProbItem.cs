@@ -51,7 +51,7 @@ namespace Framework.Prob
             this._tValue = t;
         }
     }
-    
+
     /// <summary>
     /// 概率类
     /// </summary>
@@ -70,10 +70,42 @@ namespace Framework.Prob
 
         private IContainer<T, ProbBranch<T>, ProbItem<T>> _owner;
 
-        public override T value { get => _value; set => _value = value; }
-        public override float probValue { get => _probValue; set => _probValue = value; }
-        public override bool enable { get => _enable; set => _enable = value; }
-        public override bool allProb { get => _allProb; set => _allProb = value; }
+        public override T value
+        {
+            get => _value;
+            set
+            {
+                if (owner != null && !Equals(_value, value)) owner.isDirty = true;
+                _value = value;
+            }
+        }
+        public override float probValue
+        {
+            get => _probValue;
+            set
+            {
+                if (owner != null && !Equals(_probValue, value)) owner.isDirty = true;
+                _probValue = value;
+            }
+        }
+        public override bool enable
+        {
+            get => _enable;
+            set
+            {
+                if (owner != null && !Equals(_enable, value)) owner.isDirty = true;
+                _enable = value;
+            }
+        }
+        public override bool allProb
+        {
+            get => _allProb;
+            set
+            {
+                if (owner != null && !Equals(_allProb, value)) owner.isDirty = true;
+                _allProb = value;
+            }
+        }
 
         public override IContainer<T, ProbBranch<T>, ProbItem<T>> owner { get => _owner; set => _owner = value; }
 

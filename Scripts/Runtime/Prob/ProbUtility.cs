@@ -90,6 +90,8 @@ namespace Framework.Prob
 
             float randomPV = randomProvider.RandomProbValue();// 随机一个概率值
 
+            // 用于随机的核心算法
+
             // 计算概率
             float pvSumUp = 0;// 总概率
             for (int i = 0; i < ps.Count; i++)
@@ -111,6 +113,10 @@ namespace Framework.Prob
             return ps[ps.Count - 1];
         }
 
-        // TODO：添加批量随机方法
+        /*
+        TODO：添加批量随机方法，用已优化大批量随机的性能。
+        批量随机比较麻烦，因为是树形结构，每一个分支都有自己的概率列表，在批量随机过程中，需缓存概率列表的计算结果，只在有动态变动时重新计算（例如有的道具有获取次数限制，达标后禁用或移除），其他时候复用，已达到优化目的。
+        */
+
     }
 }

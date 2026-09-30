@@ -25,11 +25,16 @@ namespace Framework.Prob
         /// <summary>随机提供者</summary>
         IRandomProvider randomProvider { get; set; }
 
+        /// <summary>容器内容是否被修改
+        /// <para>标脏基础规则：容器内的项和分支变化时，添加和移除容器内容时</para>
+        /// </summary>
+        bool isDirty { get; set; }
+
         /// <summary>
         /// 添加一个分支
         /// <para>ps：不可添加同名分支</para>
         /// </summary>
-        bool AddBranch(TProbBranch son);
+        bool AddBranch(TProbBranch branch);
 
         /// <summary>添加直属</summary>
         bool AddItem(TProbItem item);

@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using static Codice.CM.Common.BranchExplorerData;
-using static UnityEditor.Progress;
 
 namespace Framework.Prob
 {
@@ -22,9 +20,26 @@ namespace Framework.Prob
         //public abstract string containerName { get; set; }
 
         public abstract IRandomProvider randomProvider { get; set; }
+        public abstract bool isDirty { get; set; }
 
-        public virtual List<TProbItem> items { get => _items ??= new List<TProbItem>(); set => _items = value; }
-        public virtual List<TProbBranch> branchs { get => _branchs ??= new List<TProbBranch>(); set => _branchs = value; }
+        public virtual List<TProbItem> items
+        {
+            get => _items;
+            set
+            {
+                if (!Equals(items, value)) isDirty = true;
+                items = value;
+            }
+        }
+        public virtual List<TProbBranch> branchs
+        {
+            get => _branchs;
+            set
+            {
+                if (!Equals(branchs, value)) isDirty = true;
+                branchs = value;
+            }
+        }
         public virtual string containerName { get => _containerName; set => _containerName = value; }
 
         public bool AddBranch(TProbBranch branch)
@@ -37,6 +52,7 @@ namespace Framework.Prob
             if (add)
             {
                 branch.owner = this;
+                isDirty = true;
             }
             return add;
         }
@@ -51,13 +67,13 @@ namespace Framework.Prob
             return branch;
         }
 
-        public bool AddItem(TProbItem type)
+        public bool AddItem(TProbItem item)
         {
-            bool add = AddNotContains(items, type);
+            bool add = AddNotContains(items, item);
             if (add)
             {
-                type.owner = this;
-                //type.ContainerVariable = this;
+                item.owner = this;
+                isDirty = true;
             }
             return add;
         }

@@ -11,7 +11,7 @@ namespace Framework.Prob
     /// <para><see cref="IProb.probValue"/> 概率值可以是任何大于零的数，但是推荐自己提前计算好值，然后填入，以免出现概率问题而难以追踪</para>
     /// </summary>
     [System.Serializable]
-    public class ProbDevice : BaseProbDevice<string, ProbBranch, ProbItem>
+    public class ProbDevice : BaseContainer<string, ProbBranch, ProbItem>
     {
         static ProbDevice<bool> pdd = new ProbDevice<bool>();
 
@@ -19,15 +19,36 @@ namespace Framework.Prob
         private string _containerName = "Node";
 
         [SerializeField]
+        private bool _isDirty = true;
+
+        [SerializeField]
         private List<ProbItem> _items = new List<ProbItem>();
         [SerializeField]
         private List<ProbBranch> _branchs = new List<ProbBranch>();
 
-        public override List<ProbItem> items { get => _items; set => _items = value; }
-        public override List<ProbBranch> branchs { get => _branchs; set => _branchs = value; }
+        public override List<ProbItem> items
+        {
+            get => _items;
+            set
+            {
+                if (!Equals(items, value)) isDirty = true;
+                items = value;
+            }
+        }
+        public override List<ProbBranch> branchs
+        {
+            get => _branchs;
+            set
+            {
+                if (!Equals(branchs, value)) isDirty = true;
+                branchs = value;
+            }
+        }
         public override string containerName { get => _containerName; set => _containerName = value; }
 
         public override IRandomProvider randomProvider { get => RandomProvider.instance; set { } }
+
+        public override bool isDirty { get => _isDirty; set => _isDirty = value; }
 
         static ProbDevice()
         {
@@ -55,10 +76,13 @@ namespace Framework.Prob
     /// <para><see cref="IProb.probValue"/> 概率值可以是任何大于零的数，但是推荐自己提前计算好值，然后填入，以免出现概率问题而难以追踪</para>
     /// </summary>
     [System.Serializable]
-    public class ProbDevice<T> : BaseProbDevice<T, ProbBranch<T>, ProbItem<T>>
+    public class ProbDevice<T> : BaseContainer<T, ProbBranch<T>, ProbItem<T>>
     {
         [SerializeField]
         private string _containerName = "Node";
+
+        [SerializeField]
+        private bool _isDirty = true;
 
         [Header("ReadOnly")]
         [SerializeField]
@@ -66,10 +90,28 @@ namespace Framework.Prob
         [SerializeField]
         private List<ProbBranch<T>> _branchs = new List<ProbBranch<T>>();
 
-        public override List<ProbItem<T>> items { get => _items; set => _items = value; }
-        public override List<ProbBranch<T>> branchs { get => _branchs; set => _branchs = value; }
+        public override List<ProbItem<T>> items
+        {
+            get => _items;
+            set
+            {
+                if (!Equals(items, value)) isDirty = true;
+                items = value;
+            }
+        }
+        public override List<ProbBranch<T>> branchs
+        {
+            get => _branchs;
+            set
+            {
+                if (!Equals(branchs, value)) isDirty = true;
+                branchs = value;
+            }
+        }
         public override string containerName { get => _containerName; set => _containerName = value; }
 
         public override IRandomProvider randomProvider { get => RandomProvider.instance; set { } }
+
+        public override bool isDirty { get => _isDirty; set => _isDirty = value; }
     }
 }

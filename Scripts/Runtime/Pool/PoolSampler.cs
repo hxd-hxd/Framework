@@ -11,7 +11,7 @@ namespace Framework.ObjectPool
         public PoolSampleMode _sampleMode = PoolSampleMode.Min;
 
         /// <summary>最小位置</summary>
-        public Data _minPos = new()
+        public Data _minPos = new Data()
         {
             pos = int.MaxValue,
         };

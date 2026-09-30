@@ -13,11 +13,11 @@ namespace Framework.Event
     /// </summary>
     public partial class EventManager<TID> : IEventManager<TID>, ITypePoolObject
     {
-        private Dictionary<TID, LinkedList<Delegate>> _entrepot;
+        private Dictionary<TID, List<Delegate>> _entrepot;
 
         public EventManager()
         {
-            _entrepot = new Dictionary<TID, LinkedList<Delegate>>(20);
+            _entrepot = new Dictionary<TID, List<Delegate>>(20);
         }
 
         #region 添加侦听
@@ -130,9 +130,9 @@ namespace Framework.Event
             if (listener == null) return;
 
             if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
-                _entrepot[id] = new LinkedList<Delegate>();
+                _entrepot[id] = new List<Delegate>();
             if (!_entrepot[id].Contains(listener))
-                _entrepot[id].AddLast(listener);
+                _entrepot[id].Add(listener);
         }
         #endregion
 
@@ -257,124 +257,272 @@ namespace Framework.Event
         /// <summary>发送消息</summary>
         public void Send(TID id)
         {
-            //SendInternal(id, null);
+            if (!_entrepot.ContainsKey(id)) return;
 
-            // 使用优化版
-            SendOptimizeInternal(id);
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action ea)
+                        ea.Invoke();
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1>(TID id, T1 msg1)
         {
-            //var args = TypePool.root.GetArrayE<object>(msg1);
-            //SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
 
-            // 使用优化版
-            SendOptimizeInternal(id, msg1);
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1> ea)
+                        ea.Invoke(msg1);
+                }
+            }
         }
 
         #region 发送消息，多参数
         /// <summary>发送消息</summary>
         public void Send<T1, T2>(TID id, T1 msg1, T2 msg2)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2> ea)
+                        ea.Invoke(msg1, msg2);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3>(TID id, T1 msg1, T2 msg2, T3 msg3)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3> ea)
+                        ea.Invoke(msg1, msg2, msg3);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14, T15 msg15)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
+                }
+            }
         }
         /// <summary>发送消息</summary>
         public void Send<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id
             , T1 msg1, T2 msg2, T3 msg3, T4 msg4, T5 msg5, T6 msg6, T7 msg7, T8 msg8, T9 msg9, T10 msg10, T11 msg11, T12 msg12, T13 msg13, T14 msg14, T15 msg15, T16 msg16)
         {
-            var args = TypePool.root.GetArrayE<object>(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
-            SendInternal(id, args);
+            if (!_entrepot.ContainsKey(id)) return;
+
+            var msgs = _entrepot[id];
+            if (msgs.Count > 0)
+            {
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ea)
+                        ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
+                }
+            }
         }
 
         #endregion
@@ -397,113 +545,14 @@ namespace Framework.Event
             var msgs = _entrepot[id];
             if (msgs.Count > 0)
             {
-                var node = msgs.First;
-                while (node != null)
+                for (int i = 0; i < msgs.Count; i++)
                 {
-                    //if (e.Value is Action<T> ea)
-                    //    ea.Invoke(msg);
-
-                    node.Value.DynamicInvoke(args);
-
-                    node = node.Next;
+                    msgs[i].DynamicInvoke(args);
                 }
             }
 
             if (returnPool)
                 TypePool.root.Return(args);
-        }
-
-        /// <summary>发送消息
-        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
-        /// </summary>
-        internal void SendOptimizeInternal(TID id)
-        {
-            SendOptimizeInternal(id, d =>
-            {
-                if (d is Action ea)
-                    ea.Invoke();
-            });
-        }
-
-        /// <summary>发送消息
-        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
-        /// </summary>
-        internal void SendOptimizeInternal<T1>(TID id, T1 msg1)
-        {
-            if (!_entrepot.ContainsKey(id)) return;
-
-            var msgs = _entrepot[id];
-            if (msgs.Count > 0)
-            {
-                var node = msgs.First;
-                while (node != null)
-                {
-                    if (node.Value is Action<T1> ea)
-                        ea.Invoke(msg1);
-
-                    node = node.Next;
-                }
-            }
-        }
-
-        /// <summary>发送消息
-        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
-        /// </summary>
-        internal void SendOptimizeInternal<T1, T2>(TID id, T1 msg1, T2 msg2)
-        {
-            if (!_entrepot.ContainsKey(id)) return;
-
-            var msgs = _entrepot[id];
-            if (msgs.Count > 0)
-            {
-                var node = msgs.First;
-                while (node != null)
-                {
-                    if (node.Value is Action<T1, T2> ea)
-                        ea.Invoke(msg1, msg2);
-
-                    node = node.Next;
-                }
-            }
-        }
-
-        /// <summary>发送消息
-        /// <para></para>优化版，性能比 <see cref="SendInternal(TID, object[], bool)"/> 要高
-        /// </summary>
-        internal void SendOptimizeInternal<T1, T2, T3>(TID id, T1 msg1, T2 msg2, T3 msg3)
-        {
-            if (!_entrepot.ContainsKey(id)) return;
-
-            var msgs = _entrepot[id];
-            if (msgs.Count > 0)
-            {
-                var node = msgs.First;
-                while (node != null)
-                {
-                    if (node.Value is Action<T1, T2, T3> ea)
-                        ea.Invoke(msg1, msg2, msg3);
-
-                    node = node.Next;
-                }
-            }
-        }
-
-        /// <summary>发送消息</summary>
-        internal void SendOptimizeInternal(TID id, Action<Delegate> d)
-        {
-            if (!_entrepot.ContainsKey(id)) return;
-
-            var msgs = _entrepot[id];
-            if (msgs.Count > 0)
-            {
-                var node = msgs.First;
-                while (node != null)
-                {
-                    d(node.Value);
-
-                    node = node.Next;
-                }
-            }
         }
         #endregion
 
@@ -533,6 +582,19 @@ namespace Framework.Event
             _entrepot?.Clear();
         }
         #endregion
+
+
+        public bool IsListening(TID id)
+        {
+            return _entrepot.ContainsKey(id) && _entrepot[id].Count > 0;
+        }
+
+        public bool IsListening(TID id, Delegate listener)
+        {
+            if (_entrepot.ContainsKey(id))
+                return _entrepot[id].Contains(listener);
+            return false;
+        }
 
 
         #region 显式实现
@@ -582,6 +644,20 @@ namespace Framework.Event
         {
             if (id is TID tid)
                 Send(tid, msg);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        bool IEventManager.IsListening<TID1>(TID1 id)
+        {
+            if (id is TID tid)
+                return IsListening(tid);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        bool IEventManager.IsListening<TID1>(TID1 id, Delegate listener)
+        {
+            if (id is TID tid)
+                return IsListening(tid, listener);
             else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 

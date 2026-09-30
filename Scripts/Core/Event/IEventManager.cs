@@ -36,6 +36,12 @@ namespace Framework.Event
 
         /// <summary>发送消息</summary>
         void Send<TID, T>(TID id, T msg);
+
+        /// <summary>检查指定 id 是否在监听</summary>
+        bool IsListening<TID>(TID id);
+
+        /// <summary>检查指定事件是否在监听</summary>
+        bool IsListening<TID>(TID id, Delegate listener);
     }
     
     /// <summary>
@@ -61,7 +67,11 @@ namespace Framework.Event
 
         /// <summary>发送消息</summary>
         void Send<T>(TID id, T msg);
+
+        /// <summary>检查指定 id 是否在监听</summary>
+        bool IsListening(TID id);
+
+        /// <summary>检查指定事件是否在监听</summary>
+        bool IsListening(TID id, Delegate listener);
     }
-
-
 }

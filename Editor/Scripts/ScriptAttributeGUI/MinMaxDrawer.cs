@@ -62,13 +62,15 @@ namespace Framework.Editor
 
             isMinMaxT = true;
             minMaxTType = min.propertyType;
-            if (IsUniline(min.propertyType))
+            if (IsStackedLine(min.propertyType))
+            {
+                DrawStackedMinMax(pos, min, max, label);
+                DrawAttributeHint(layout, min);
+            }
+            else if (IsUniline(min.propertyType))
             {
                 pos.height = layout.fieldHeight;
-                //绘制标签
-                // 会导致后续的 gui x 轴位置改变
-                EditorGUIUtilityExtend.SetLabelWidth(EditorGUIUtility.labelWidth *= 0.75f,
-                    () => pos = EditorGUI.PrefixLabel(pos, GUIUtility.GetControlID(FocusType.Keyboard), label));
+                pos = DrawMinMaxPrefixLabel(pos, label);
                 PropertyField1(pos, min, label);
                 PropertyField1(pos, max, label, 1);
                 DrawAttributeHint(layout, min);
@@ -119,7 +121,9 @@ namespace Framework.Editor
                     hintProp = min;
                 }
 
-                if (min != null && IsUniline(min.propertyType))
+                if (min != null && IsStackedLine(min.propertyType))
+                    fieldHeight = GetStackedLineFieldHeight();
+                else if (min != null && IsUniline(min.propertyType))
                     fieldHeight = singleLineHeight;
                 else
                     fieldHeight = AmendFieldHeight(EditorGUI.GetPropertyHeight(property, label, true));
@@ -298,16 +302,48 @@ namespace Framework.Editor
         }
 
         /// <summary>
+        /// 标题跟在第一行 min 前面；PrefixLabel 只用单行高度，避免标题在两行间垂直居中。
+        /// </summary>
+        protected Rect DrawMinMaxPrefixLabel(Rect pos, GUIContent label)
+        {
+            EditorGUIUtilityExtend.SetLabelWidth(EditorGUIUtility.labelWidth * 0.75f,
+                () => pos = EditorGUI.PrefixLabel(pos, GUIUtility.GetControlID(FocusType.Keyboard), label));
+            return pos;
+        }
+
+        /// <summary>
+        /// Vector3 等：min 跟在标题后，max 另起一行并与 min 对齐。
+        /// </summary>
+        protected virtual void DrawStackedMinMax(Rect pos, SerializedProperty min, SerializedProperty max, GUIContent label)
+        {
+            pos.height = singleLineHeight;
+            pos = DrawMinMaxPrefixLabel(pos, label);
+
+            float spacing = EditorGUIUtility.standardVerticalSpacing;
+            var minRect = new Rect(pos.x, pos.y, pos.width, singleLineHeight);
+            var maxRect = new Rect(pos.x, pos.y + singleLineHeight + spacing, pos.width, singleLineHeight);
+
+            OnUniline(minRect, min, new GUIContent(min.displayName), 0, 1f);
+            OnUniline(maxRect, max, new GUIContent(max.displayName), 0, 1f);
+        }
+
+        protected float GetStackedLineFieldHeight()
+        {
+            return singleLineHeight * 2f + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        /// <summary>
         /// 执行单行绘制
         /// </summary>
-        protected virtual void OnUniline(Rect pos, SerializedProperty property, GUIContent label, int level = 0)
+        /// <param name="widthRatio">值区域占剩余宽度的比例；并排 min/max 为约一半，上下堆叠为 1。</param>
+        protected virtual void OnUniline(Rect pos, SerializedProperty property, GUIContent label, int level = 0, float widthRatio = 0.495f)
         {
             int l = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 
             float unit = 4;
             float nameWidth = 30;// 名字宽度
-            float vWidth = pos.width * 0.495f;// 值宽度
+            float vWidth = pos.width * widthRatio;// 值宽度
             float vOffsetX = (vWidth + unit) * level;// 值 x 偏移
 
             // 使用适应性的宽度
@@ -367,6 +403,14 @@ namespace Framework.Editor
         {
             return IsUnilineSerializedPropertyType(type);
         }
+        /// <summary>
+        /// Vector3 分量较多，min/max 并排会挤；改为两行：标题后跟 min，max 另起一行。
+        /// </summary>
+        protected bool IsStackedLine(SerializedPropertyType type)
+        {
+            return type == SerializedPropertyType.Vector3
+                || type == SerializedPropertyType.Vector3Int;
+        }
         /// <summary>指定的 <see cref="SerializedPropertyType"/> 是否在一行中显示</summary>
         protected bool IsUnilineSerializedPropertyType(SerializedPropertyType type)
         {
@@ -376,7 +420,6 @@ namespace Framework.Editor
                 || type == SerializedPropertyType.Enum
                 || type == SerializedPropertyType.Color
                 || type == SerializedPropertyType.Vector2 || type == SerializedPropertyType.Vector2Int
-                || type == SerializedPropertyType.Vector3 || type == SerializedPropertyType.Vector3Int
                 ;
         }
     }

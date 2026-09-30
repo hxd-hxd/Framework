@@ -10,6 +10,8 @@ namespace Framework.LocalizationSimple
     /// <summary>设置本地化语言基类</summary>
     public abstract class LocalizationSetBase : MonoBehaviour, ILocalizationSet
     {
+        [Tooltip("是否全局设置器。\r\n注意：全局设置器不能注册到管理器，而是控制管理器的设置")]
+        public bool _isGolbalSetter;
         public LocalizationSetMode _setMode;
         //[SerializeField]
         //private bool _isSendSetEventInform;
@@ -55,26 +57,50 @@ namespace Framework.LocalizationSimple
         }
 
         /// <summary>获取所有语言</summary>
-        public abstract void GetAllLangType(ref List<object> list);
+        public virtual void GetAllLangType(ref List<object> list)
+            => GetAllLangType<object>(ref list);
 
         /// <summary>将语言类型转换成字符串形式</summary>
-        public abstract string LangTypeToString(object lang);
+        public virtual string LangTypeToString(object lang)
+            => LangTypeToString<object>(lang);
 
         /// <summary>获取当前语言</summary>
-        public abstract object GetCurrentLang();
+        public virtual object GetCurrentLang()
+            => GetCurrentLang<object>();
+
+        /// <summary>获取所有语言</summary>
+        public abstract void GetAllLangType<T>(ref List<T> list);
+
+        /// <summary>将语言类型转换成字符串形式</summary>
+        public abstract string LangTypeToString<T>(T lang);
+
+        /// <summary>获取当前语言</summary>
+        public abstract T GetCurrentLang<T>();
 
         /// <summary>设置</summary>
         public abstract void Set();
 
         /// <summary>按指定语言设置</summary>
         public virtual void Set(object lang)
-        {
-            Set(lang, _setMode);
-        }
+            => Set<object>(lang);
 
         /// <summary>按指定语言和设置方式设置</summary>
         public virtual void Set(object lang, LocalizationSetMode setMode)
+            => Set<object>(lang, setMode);
+
+        /// <summary>按指定语言设置</summary>
+        public virtual void Set<T>(T lang)
+            => Set(lang, _setMode);
+
+        /// <summary>按指定语言和设置方式设置</summary>
+        public virtual void Set<T>(T lang, LocalizationSetMode setMode)
         {
+            if (_isGolbalSetter)
+            {
+                LocalizationSetManager.Instance.Set();
+                return;
+            }
+
             switch (setMode)
             {
                 case LocalizationSetMode.Type:
@@ -99,7 +125,7 @@ namespace Framework.LocalizationSimple
                     var langProviders = _langProviders;
                     if (Application.isPlaying)
                     {
-                        if (langProviders == null || langProviders.Count == 0) 
+                        if (langProviders == null || langProviders.Count == 0)
                             langProviders = LocalizationSetManagerComp.Instance.defultLangProviders;
                     }
                     var provider = langProviders.Find(d =>

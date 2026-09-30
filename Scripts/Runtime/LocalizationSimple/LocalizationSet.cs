@@ -8,14 +8,15 @@ namespace Framework.LocalizationSimple
     /// <summary>设置本地化语言</summary>
     public class LocalizationSet : LocalizationSetBase
     {
-        public override object GetCurrentLang()
+        public override T GetCurrentLang<T>()
         {
-            return LocalizationCurLanguage.Instance.curLanguage;
+            if (LocalizationCurLanguage.Instance.curLanguage is T lang) return lang;
+            return default;
         }
 
         public override void Set()
         {
-            Set(GetCurrentLang());
+            Set(GetCurrentLang<LangType>());
         }
 
         /// <summary>设置</summary>
@@ -24,7 +25,7 @@ namespace Framework.LocalizationSimple
             base.Set(lang);
         }
 
-        public override string LangTypeToString(object lang)
+        public override string LangTypeToString<T>(T lang)
         {
             string langStr = default;
             if (lang is LangType langType)
@@ -45,12 +46,16 @@ namespace Framework.LocalizationSimple
             };
         }
 
-        public override void GetAllLangType(ref List<object> list)
+        public override void GetAllLangType<T>(ref List<T> list)
         {
-            list ??= TypePool.root.GetList<object>();
-            foreach (var item in Enum.GetValues(typeof(LangType)))
+            if (default(LangType) is T)
+            //if(typeof(T).IsAssignableFrom(typeof(LangType)))
             {
-                list.Add(item);
+                list ??= TypePool.root.GetList<T>();
+                foreach (var item in Enum.GetValues(typeof(LangType)))
+                {
+                    list.Add((T)item);
+                }
             }
         }
     }

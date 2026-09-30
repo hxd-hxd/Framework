@@ -19,6 +19,7 @@ namespace Framework.Editor
         protected LocalizationSetBase Set => (LocalizationSetBase)target;
         protected Component SetTarget => Set;
         protected LocalizationSetMode SetMode => Set._setMode;
+        protected bool IsGlobalSetter => Set._isGolbalSetter;
         protected List<ILocalization> ConfiguredLocalizations => Set._localizations;
         protected List<LanguageProviderComponentBase> LangProviders => Set._langProviders;
 
@@ -81,7 +82,10 @@ namespace Framework.Editor
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"语言设置（{GetSetModeLabel(SetMode)}）", EditorStyles.boldLabel);
+            string modeLabel = GetSetModeLabel(SetMode);
+            EditorGUILayout.LabelField(
+                IsGlobalSetter ? $"语言设置（全局 · {modeLabel}）" : $"语言设置（{modeLabel}）",
+                EditorStyles.boldLabel);
 
             var langs = GetLanguagesToShow();
             if (langs.Count == 0)
@@ -93,6 +97,9 @@ namespace Framework.Editor
             DrawSupportedLanguagesLabel(langs);
             DrawCurrentLanguageButton();
             DrawLanguageButtons(langs);
+
+            if (IsGlobalSetter && CollectManagedSets().Count == 0)
+                EditorGUILayout.HelpBox("当前没有可控制的 LocalizationSet。", MessageType.Info);
         }
 
         /// <summary>绘制可设置语言列表（自动换行，支持选中复制）。</summary>
@@ -105,11 +112,15 @@ namespace Framework.Editor
             EditorGUILayout.SelectableLabel(text, style, GUILayout.Height(height));
         }
 
-        /// <summary>按 SetMode 绘制字段：Provider 模式才显示语言提供者列表。</summary>
+        /// <summary>
+        /// 按 SetMode 绘制字段：Provider 模式才显示语言提供者列表；
+        /// 全局设置器不显示本地化列表（由管理器已注册的设置器负责）。
+        /// </summary>
         protected virtual void DrawSetFields()
         {
             var iterator = serializedObject.GetIterator();
             bool enterChildren = true;
+            var isGlobalSetter = serializedObject.FindProperty("_isGolbalSetter")?.boolValue ?? false;
             while (iterator.NextVisible(enterChildren))
             {
                 enterChildren = false;
@@ -122,8 +133,23 @@ namespace Framework.Editor
                         continue;
                 }
 
+                if (iterator.name == "_localizations" && isGlobalSetter)
+                    continue;
+
                 using (new EditorGUI.DisabledScope(iterator.propertyPath == "m_Script"))
-                    EditorGUILayout.PropertyField(iterator, true);
+                {
+                    if (iterator.name == "_isGolbalSetter")
+                        EditorGUILayout.PropertyField(iterator, new GUIContent("是否全局设置器", iterator.tooltip), true);
+                    else
+                        EditorGUILayout.PropertyField(iterator, true);
+                }
+            }
+
+            if (isGlobalSetter)
+            {
+                EditorGUILayout.HelpBox(
+                    "当前为全局设置器：不会注册到管理器，语言设置将应用到管理器已注册的 LocalizationSet（编辑器下若尚未注册，则应用到场景中的非全局设置器）。",
+                    MessageType.Info);
             }
         }
 
@@ -219,7 +245,7 @@ namespace Framework.Editor
 
         void CollectProviderLanguages(List<object> result)
         {
-            var providers = LangProviders;
+            var providers = GetEffectiveLangProviders(Set);
             if (providers == null || providers.Count == 0) return;
 
             var all = new List<object>();
@@ -248,14 +274,17 @@ namespace Framework.Editor
             Undo.IncrementCurrentGroup();
             int undoGroup = Undo.GetCurrentGroup();
 
-            switch (SetMode)
+            if (IsGlobalSetter)
             {
-                case LocalizationSetMode.Type:
-                    ApplyTypeLanguage(targetLang, undoName);
-                    break;
-                case LocalizationSetMode.Provider:
-                    ApplyProviderLanguage(targetLang, undoName);
-                    break;
+                if (targetLang is Language language)
+                    LocalizationCurLanguage.Instance.curLanguage = language;
+
+                foreach (var managed in CollectManagedSets())
+                    ApplyLanguageToSet(managed, targetLang, undoName);
+            }
+            else
+            {
+                ApplyLanguageToSet(Set, targetLang, undoName);
             }
 
             Undo.SetCurrentGroupName(undoName);
@@ -263,25 +292,91 @@ namespace Framework.Editor
             RefreshViews();
         }
 
-        void ApplyTypeLanguage(object lang, string undoName)
+        void ApplyLanguageToSet(LocalizationSetBase set, object lang, string undoName)
         {
-            string type = GetLangLabel(lang);
+            if (set == null) return;
 
-            foreach (var localization in CollectLocalizations())
+            switch (set._setMode)
+            {
+                case LocalizationSetMode.Type:
+                    ApplyTypeLanguage(set, lang, undoName);
+                    break;
+                case LocalizationSetMode.Provider:
+                    ApplyProviderLanguage(set, lang, undoName);
+                    break;
+            }
+        }
+
+        void ApplyTypeLanguage(LocalizationSetBase set, object lang, string undoName)
+        {
+            string type = set.LangTypeToString(lang);
+
+            foreach (var localization in CollectLocalizations(set))
             {
                 ApplyLocalization(localization, undoName, type, null);
             }
         }
 
-        void ApplyProviderLanguage(object lang, string undoName)
+        void ApplyProviderLanguage(LocalizationSetBase set, object lang, string undoName)
         {
-            var provider = LangProviders?.Find(d => d != null && d.IsLanguage(lang));
+            var provider = GetEffectiveLangProviders(set)?.Find(d => d != null && d.IsLanguage(lang));
             if (provider == null) return;
 
-            foreach (var localization in CollectLocalizations())
+            foreach (var localization in CollectLocalizations(set))
             {
                 ApplyLocalization(localization, undoName, null, provider);
             }
+        }
+
+        static List<LanguageProviderComponentBase> GetEffectiveLangProviders(LocalizationSetBase set)
+        {
+            var providers = set != null ? set._langProviders : null;
+            if (providers == null || providers.Count == 0)
+            {
+                var manager = UnityEngine.Object.FindObjectOfType<LocalizationSetManagerComp>();
+                if (manager != null)
+                    providers = manager.defultLangProviders;
+            }
+            return providers;
+        }
+
+        /// <summary>
+        /// 全局设置器要控制的 LocalizationSet：优先管理器已注册列表；
+        /// 编辑器下尚未注册时，回退到场景中的非全局设置器。
+        /// </summary>
+        protected List<LocalizationSetBase> CollectManagedSets() => CollectManagedSets(Set);
+
+        /// <summary>
+        /// 全局设置器要控制的 LocalizationSet：优先管理器已注册列表；
+        /// 编辑器下尚未注册时，回退到场景中的非全局设置器。
+        /// </summary>
+        public static List<LocalizationSetBase> CollectManagedSets(LocalizationSetBase self)
+        {
+            var result = new List<LocalizationSetBase>();
+            var registered = LocalizationSetManager.Instance.sets;
+            if (registered != null)
+            {
+                foreach (var set in registered)
+                {
+                    if (set is LocalizationSetBase setBase &&
+                        setBase &&
+                        !setBase._isGolbalSetter &&
+                        !result.Contains(setBase))
+                        result.Add(setBase);
+                }
+            }
+
+            if (result.Count == 0)
+            {
+                foreach (var setBase in UnityEngine.Object.FindObjectsOfType<LocalizationSetBase>(true))
+                {
+                    if (!setBase || setBase._isGolbalSetter || setBase == self)
+                        continue;
+                    result.Add(setBase);
+                }
+            }
+
+            return result;
         }
 
         void ApplyLocalization(
@@ -768,20 +863,34 @@ namespace Framework.Editor
 
         protected IEnumerable<ILocalization> CollectLocalizations()
         {
-            var configured = ConfiguredLocalizations;
-            if (configured != null && configured.Count > 0)
+            if (IsGlobalSetter)
             {
-                foreach (var localization in configured)
+                foreach (var managed in CollectManagedSets())
                 {
-                    yield return localization;
+                    foreach (var localization in CollectLocalizations(managed))
+                        yield return localization;
                 }
                 yield break;
             }
 
-            foreach (var dl in SetTarget.GetComponentsInChildren<ILocalization>(true))
+            foreach (var localization in CollectLocalizations(Set))
+                yield return localization;
+        }
+
+        static IEnumerable<ILocalization> CollectLocalizations(LocalizationSetBase set)
+        {
+            if (set == null) yield break;
+
+            var configured = set._localizations;
+            if (configured != null && configured.Count > 0)
             {
-                yield return dl;
+                foreach (var localization in configured)
+                    yield return localization;
+                yield break;
             }
+
+            foreach (var localization in set.GetComponentsInChildren<ILocalization>(true))
+                yield return localization;
         }
 
         void RefreshViews()

@@ -13,7 +13,7 @@ namespace Framework.Event
     /// </summary>
     public partial class EventGroup<TID> : IEventGroup<TID>, ITypePoolObject
     {
-        Dictionary<TID, LinkedList<Delegate>> _entrepot = new Dictionary<TID, LinkedList<Delegate>>(20);
+        Dictionary<TID, List<Delegate>> _entrepot = new Dictionary<TID, List<Delegate>>(20);
 
         #region 添加侦听
         /// <summary>添加侦听</summary>
@@ -125,9 +125,9 @@ namespace Framework.Event
             if (listener == null) return;
 
             if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
-                _entrepot[id] = new LinkedList<Delegate>();
+                _entrepot[id] = new List<Delegate>();
             if (!_entrepot[id].Contains(listener))
-                _entrepot[id].AddLast(listener);
+                _entrepot[id].Add(listener);
 
             EventCenter<TID>.AddListener(id, listener);
         }
@@ -257,7 +257,7 @@ namespace Framework.Event
             {
                 TID id = msgs.Key;
                 Clear(id);
-                msgs.Value.Clear();
+                //msgs.Value.Clear();
             }
             //_entrepot.Clear();
         }

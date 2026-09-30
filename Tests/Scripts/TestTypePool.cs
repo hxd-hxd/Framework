@@ -22,10 +22,14 @@ namespace Framework.Test
         // Start is called before the first frame update
         void Start()
         {
-            _ints = pool.GetArrayE(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+            _ints = pool.GetArray<int>(10);
+            for (int i = 0; i < _ints.Length; i++)
+                _ints[i] = i + 1;
             Log(_ints);
 
-            _intArray = pool.GetArrayE(typeof(int), 1, 2, 3, 4, 5);
+            _intArray = pool.GetArray(typeof(int), 5);
+            for (int i = 0; i < _intArray.Length; i++)
+                _intArray.SetValue(i + 1, i);
             Log(_intArray);
         }
 

@@ -13,20 +13,41 @@ namespace Framework.Prob
     public class ProbItem : BaseProbItem<string, ProbBranch, ProbItem>
     {
         [SerializeField]
-        private string _tValue;
+        private string _value;
         [SerializeField]
         private float _probValue = -1;
         [SerializeField]
         private bool _enable = true;
-        [SerializeField]
-        private bool _allProb;
 
         private Container _ownerContainer;
 
-        public override string value { get => _tValue; set => _tValue = value; }
-        public override float probValue { get => _probValue; set => _probValue = value; }
-        public override bool enable { get => _enable; set => _enable = value; }
-        public override bool allProb { get => _allProb; set => _allProb = value; }
+        public override string value
+        {
+            get => _value;
+            set
+            {
+                if (owner != null && !Equals(_value, value)) owner.isDirty = true;
+                _value = value;
+            }
+        }
+        public override float probValue
+        {
+            get => _probValue;
+            set
+            {
+                if (owner != null && !Equals(_probValue, value)) owner.isDirty = true;
+                _probValue = value;
+            }
+        }
+        public override bool enable
+        {
+            get => _enable;
+            set
+            {
+                if (owner != null && !Equals(_enable, value)) owner.isDirty = true;
+                _enable = value;
+            }
+        }
 
         public override Container owner { get => _ownerContainer; set => _ownerContainer = value; }
 
@@ -34,13 +55,13 @@ namespace Framework.Prob
         {
             _probValue = -1;
             _enable = true;
-            _tValue = default;
+            _value = default;
         }
 
         public ProbItem(float probValue)
         {
             _enable = true;
-            _tValue = default;
+            _value = default;
             this._probValue = probValue;
         }
 
@@ -48,7 +69,7 @@ namespace Framework.Prob
         {
             _enable = true;
             this._probValue = probValue;
-            this._tValue = t;
+            this._value = t;
         }
     }
 
@@ -65,8 +86,6 @@ namespace Framework.Prob
         private float _probValue = -1;
         [SerializeField]
         private bool _enable = true;
-        [SerializeField]
-        private bool _allProb;
 
         private IContainer<T, ProbBranch<T>, ProbItem<T>> _owner;
 
@@ -95,15 +114,6 @@ namespace Framework.Prob
             {
                 if (owner != null && !Equals(_enable, value)) owner.isDirty = true;
                 _enable = value;
-            }
-        }
-        public override bool allProb
-        {
-            get => _allProb;
-            set
-            {
-                if (owner != null && !Equals(_allProb, value)) owner.isDirty = true;
-                _allProb = value;
             }
         }
 

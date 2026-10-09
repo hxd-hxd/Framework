@@ -6,7 +6,7 @@ namespace Framework.Prob
 {
     /// <summary>容器基类</summary>
     public abstract class BaseContainer<TValue, TProbBranch, TProbItem> :
-        IContainer<TValue, TProbBranch, TProbItem>
+        IContainer<TValue, TProbBranch, TProbItem>, ITypePoolObject
         where TProbBranch : BaseProbBranch<TValue, TProbBranch, TProbItem>
         where TProbItem : BaseProbItem<TValue, TProbBranch, TProbItem>
     {
@@ -15,29 +15,32 @@ namespace Framework.Prob
         private List<TProbItem> _items;
         private List<TProbBranch> _branchs;
 
-        //public abstract List<TProbItem> items { get; set; }
-        //public abstract List<TProbBranch> branchs { get; set; }
-        //public abstract string containerName { get; set; }
+        internal List<IProb> _validProbs = new List<IProb>();
+        internal List<float> _probRanges = new List<float>();
 
         public abstract IRandomProvider randomProvider { get; set; }
         public abstract bool isDirty { get; set; }
 
+        List<IProb> IContainer<TValue, TProbBranch, TProbItem>.validProbs { get => _validProbs; set => _validProbs = value; }
+
+        List<float> IContainer<TValue, TProbBranch, TProbItem>.probRanges { get => _probRanges; set => _probRanges = value; }
+
         public virtual List<TProbItem> items
         {
-            get => _items;
+            get => _items ??= new List<TProbItem>();
             set
             {
-                if (!Equals(items, value)) isDirty = true;
-                items = value;
+                if (!Equals(_items, value)) isDirty = true;
+                _items = value;
             }
         }
         public virtual List<TProbBranch> branchs
         {
-            get => _branchs;
+            get => _branchs ??= new List<TProbBranch>();
             set
             {
-                if (!Equals(branchs, value)) isDirty = true;
-                branchs = value;
+                if (!Equals(_branchs, value)) isDirty = true;
+                _branchs = value;
             }
         }
         public virtual string containerName { get => _containerName; set => _containerName = value; }
@@ -60,10 +63,14 @@ namespace Framework.Prob
         /// <summary>添加分支</summary>
         public TProbBranch AddBranch(string containerName, float provValue)
         {
-            TProbBranch branch = Activator.CreateInstance<TProbBranch>();
+            TProbBranch branch = TypePool.root.Get<TProbBranch>();
             branch.containerName = containerName;
             branch.probValue = provValue;
-            branch = AddBranch(branch) ? branch : null;
+            if (!AddBranch(branch))
+            {
+                TypePool.root.Return(branch);
+                branch = null;
+            }
             return branch;
         }
 
@@ -81,39 +88,93 @@ namespace Framework.Prob
         /// <summary>添加概率项</summary>
         public TProbItem AddItem(float provValue, TValue value)
         {
-            TProbItem item = Activator.CreateInstance<TProbItem>();
+            TProbItem item = TypePool.root.Get<TProbItem>();
             item.value = value;
             item.probValue = provValue;
-            item = AddItem(item) ? item : null;
+            if (!AddItem(item))
+            {
+                TypePool.root.Return(item);
+                item = null;
+            }
             return item;
         }
 
-        public TProbItem GetRandmoDirectlyItem(bool ignoreEnable = false)
+        public bool RemoveItem(TProbItem item)
         {
-            TProbItem p = items.RandomProb(randomProvider, ignoreEnable);
+            bool remove = items.Remove(item);
+            if (remove)
+            {
+                item.owner = null;
+                isDirty = true;
+            }
+            return remove;
+        }
+
+        /// <summary>移除概率项</summary>
+        public bool RemoveItem(TValue value)
+        {
+            var index = items.FindIndex((i) => Equals(i.value, value));
+            if (index < 0) return false;
+            var item = items[index];
+
+            items.RemoveAt(index);
+            item.owner = null;
+            isDirty = true;
+            TypePool.root.Return(item);
+            return true;
+        }
+
+        public bool RemoveBranch(TProbBranch branch)
+        {
+            bool remove = branchs.Remove(branch);
+            if (remove)
+            {
+                branch.owner = null;
+                isDirty = true;
+            }
+            return remove;
+        }
+
+        /// <summary>移除分支</summary>
+        public bool RemoveBranch(string containerName)
+        {
+            var index = branchs.FindIndex((tpb) => tpb.containerName == containerName);
+            if (index < 0) return false;
+            var branch = branchs[index];
+
+            branchs.RemoveAt(index);
+            branch.owner = null;
+            isDirty = true;
+            TypePool.root.Return(branch);
+            return true;
+        }
+
+        public TProbItem GetRandmoDirectlyItem()
+        {
+            TProbItem p = items.RandomProb(randomProvider);
             return p;
         }
 
-        public TProbBranch GetRandmoDirectlyBranch(bool ignoreEnable = false)
+        public TProbBranch GetRandmoDirectlyBranch()
         {
-            return branchs.RandomProb(randomProvider, ignoreEnable);
+            return branchs.RandomProb(randomProvider);
         }
 
-        public TProbItem GetRandmoDirectlyBranchItem(bool ignoreEnable = false)
+        public TProbItem GetRandmoDirectlyBranchItem()
         {
-            TProbBranch p = GetRandmoDirectlyBranch(ignoreEnable);
-            return p?.GetRandmoDirectlyItem(ignoreEnable);
+            TProbBranch p = GetRandmoDirectlyBranch();
+            return p?.GetRandmoDirectlyItem();
         }
 
-        public TProbBranch GetRandmoBranch(bool ignoreEnable = false)
+        public TProbBranch GetRandmoBranch()
         {
-            var b = GetRandmoDirectlyBranch(ignoreEnable);
+            var b = GetRandmoDirectlyBranch();
             while (b != null)
             {
                 bool next = randomProvider.RandomProbValue() <= 50 ? false : true;
                 if (next)
                 {
-                    var b1 = b.GetRandmoDirectlyBranch(ignoreEnable);
+                    var b1 = b.GetRandmoDirectlyBranch();
                     if (b == b1) break;
                     b = b1;
                 }
@@ -122,33 +183,18 @@ namespace Framework.Prob
         }
 
         /// <summary>随机获取一个概率项的结果</summary>
-        public virtual TProbItem GetRandomItem(bool ignoreEnable = false)
+        public virtual TProbItem GetRandomItem()
         {
-            // TODO：因为分支既可以有项也可以有下级分支，所以要在项和分支里共同随机
-            //return GetRandmoDirectlyBranchItem(ignoreEnable);
+            // 因为分支既可以有项也可以有下级分支，所以要在项和分支里共同随机
 
             TProbItem r = default;
             IContainer<TValue, TProbBranch, TProbItem> b = this;
 
-            var ps = TypePool.root.GetList<IProb>();
-
             while (b != null)
             {
-                ps.Clear();
-                // 添加项
-                //ps.AddRange(b.items);
-                foreach (var item in b.items)
-                {
-                    if (item.IsValid(ignoreEnable)) ps.Add(item);
-                }
-                // 添加容器
-                foreach (var b1 in b.branchs)
-                {
-                    // 没有项的分支不可参与随机
-                    if (b1.IsValid(ignoreEnable) && b1.HasValidItem()) ps.Add(b1);
-                }
+                b.UpdateValidProbs();
 
-                var p = ps.InternalRandomProb(randomProvider);
+                var p = b.validProbs.InternalRandomProb(randomProvider, b.probRanges);
                 // 随机到容器继续
                 if (p is IContainer<TValue, TProbBranch, TProbItem> c)
                 {
@@ -159,18 +205,17 @@ namespace Framework.Prob
                 r = p as TProbItem;
                 break;
             }
-            TypePool.root.Return(ps);
             return r;
         }
 
         /// <summary>随机获取一个概率项的结果</summary>
-        public virtual TValue GetRandomValue(bool ignoreEnable = false)
+        public virtual TValue GetRandomValue()
         {
-            TProbItem p = GetRandomItem(ignoreEnable);
+            TProbItem p = GetRandomItem();
             return p == null ? default : p.value;
         }
 
-        public float GetRealProb(TValue value, bool ignoreEnable = false)
+        public float GetRealProb(TValue value)
         {
             TProbItem probItem = FindItem(value);
             return probItem == null ? 0 : probItem.RealProb();
@@ -245,23 +290,71 @@ namespace Framework.Prob
         }
 
         /// <summary>存在有效项，会递归查找子分支，有任意一个子分支存在有效项即可</summary>
-        public bool HasValidItem(bool ignoreEnable = false)
+        public bool HasValidItem()
         {
             foreach (var item in items)
             {
-                if (item.IsValid(ignoreEnable)) return true;
+                if (item.IsValid()) return true;
             }
             foreach (var b1 in branchs)
             {
-                if (b1.HasValidItem(ignoreEnable)) return true;
+                if (b1.HasValidItem()) return true;
             }
             return false;
         }
 
-        public void Clear()
+        public void UpdateValidProbs()
         {
-            items.Clear();
-            branchs.Clear();
+            if (!isDirty) return;
+
+            List<IProb> validProbs = _validProbs;
+            validProbs.Clear();
+            // 添加项
+            foreach (var item in items)
+            {
+                if (item.IsValid()) validProbs.Add(item);
+            }
+            // 添加容器
+            foreach (var b1 in branchs)
+            {
+                // 没有项的分支不可参与随机
+                if (b1.IsValid() && b1.HasValidItem()) validProbs.Add(b1);
+            }
+
+            validProbs.GetProbRanges(_probRanges);
+
+            isDirty = false;
+        }
+
+        public virtual void Clear()
+        {
+            if (items.Count > 0 || branchs.Count > 0) isDirty = true;
+
+            foreach (var item in items)
+            {
+                if (item != null)
+                    item.owner = null;
+            }
+            foreach (var item in branchs)
+            {
+                if (item != null)
+                    item.owner = null;
+            }
+            //items.Clear();
+            //branchs.Clear();
+            TypePool.root.ReturnE(items);
+            TypePool.root.ReturnE(branchs);
+        }
+
+        void ITypePoolObject.Clear()
+        {
+            OnPoolClear();
+        }
+
+        protected virtual void OnPoolClear()
+        {
+            containerName = "Node";
+            Clear();
         }
 
         /// <summary>添加时检查是否包含，已包含则不添加</summary>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Framework.Prob
     [System.Serializable]
     public class ProbDevice : BaseContainer<string, ProbBranch, ProbItem>
     {
-        static ProbDevice<bool> pdd = new ProbDevice<bool>();
+        static ProbDevice<bool> boolPd = new ProbDevice<bool>();
 
         [SerializeField]
         private string _containerName = "Node";
@@ -31,8 +32,8 @@ namespace Framework.Prob
             get => _items;
             set
             {
-                if (!Equals(items, value)) isDirty = true;
-                items = value;
+                if (!Equals(_items, value)) isDirty = true;
+                _items = value;
             }
         }
         public override List<ProbBranch> branchs
@@ -40,8 +41,8 @@ namespace Framework.Prob
             get => _branchs;
             set
             {
-                if (!Equals(branchs, value)) isDirty = true;
-                branchs = value;
+                if (!Equals(_branchs, value)) isDirty = true;
+                _branchs = value;
             }
         }
         public override string containerName { get => _containerName; set => _containerName = value; }
@@ -52,20 +53,31 @@ namespace Framework.Prob
 
         static ProbDevice()
         {
-            pdd.AddItem(1, true);
-            pdd.AddItem(1, false);
+            boolPd.AddItem(1, true);
+            boolPd.AddItem(1, false);
         }
 
         /// <summary>
-        /// 随机 <see cref="bool"/>，概率值可以填任意数，他们会按比例进行计算
+        /// 随机 <see cref="bool"/>，概率值可以填任意正数，他们会按比例进行计算
         /// <para><paramref name="truePV"/>：true 的概率值</para>
         /// <para><paramref name="falsePV"/>：false 的概率值</para>
         /// </summary>
         public static bool RandomBool(float truePV, float falsePV)
         {
-            pdd.FindItem(true).probValue = truePV;
-            pdd.FindItem(false).probValue = falsePV;
-            return pdd.GetRandomValue();
+            boolPd.FindItem(true).probValue = truePV;
+            boolPd.FindItem(false).probValue = falsePV;
+            return boolPd.GetRandomValue();
+        }
+
+        /// <summary>
+        /// 随机 <see cref="bool"/>，概率值基准为 100，true 的概率值为 <paramref name="truePV"/>，false 的概率值为 100 - <paramref name="truePV"/>
+        /// </summary>
+        public static bool RandomBool100(float truePV)
+        {
+            truePV = Mathf.Clamp(truePV, 0f, 100f);
+            boolPd.FindItem(true).probValue = truePV;
+            boolPd.FindItem(false).probValue = 100f - truePV;
+            return boolPd.GetRandomValue();
         }
     }
 
@@ -95,8 +107,8 @@ namespace Framework.Prob
             get => _items;
             set
             {
-                if (!Equals(items, value)) isDirty = true;
-                items = value;
+                if (!Equals(_items, value)) isDirty = true;
+                _items = value;
             }
         }
         public override List<ProbBranch<T>> branchs
@@ -104,8 +116,8 @@ namespace Framework.Prob
             get => _branchs;
             set
             {
-                if (!Equals(branchs, value)) isDirty = true;
-                branchs = value;
+                if (!Equals(_branchs, value)) isDirty = true;
+                _branchs = value;
             }
         }
         public override string containerName { get => _containerName; set => _containerName = value; }

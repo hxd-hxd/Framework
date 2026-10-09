@@ -6,15 +6,15 @@ using Framework.Test;
 
 namespace Framework.Prob
 {
-
     [CustomEditor(typeof(TestProb))]
     public class TestProbInspector : UnityEditor.Editor
     {
-        TestProb testProb;
         IProb prob;
         static string tValue;
         static string branchName;
         float probValue;
+
+        TestProb my => (TestProb)target;
 
         public override void OnInspectorGUI()
         {
@@ -22,8 +22,12 @@ namespace Framework.Prob
 
             EditorGUI.BeginDisabledGroup(!Application.isPlaying);
             {
-                testProb = (TestProb)target;
                 serializedObject.Update();
+
+                if (GUILayout.Button("测试批量随机耗时"))
+                {
+                    my.TestTime();
+                }
 
                 EditorGUILayout.BeginVertical("box");
                 {
@@ -34,7 +38,7 @@ namespace Framework.Prob
                         tValue = EditorGUILayout.TextField(tValue);
                         if (GUILayout.Button("获取信息", GUILayout.MinWidth(100)))
                         {
-                            prob = testProb.pdd.FindItem(tValue);
+                            prob = my.pdd.FindItem(tValue);
 
                             probValue = prob == null ? 0 : prob.RealProb();
                         }
@@ -48,7 +52,7 @@ namespace Framework.Prob
                         branchName = EditorGUILayout.TextField(branchName);
                         if (GUILayout.Button("获取信息", GUILayout.MinWidth(100)))
                         {
-                            prob = testProb.pdd.FindBranch(tValue);
+                            prob = my.pdd.FindBranch(tValue);
 
                             probValue = prob == null ? 0 : prob.RealProb();
                         }
@@ -81,14 +85,14 @@ namespace Framework.Prob
                 {
                     if (GUILayout.Button("随机"))
                     {
-                        var item = testProb.pdd.GetRandomItem();
+                        var item = my.pdd.GetRandomItem();
                         Debug.Log($"{item.value}，\t概率：{item.RealProb()}%，路径：{item.GetPath()}");
                     }
                     if (GUILayout.Button("随机 100 次"))
                     {
                         for (int i = 0; i < 100; i++)
                         {
-                            var item = testProb.pdd.GetRandomItem();
+                            var item = my.pdd.GetRandomItem();
                             Debug.Log($"{item.value}，\t概率：{item.RealProb()}%，路径：{item.GetPath()}");
                         }
                     }
@@ -100,16 +104,16 @@ namespace Framework.Prob
                 {
                     if (GUILayout.Button("保存成 json "))
                     {
-                        testProb.SaveJson();
+                        my.SaveJson();
                         AssetDatabase.Refresh();
                     }
                     if (GUILayout.Button("读取 json "))
                     {
-                        testProb.ReadJson();
+                        my.ReadJson();
                     }
                     if (GUILayout.Button("清除"))
                     {
-                        testProb.Clear();
+                        my.Clear();
                     }
                 }
                 EditorGUILayout.EndHorizontal();

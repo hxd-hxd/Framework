@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using Framework.Prob;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 namespace Framework.Test
 {
@@ -11,6 +13,11 @@ namespace Framework.Test
         public ProbDevice<int> pddInt = new ProbDevice<int>();
 
         public ProbDevice pdd = new ProbDevice();
+
+        [Header("测试单批随机次数")]
+        public int testRandomCount = 100000;
+        [Header("测试随机批次数")]
+        public int testCount = 100;
 
         [TextArea(0, 10)]
         public string path;
@@ -66,6 +73,46 @@ namespace Framework.Test
             }
 
             path = Application.dataPath + "/" + pdd.GetType().FullName + ".json";
+        }
+
+        /// <summary>测试耗时</summary>
+        public void TestTime()
+        {
+            //TestTime(testRandomCount);
+            StartCoroutine(TestTimeCoroutine(testCount, testRandomCount));
+        }
+
+        /// <summary>测试耗时</summary>
+        public long TestTime(int count)
+        {
+            int num = 0;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            for (int i = 0; i < count; i++)
+            {
+                var item = pdd.GetRandomItem();
+                //if (num < 10 && item.value == "能量<境>")
+                //{
+                //    num += 1;
+                //    if(num == 10) item.enable = false;
+                //}
+                if (num < 100 && item.owner.containerName == "SSR+")
+                {
+                    num += 1;
+                    if(num == 100 && item.owner is IProb p) p.enable = false;
+                }
+            }
+            stopwatch.Stop();
+            Debug.Log($"单次批量随机 {count} 次耗时: {stopwatch.ElapsedMilliseconds} ms");
+            return stopwatch.ElapsedMilliseconds;
+        }
+
+        IEnumerator TestTimeCoroutine(int count, int randomCount)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                TestTime(randomCount);
+                yield return null;
+            }
         }
 
         public void SaveJson()

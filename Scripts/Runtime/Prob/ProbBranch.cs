@@ -16,8 +16,6 @@ namespace Framework.Prob
         [SerializeField]
         private bool _enable = true;
         [SerializeField]
-        private bool _allProb;
-        [SerializeField]
         private bool _isDirty = true;
 
         [SerializeField]
@@ -33,8 +31,8 @@ namespace Framework.Prob
             get => _items;
             set
             {
-                if (!Equals(items, value)) isDirty = true;
-                items = value;
+                if (!Equals(_items, value)) isDirty = true;
+                _items = value;
             }
         }
         public override List<ProbBranch> branchs
@@ -42,8 +40,8 @@ namespace Framework.Prob
             get => _branchs;
             set
             {
-                if (!Equals(branchs, value)) isDirty = true;
-                branchs = value;
+                if (!Equals(_branchs, value)) isDirty = true;
+                _branchs = value;
             }
         }
         public override string containerName { get => _containerName; set => _containerName = value; }
@@ -68,19 +66,20 @@ namespace Framework.Prob
                 _enable = value;
             }
         }
-        public override bool allProb
-        {
-            get => _allProb;
-            set
-            {
-                if (owner != null && !Equals(_allProb, value)) owner.isDirty = true;
-                _allProb = value;
-            }
-        }
 
         public override IContainer<string, ProbBranch, ProbItem> owner { get => _owner; set => _owner = value; }
 
-        public override bool isDirty { get => _isDirty; set => _isDirty = value; }
+        public override bool isDirty
+        {
+            get => _isDirty;
+            set
+            {
+                // 向上标记
+                if (value == true && owner != null && !Equals(_isDirty, value)) owner.isDirty = true;
+
+                _isDirty = value;
+            }
+        }
 
         public ProbBranch()
         {
@@ -111,8 +110,6 @@ namespace Framework.Prob
         [SerializeField]
         private bool _enable = true;
         [SerializeField]
-        private bool _allProb;
-        [SerializeField]
         private bool _isDirty = true;
 
         [SerializeField]
@@ -132,8 +129,8 @@ namespace Framework.Prob
             get => _items;
             set
             {
-                if (!Equals(items, value)) isDirty = true;
-                items = value;
+                if (!Equals(_items, value)) isDirty = true;
+                _items = value;
             }
         }
         public override List<ProbBranch<T>> branchs
@@ -141,8 +138,8 @@ namespace Framework.Prob
             get => _branchs;
             set
             {
-                if (!Equals(branchs, value)) isDirty = true;
-                branchs = value;
+                if (!Equals(_branchs, value)) isDirty = true;
+                _branchs = value;
             }
         }
         public override string containerName { get => _containerName; set => _containerName = value; }
@@ -167,19 +164,20 @@ namespace Framework.Prob
                 _enable = value;
             }
         }
-        public override bool allProb
-        {
-            get => _allProb;
-            set
-            {
-                if (owner != null && !Equals(_allProb, value)) owner.isDirty = true;
-                _allProb = value;
-            }
-        }
 
         public override IContainer<T, ProbBranch<T>, ProbItem<T>> owner { get => _owner; set => _owner = value; }
 
-        public override bool isDirty { get => _isDirty; set => _isDirty = value; }
+        public override bool isDirty
+        {
+            get => _isDirty;
+            set
+            {
+                // 向上标记
+                if (value == true && owner != null && !Equals(_isDirty, value)) owner.isDirty = true;
+
+                _isDirty = value;
+            }
+        }
 
         public ProbBranch()
         {

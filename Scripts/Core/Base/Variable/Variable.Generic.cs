@@ -6,7 +6,7 @@ namespace Framework.Core
     /// 变量。
     /// </summary>
     /// <typeparam name="T">变量类型。</typeparam>
-    public abstract class Variable<T> : Variable
+    public class Variable<T> : Variable
     {
         private T m_Value;
 

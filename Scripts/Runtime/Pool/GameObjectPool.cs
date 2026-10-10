@@ -506,11 +506,16 @@ namespace Framework
 
             if (has)
             {
-                while (tPool.Count > 0)
+                //while (tPool.Count > 0)
+                //{
+                //    var _go = FetchLast(tPool);
+                //    GameObject.Destroy(_go);
+                //}
+                foreach (var item in tPool)
                 {
-                    var _go = FetchLast(tPool);
-                    GameObject.Destroy(_go);
+                    GameObject.Destroy(item);
                 }
+                tPool.Clear();
             }
         }
 
@@ -590,99 +595,6 @@ namespace Framework
             return obj;
         }
 
-    }
-
-    /// <summary>
-    /// 用于记录 <see cref="GameObjectPool"/> 信息
-    /// </summary>
-    [Serializable]
-    public class GameObjectPoolRecord : ITypePoolObject
-    {
-        [NonSerialized]
-        public GameObjectPool pool;
-        public GameObject template;
-        /// <summary>通过 <see cref="template"/> 实例化的实例，可选，视自己的使用方式而定</summary>
-        public GameObject instance;
-        public Transform parent;
-
-        public GameObjectPoolRecord()
-        {
-
-        }
-        public GameObjectPoolRecord(GameObjectPool pool, GameObject template)
-        {
-            this.pool = pool;
-            this.template = template;
-        }
-        public GameObjectPoolRecord(GameObjectPool pool, GameObject template, GameObject instance)
-        {
-            this.pool = pool;
-            this.template = template;
-            this.instance = instance;
-        }
-        public GameObjectPoolRecord(GameObjectPool pool, GameObject template, GameObject instance, Transform parent)
-        {
-            this.pool = pool;
-            this.template = template;
-            this.instance = instance;
-            this.parent = parent;
-        }
-
-        /// <summary>
-        /// 是否有效记录
-        /// </summary>
-        /// <returns></returns>
-        public bool IsValid()
-        {
-            bool r = pool != null && template != null;
-            return r;
-        }
-
-        /// <summary>
-        /// 返回对象池
-        /// </summary>
-        /// <returns></returns>
-        public bool Return() => Return(parent);
-
-        /// <summary>
-        /// 返回对象池
-        /// </summary>
-        /// <returns></returns>
-        public bool Return(Transform parent)
-        {
-            if (IsValid() && instance)
-            {
-                pool.Return(instance, template, parent);
-                return true;
-            }
-            return false;
-        }
-
-
-        public void Clear()
-        {
-            pool = null;
-            template = null;
-            instance = null;
-        }
-    }
-
-    /// <summary>
-    /// 可用于记录 <see cref="GameObjectPoolRecord"/>
-    /// </summary>
-    public class PoolRecordComponent : MonoBehaviour
-    {
-        public GameObjectPoolRecord record = new GameObjectPoolRecord();
-
-        /// <summary>
-        /// 通过 <see cref="record"/> 记录的对象池信息放入对象池
-        /// </summary>
-        /// <returns></returns>
-        public bool Return()
-        {
-            if (record == null) return false;
-            return record.Return();
-        }
     }
 
 }

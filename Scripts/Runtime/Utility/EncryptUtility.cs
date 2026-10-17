@@ -1,53 +1,30 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2022/11/11 18:45:15
 // -------------------------
 
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Security.Cryptography;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace Framework
 {
-    /// <summary>
-    /// 加解密
-    /// </summary>
+    /// <summary>加解密</summary>
     public static class EncryptUtility
     {
-        /// <summary>
-        /// 安全密钥
-        /// </summary>
+        /// <summary>安全密钥</summary>
         static string secretKey = "1yy2";
 
-
-        /// <summary>
-        /// 加密
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
+        /// <summary>加密</summary>
         public static string ToEncrypt(string str)
         {
             return ToEncrypt(secretKey, str);
         }
 
-        /// <summary>
-        /// 加密
-        /// </summary>
-        /// <param name="encryptKey"></param>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
+        /// <summary>加密</summary>
         public static string ToEncrypt(string encryptKey, string str)
         {
-            //if (string.IsNullOrEmpty(encryptKey) || encryptKey.Length != 4)
-            //{
-            //    Debug.LogError("");
-            //    return str;
-            //}
-
             try
             {
                 byte[] P_byte_key = Encoding.Unicode.GetBytes(encryptKey);//将密钥字符串转换为字节序列
@@ -75,23 +52,13 @@ namespace Framework
             }
         }
 
-
-        /// <summary>
-        /// 解密
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
+        /// <summary>解密</summary>
         public static string ToDecrypt(string str)
         {
             return ToDecrypt(secretKey, str);
         }
-        /// <summary>
-        /// 解密
-        /// </summary>
-        /// <param name="encryptKey"></param>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
+        
+        /// <summary>解密</summary>
         public static string ToDecrypt(string encryptKey, string str)
         {
             try

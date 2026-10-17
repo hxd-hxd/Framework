@@ -3,28 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using Framework.UI;
 
 namespace Framework
 {
-    /// <summary>
-    /// UGUI 基类
-    /// </summary>
-    public abstract partial class UIBase : MonoBehaviour, IUI
+    /// <summary>UI 基类</summary>
+    public abstract partial class UIBase : MonoBehaviour, IUI, IUIGroupItem
     {
+        private IUIGroup _owner;
+
+        public virtual bool isEnable
+        {
+            get => gameObject.activeSelf;
+            set => gameObject.SetActive(value);
+        }
+
+        public string itemName => name;
+
+        public virtual IUIGroup group { get => _owner; set => _owner = value; }
+
+        public virtual int sortOrder
+        {
+            get => transform.GetSiblingIndex();
+            set
+            {
+                // 只在有父节点时才调整排序，不然没有意义
+                if (transform.parent)
+                {
+                    int so = Mathf.Clamp(value, 0, transform.parent.childCount - 1);
+                    transform.SetSiblingIndex(so);
+                }
+            }
+        }
+
         string IUI.name
         {
             get => name;
             set => name = value;
         }
-        public virtual bool isEnable
-        {
-            get => gameObject.activeSelf;
-            set => _Enable(value);
-        }
 
         protected virtual void Awake()
         {
-            UIManager.Register(this);
+            
         }
 
         protected virtual void Start()
@@ -44,21 +64,7 @@ namespace Framework
 
         protected virtual void OnDestroy()
         {
-            UIManager.Unregister(this);
-        }
-
-        /// <summary>
-        /// 在刷新的时候触发
-        /// </summary>
-        protected internal virtual void OnRefresh()
-        {
-
-        }
-
-        /// <summary>在置顶的时候触发</summary>
-        protected internal virtual void OnTopmost()
-        {
-
+            
         }
 
         public virtual void Init()
@@ -66,39 +72,42 @@ namespace Framework
 
         }
 
-        /// <summary>
-        /// 反向启用。即当前为启用则禁用，当前为禁用则启用
-        /// </summary>
-        public void Enable() => _Enable(!gameObject.activeSelf);
-
         public virtual void Enable(bool isEnable)
         {
-            _Enable(isEnable);
+            this.isEnable = isEnable;
         }
 
-        protected void _Enable(bool isEnable)
-        {
-            if (gameObject.activeSelf == isEnable) return;
-
-            gameObject.SetActive(isEnable);
-        }
-
-        /// <summary>
-        /// 刷新
-        /// </summary>
+        /// <summary>刷新</summary>
         public void Refresh()
         {
             OnRefresh();
         }
 
-        /// <summary>
-        /// 销毁界面
-        /// </summary>
+        /// <summary>销毁界面</summary>
         public virtual void Destroy()
         {
-            
+
         }
 
+        public virtual void OnRefresh()
+        {
+
+        }
+
+        public virtual void OnTopmost()
+        {
+            transform.SetAsLastSibling();
+        }
+
+        public virtual void OnCovered()
+        {
+
+        }
+
+        public virtual void OnNotCovered()
+        {
+
+        }
 
         public static void AddEvent(Button btn, UnityAction e)
         {

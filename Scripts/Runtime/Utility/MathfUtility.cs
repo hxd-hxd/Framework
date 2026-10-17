@@ -6,18 +6,10 @@ using UnityEngine;
 
 namespace Framework
 {
-    /// <summary>
-    /// 处理一些通用的数学计算
-    /// </summary>
+    /// <summary>处理一些通用的数学计算</summary>
     public static class MathfUtility
     {
-        /// <summary>
-        /// 判断向量大小是否在指定区域
-        /// </summary>
-        /// <param name="v"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
+        /// <summary>判断向量大小是否在指定区域</summary>
         public static bool MagnitudeAmong(Vector3 v, float min, float max)
         {
             float magnitude = Mathf.Abs(v.magnitude);

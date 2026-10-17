@@ -24,7 +24,5 @@ namespace Framework
             }
             protected set { inst = value; }
         }
-
-        public static T Ins => Instance;
     }
 }

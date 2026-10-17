@@ -32,7 +32,7 @@ namespace Framework.LogSystem
             _fpsText = _logBtn.transform.FindOf<Text>("Text");
 
             if (!_logSystemUI)
-                _logSystemUI = UIManager.ExpectGetUI<LogSystemUI>();
+                _logSystemUI = UIManager.Instance.ExpectGetUI<LogSystemUI>();
 
             AddEvent(_logBtn, OnLogClick);
         }

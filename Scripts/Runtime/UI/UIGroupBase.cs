@@ -1,0 +1,119 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Framework.UI
+{
+    /// <summary>UI 分组基类</summary>
+    public abstract class UIGroupBase : MonoBehaviour, IUIGroup
+    {
+        [SerializeField]
+        private string _groupName = "默认";
+
+        private List<IUIGroupItem> _items = new List<IUIGroupItem>(4);
+
+        public abstract int sortOrder { get; set; }
+
+        public virtual string groupName { get => _groupName; set => _groupName = value; }
+
+        public virtual int itemCount => _items.Count;
+
+        public bool isEnable { get => gameObject.activeSelf; set => gameObject.SetActive(value); }
+
+        public IReadOnlyList<IUIGroupItem> items => _items;
+
+        internal List<IUIGroupItem> internalItems => _items;
+
+        protected virtual void Awake()
+        {
+            // 自动收集子节点项
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.TryGetComponent(out IUIGroupItem item))
+                    _items.Add(item);
+            }
+            //gameObject.GetComponentsInChildren(_items);
+        }
+
+        public virtual void AddItem(IUIGroupItem item)
+        {
+            if (_items.Contains(item)) return;
+
+            item.group = this;
+            if (item is Component comp)
+            {
+                if (transform.parent != comp.transform.parent)
+                    comp.transform.SetParent(transform);
+            }
+
+            _items.Add(item);
+            //// 按顺序插入
+            //int index = int.MaxValue;
+            //for (int i = _items.Count - 1; i >= 0; i--)
+            //{
+            //    var itemL = _items[i];
+            //    if (item.sortOrder >= itemL.sortOrder)
+            //    {
+            //        index = i;
+            //        break;
+            //    }
+            //}
+            //if (index != int.MaxValue)
+            //{
+            //    _items.Insert(index - 1, item);
+            //}
+        }
+
+        public virtual void RemoveItem(IUIGroupItem item)
+        {
+            if (_items.Remove(item))
+            {
+                item.group = null;
+                if (item is Component comp)
+                {
+                    if (transform.parent == comp.transform.parent)
+                        comp.transform.SetParent(transform.parent);
+                }
+            }
+        }
+
+        public virtual IUIGroupItem GetItem(string name)
+        {
+            var item = _items.Find(i => i.itemName == name);
+            return item;
+        }
+
+        public virtual IUIGroupItem GetTopItem()
+        {
+            for (int i = _items.Count - 1; i >= 0; i--)
+            {
+                // 组中按顺序排，所以从后往前找到的第一个就是顶部的
+                var item = _items[i];
+                if (item.isEnable) return item;
+            }
+            return null;
+        }
+
+        public virtual bool HasEnableItem()
+        {
+            for (int i = _items.Count - 1; i >= 0; i--)
+            {
+                // 组中按顺序排，所以从后往前找
+                var item = _items[i];
+                if (item.isEnable) return true;
+            }
+            return false;
+        }
+
+        public IEnumerator<IUIGroupItem> GetEnumerator()
+        {
+            return _items.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+}

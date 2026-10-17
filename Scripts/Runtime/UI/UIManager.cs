@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Framework.UI;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -11,242 +12,253 @@ namespace Framework
     /// </summary>
     public class UIManager : Singleton<UIManager>
     {
-        static Dictionary<Type, IUI> uis = new Dictionary<Type, IUI>(20);
+        internal Dictionary<Type, IUI> _uis = new Dictionary<Type, IUI>(20);
+        internal Dictionary<string, IUIGroup> _groups = new Dictionary<string, IUIGroup>(4);
 
         /// <summary>指定界面是否存在实例，会尝试获取实例 <see cref="ExpectGetUI{T}"/></summary>
-        public static bool IsExistInstance<T>() where T : class, IUI
+        public bool IsExistInstance<T>() where T : class, IUI
         {
             bool r = !ObjectUtility.IsNull(ExpectGetUI<T>());
             return r;
         }
+
         /// <summary>指定界面是否注册</summary>
-        public static bool IsRegister<T>() where T : class, IUI
+        public bool IsRegister<T>() where T : class
         {
             Type type = typeof(T);
-            if (uis.TryGetValue(type, out var bui))
+            if (_uis.TryGetValue(type, out var bui))
             {
-                // 判断实例
-                if (ObjectUtility.IsNull(bui))
+                return ObjectUtility.IsNull(bui);
+            }
+            else
+            {
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
                 {
-                    return false;
+                    if (item.Value is T)
+                    {
+                        return true;
+                    }
                 }
+            }
+            return false;
+        }
+
+        /// <summary>指定界面是否注册</summary>
+        public bool IsRegister(Type type)
+        {
+            if (_uis.TryGetValue(type, out var bui))
+            {
+                return ObjectUtility.IsNull(bui);
+            }
+            else
+            {
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
+                {
+                    if (ObjectUtility.IsNull(item.Value)) continue;
+                    if (type.IsAssignableFrom(item.Value.GetType()))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>指定界面是否注册</summary>
+        public bool IsRegister<T>(T ui) where T : class
+        {
+            if (ObjectUtility.IsNull(ui)) return false;
+
+            Type type = ui.GetType();
+            if (_uis.TryGetValue(type, out var bui))
+            {
+                return Equals(bui, ui);
             }
             else
             {
                 return false;
             }
-            return true;
         }
-        /// <summary>指定界面是否注册</summary>
-        public static bool IsRegister<T>(T ui) where T : class, IUI
+
+        /// <summary>注册</summary>
+        public bool Register<T>(T ui) where T : class, IUI
         {
-            if (ui == null)
-            {
-                //Debug.LogError("空 ui ");
-                return false;
-            }
+            if (ObjectUtility.IsNull(ui)) return false;
+
             Type type = ui.GetType();
-            if (uis.TryGetValue(type, out var bui))
+            if (_uis.TryGetValue(type, out var bui))
             {
-                // 判断实例
-                if (bui is UnityEngine.Object uui)
-                {
-                    return uui;
-                }
-                else
-                //if (bui != ui)
-                //if (!object.ReferenceEquals(bui, ui))
-                if (!object.Equals(bui, ui))
-                {
-                    return false;
-                }
+                if (Equals(bui, ui)) return false;
             }
-            else
-            {
-                return false;
-            }
+
+            _uis[type] = ui;
             return true;
         }
 
-        /// <summary>
-        /// 注册
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="ui"></param>
-        /// <returns></returns>
-        public static bool Register<T>(T ui) where T : class, IUI
+        /// <summary>注销</summary>
+        public bool Unregister<T>(T ui) where T : class, IUI
         {
-            if (ObjectUtility.IsNull(ui))
-            {
-                Debug.LogError("不能注册空 ui");
-                return false;
-            }
+            if (ObjectUtility.IsNull(ui)) return false;
+
             Type type = ui.GetType();
-            if (uis.TryGetValue(type, out var bui))
+            if (_uis.TryGetValue(type, out var bui))
             {
-                //if (bui == ui)
-                if (object.Equals(bui, ui))
+                if (Equals(bui, ui))
                 {
-                    Debug.LogWarning($"已经注册过 ui \"{ui.name}\"");
-                    return false;
+                    _uis.Remove(type);
                 }
                 else
                 {
-                    Debug.LogWarning($"已经注册过 \"{type.Name}\" 的同类型 ui，将使用 \"{ui.name}\" 替换 \"{bui?.name}\"");
-                }
-            }
-
-            uis[type] = ui;
-            return true;
-        }
-
-        /// <summary>
-        /// 注销
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="ui"></param>
-        /// <returns></returns>
-        public static bool Unregister<T>(T ui) where T : class, IUI
-        {
-            Object uui = ui as Object;
-            if (ui == null || uui == null)
-            {
-                Debug.LogError($"不能注销空 ui 实例 \"{typeof(T)}\"");
-                return false;
-            }
-            Type type = ui.GetType();
-            if (uis.TryGetValue(type, out  var bui))
-            {
-                //if (bui == ui)
-                if (object.Equals(bui, ui))
-                {
-                    uis.Remove(type);
-                }
-                else
-                {
-                    Debug.LogWarning($"不能注销 ui 实例 \"{ui}\"，和已注册的 \"{bui}\" 不是同一个 \"{typeof(T)}\" 实例");
+                    Debug.LogWarning($"不能注销 ui 实例 \"{ui}\"，和已注册的 \"{bui}\" 不是同一个 \"{typeof(T)}\" 实例，你持有的可能是已销毁的旧实例引用");
                     return false;
                 }
             }
 
             return true;
         }
-        /// <summary>
-        /// 注销
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static bool Unregister<T>() where T : class, IUI
+
+        /// <summary>注销</summary>
+        public bool Unregister<T>() where T : class
         {
             Type type = typeof(T);
-            if (uis.ContainsKey(type))
+            if (!_uis.ContainsKey(type))
             {
-                uis.Remove(type);
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
+                {
+                    if (ObjectUtility.IsNull(item.Value)) continue;
+                    if (item.Value is T)
+                    {
+                        type = item.Value.GetType();
+                        break;
+                    }
+                }
             }
-            else { return false; }
 
-            return true;
+            if (type != null)
+                return _uis.Remove(type);
+            return false;
         }
 
-        /// <summary>
-        /// 获取 <typeparamref name="T"/> 的实例
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static T GetUI<T>() where T : class, IUI
+        /// <summary>注销</summary>
+        public bool Unregister(Type type)
+        {
+            if (!_uis.ContainsKey(type))
+            {
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
+                {
+                    if (ObjectUtility.IsNull(item.Value)) continue;
+                    if (type.IsAssignableFrom(item.Value.GetType()))
+                    {
+                        type = item.Value.GetType();
+                        break;
+                    }
+                }
+            }
+
+            if (type != null)
+                return _uis.Remove(type);
+            return false;
+        }
+
+        /// <summary>获取实例</summary>
+        public T GetUI<T>() where T : class
         {
             Type type = typeof(T);
             T ui = default;
-            if (uis.TryGetValue(type, out var bui))
+            if (_uis.TryGetValue(type, out var bui))
             {
-                //if (bui is UnityEngine.Object uui)
-                //{
-                //    if (uui != null)
-                //    {
-                //        ui = (T)bui;
-                //    }
-                //    else
-                //    {
-                //        Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
-                //    }
-                //}
-                //else
-                //if (bui != null)
-                //{
-                //    ui = (T)bui;
-                //}
+                if (!ObjectUtility.IsNull(bui))
+                    ui = (T)bui;
+            }
+            else
+            {
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
+                {
+                    if (ObjectUtility.IsNull(item.Value)) continue;
+                    if (item.Value is T t)
+                    {
+                        ui = t;
+                        break;
+                    }
+                }
+            }
+            return ui;
+        }
+
+        /// <summary>获取实例</summary>
+        public object GetUI(Type type)
+        {
+            object ui = default;
+            if (_uis.TryGetValue(type, out var bui))
+            {
                 if (!ObjectUtility.IsNull(bui))
                 {
-                    ui = (T)bui;
-                }
-                else
-                {
-                    //Debug.LogWarning($"要获取的 ui \"{type}\" 为空，可能已经被销毁");
+                    ui = bui;
                 }
             }
             else
             {
-                //Debug.LogWarning($"要获取的 ui \"{type}\" 不存在，可能未注册到管理器");
+                // 判断是否是通过基类或接口获取
+                foreach (var item in _uis)
+                {
+                    if (ObjectUtility.IsNull(item.Value)) continue;
+                    if (type.IsAssignableFrom(item.Key))
+                    {
+                        ui = item.Value;
+                        break;
+                    }
+                }
             }
             return ui;
         }
-        /// <summary>
-        /// 期望获取 <typeparamref name="T"/> 的实例
+
+        /// <summary>期望获取实例
         /// <para>如果未从已注册列表中找到，则会尝试从已加载的 Unity 对象中找，找到后会将其注册到管理器</para>
         /// </summary>
-        public static T ExpectGetUI<T>() where T : class, IUI
+        public T ExpectGetUI<T>() where T : class
         {
             Type type = typeof(T);
-            T ui = GetUI<T>();
-            //if (ui == null)
-            if (ObjectUtility.IsNull(ui))
+            T target = GetUI<T>();
+            if (ObjectUtility.IsNull(target))
             {
-                //var m = ui as MonoBehaviour;
-                //if (m == null)
-                //{
-                //    ui = GameObject.FindObjectOfType(type, true) as T;// 尝试从已加载的 Unity 对象中找
-                //    if (ui != null)
-                //    {
-                //        Register(ui);
-                //    }
-                //}
-
 #if UNITY_2020_1_OR_NEWER
-                ui = GameObject.FindObjectOfType(type, true) as T;// 尝试从已加载的 Unity 对象中找
+                target = (T)(object)Object.FindObjectOfType(type, true);// 尝试从已加载的 Unity 对象中找
 #else
-                //ui = GameObject.FindObjectOfType(type) as T;// 尝试从已加载的 Unity 对象中找
                 var uis = Resources.FindObjectsOfTypeAll(type);
-                //ui = (uis.Length > 0 ? uis[0] : null) as T;
                 foreach (var item in uis)
                 {
                     if (item is MonoBehaviour cui)
                     {
-                        if(cui.gameObject.scene.path != "")// 排除预制体
+                        if(!string.IsNullOrEmpty(cui.gameObject.scene.path))// 排除预制体
                         {
-                            ui = item as T;
+                            target = item as T;
                             break;
                         }
                     }
                 }
-                if(ui == null) ui = (uis.Length > 0 ? uis[0] : null) as T;
+                //if(target == null) target = (uis.Length > 0 ? uis[0] : null) as T;
 #endif
-                if (ui != null)
+                if (target != null)
                 {
                     Debug.Log($"要获取的 ui \"{type}\" 为空，找到已创建的实例并注册");
-                    Register(ui);
+                    if (target is IUI ui)
+                        Register(ui);
                 }
                 else
                 {
                     Debug.LogWarning($"要获取的 ui \"{type}\" 为空，并且没有找到任何已创建的实例");
                 }
             }
-            return ui;
+            return target;
         }
-        /// <summary>
-        /// 尝试期望获取 <typeparamref name="T"/> 的实例
+
+        /// <summary>尝试期望获取 <typeparamref name="T"/> 的实例
         /// <para>如果未从已注册列表中找到，则会尝试从已加载的 Unity 对象中找，找到后会将其注册到管理器</para>
         /// </summary>
-        public static bool TryExpectGetUI<T>(out T ui) where T : class, IUI
+        public bool TryExpectGetUI<T>(out T ui) where T : class, IUI
         {
             ui = ExpectGetUI<T>();
             bool r = !ObjectUtility.IsNull(ui);
@@ -254,26 +266,195 @@ namespace Framework
         }
 
         /// <summary>启用 ui</summary>
-        public static bool EnableUI<T>(bool enable) where T : class, IUI
+        public bool EnableUI<T>(bool enable) where T : class, IUI
         {
-            if (!ObjectUtility.IsNull(ExpectGetUI<T>()))
+            T ui = ExpectGetUI<T>();
+            if (!ObjectUtility.IsNull(ui))
             {
-                ExpectGetUI<T>().Enable(enable);
+                ui.Enable(enable);
                 return true;
             }
 
             return false;
         }
-        /// <summary>启用所有 ui，只会启用已注册的</summary>
-        public static void EnableUIAll(bool enable)
+
+        /// <summary>UI 置顶</summary>
+        public void TopmostUI<T>() where T : class
         {
-            foreach (var item in uis)
+            IUI ui = (IUI)GetUI<T>();
+            TopmostUI(ui);
+        }
+
+        /// <summary>UI 置顶</summary>
+        public void TopmostUI(Type type)
+        {
+            IUI ui = (IUI)GetUI(type);
+            TopmostUI(ui);
+        }
+
+        /// <summary>UI 置顶，如果 ui 在组中，则只会在组内置顶</summary>
+        public void TopmostUI(IUI ui)
+        {
+            /*
+            置顶规则：
+            全局：
+                根 UI 在所有根 UI 和根组中调整排序。
+            本地：
+                只在组内置顶，不会影响组外 UI。
+            */
+            
+            if (ObjectUtility.IsNull(ui)) return;
+
+            // 这里获取当前的顶部 UI 有坑，
+            // 如果在置顶之前启用了 ui，而 ui 再启用后正好是顶部 UI，那么覆盖逻辑就不对，
+            // 应该在启用前就获取当前的顶部 UI，启用后先置顶
+            var coveredUI = GetTopUI();
+            if(ui == coveredUI) return;
+
+            // 区分全局置顶和局部置顶
+            if (true)
             {
-                if (!ObjectUtility.IsNull(item.Value))
+
+            }
+            int max = ui.sortOrder;
+            foreach (var item in _uis)
+            {
+                if (ObjectUtility.IsNull(item.Value)
+                    || item.Value == ui
+                    ) continue;
+
+                int sortingOrder = item.Value.sortOrder;
+                if (sortingOrder >= max)
                 {
-                    item.Value.Enable(enable);
+                    max = sortingOrder + 1;
                 }
             }
+            ui.sortOrder = max;
+            ui.OnTopmost();
+
+            if (coveredUI != null) coveredUI.OnCovered();
+        }
+
+        /// <summary>注册分组</summary>
+        public void RegisterGroup(IUIGroup group)
+        {
+            if (_groups.TryGetValue(group.groupName, out var oldGroup))
+            {
+                // TODO：处理同名旧分组，例如将旧分组里的项移到新分组
+            }
+            _groups[group.groupName] = group;
+        }
+
+        /// <summary>注销分组</summary>
+        public void UnregisterGroup(IUIGroup group)
+        {
+            _groups.Remove(group.groupName);
+        }
+
+        /// <summary>获取分组</summary>
+        public IUIGroup GetGroup(string name)
+        {
+            _groups.TryGetValue(name, out var group);
+            return group;
+        }
+
+        /// <summary>尝试获取分组</summary>
+        public void TryGetGroup(string name, out IUIGroup group)
+        {
+            _groups.TryGetValue(name, out group);
+        }
+
+        /// <summary>获取顶部 UI 分组</summary>
+        public IUIGroup GetTopUIGroup()
+        {
+            IUIGroup topGroup = null;
+            foreach (var item in _groups)
+            {
+                if (!item.Value.isEnable) continue;
+                if (topGroup == null || topGroup.HasEnableItem() && topGroup.sortOrder <= item.Value.sortOrder)
+                {
+                    topGroup = item.Value;
+                }
+            }
+            return topGroup;
+        }
+
+        /// <summary>获取顶部 <see cref="IUI"/></summary>
+        public IUI GetTopUI()
+        {
+            // 这里的判断由于组的因素，变得更为复杂
+            /* 
+            判断排序高的组中有没有启用的 UI。
+            考虑子组的因素。
+
+            没有组的 UI 和组一起计算，有组的以组为基础，再判断内部项排序。
+            */
+
+            IUI topUI = default;
+            // 先找出不在组中的顶部 UI
+            IUI notGroupTopUI = default;
+            foreach (var item in _uis)
+            {
+                var uil = item.Value;
+                if (!uil.isEnable) continue;
+                if (uil is IUIGroupItem groupItem)
+                {
+                    if (groupItem.group == null)
+                    {
+                        if (notGroupTopUI == null || notGroupTopUI.sortOrder >= uil.sortOrder)
+                        {
+                            notGroupTopUI = uil;
+                        }
+                    }
+                }
+            }
+
+            // 找出组中比非组 UI 排序小的顶部组 UI
+            IUIGroup topGroup = default;
+            foreach (var item in _groups)
+            {
+                var group = item.Value;
+                if (!group.isEnable) continue;
+                // 有非组 UI
+                if (notGroupTopUI != null)
+                {
+                    // 没有比 UI 大的组就先找组
+                    if (topGroup == null)
+                    {
+                        if (group.sortOrder > notGroupTopUI.sortOrder)
+                        {
+                            topGroup = group;
+                        }
+                    }
+                    // 找到组后就在组之间找
+                    else
+                    {
+                        if (group.sortOrder > topGroup.sortOrder)
+                        {
+                            topGroup = group;
+                        }
+                    }
+                }
+                else
+                {
+                    // 没有非组 UI 就在组之间找
+                    if (topGroup == null || topGroup.HasEnableItem() && group.sortOrder > topGroup.sortOrder)
+                    {
+                        topGroup = group;
+                    }
+                }
+            }
+
+            if (topGroup != null)
+            {
+                topUI = topGroup.GetTopItem() as IUI;
+            }
+            else
+            {
+                topUI = notGroupTopUI;
+            }
+
+            return topUI;
         }
     }
 }

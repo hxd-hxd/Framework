@@ -2,169 +2,156 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public static class AvatarUtility
+namespace Framework
 {
-
-    /// <summary>
-	/// Only for merge materials.
-	/// ½öÓÃÓÚºÏ²¢²ÄÁÏ¡£
-	/// </summary>
-	public static int combine_texture_max = 512;
-    public static string combine_diffuse_texture = "_MainTex";
-    public static string combine_default_shader = "Mobile/Diffuse";
-
-    /// <summary>
-    /// ½« SkinnedMeshRenderers ×éºÏÔÚÒ»Æğ²¢¹²ÏíÒ»¸ö¹Ç¼Ü¡£
-    /// ºÏ²¢²ÄÖÊ»á¼õÉÙµ÷ÓÃ´ÎÊı£¬µ«Ëü»áÔö¼ÓÄÚ´æµÄ´óĞ¡¡£
-    /// </summary>
-    /// <param name="skeleton">combine meshes to this skeleton(a gameobject)</param>
-    /// <param name="meshes">meshes need to be merged</param>
-    /// <param name="combine">merge materials or not</param>
-	public static void CombineSkinObject(GameObject skeleton, SkinnedMeshRenderer[] meshes, bool combine = false)
+    public static class AvatarUtility
     {
+        /// <summary>ä»…ç”¨äºåˆå¹¶ææ–™</summary>
+        public static int combine_texture_max = 512;
+        public static string combine_diffuse_texture = "_MainTex";
+        public static string combine_default_shader = "Mobile/Diffuse";
 
-        // Fetch all bones of the skeleton
-        List<Transform> transforms = new List<Transform>();
-        transforms.AddRange(skeleton.GetComponentsInChildren<Transform>(true));
-
-        List<Material> materials = new List<Material>();                        //the list of materials
-        List<CombineInstance> combineInstances = new List<CombineInstance>();   //the list of meshes
-        List<Transform> bones = new List<Transform>();                          //the list of bones
-
-        // Below informations only are used for merge materilas(bool combine = true)
-        List<Vector2[]> oldUV = null;
-        Material newMaterial = null;
-        Texture2D newDiffuseTex = null;
-
-        // Collect information from meshes
-        for (int i = 0; i < meshes.Length; i++)
+        /// <summary>
+        /// å°† SkinnedMeshRenderers ç»„åˆåœ¨ä¸€èµ·å¹¶å…±äº«ä¸€ä¸ªéª¨æ¶ã€‚åˆå¹¶æè´¨ä¼šå‡å°‘è°ƒç”¨æ¬¡æ•°ï¼Œä½†å®ƒä¼šå¢åŠ å†…å­˜çš„å¤§å°
+        /// <para><paramref name="skeleton"/>å°†ç½‘æ ¼åˆå¹¶åˆ°æ­¤éª¨éª¼ï¼ˆä¸€ä¸ªæ¸¸æˆå¯¹è±¡ï¼‰</para>
+        /// <para><paramref name="meshes"/>éœ€è¦åˆå¹¶çš„ç½‘æ ¼</para>
+        /// <para><paramref name="combine"/>æ˜¯å¦åˆå¹¶æè´¨</para>
+        /// </summary>
+        public static void CombineSkinObject(GameObject skeleton, SkinnedMeshRenderer[] meshes, bool combine = false)
         {
-            SkinnedMeshRenderer smr = meshes[i];
-            materials.AddRange(smr.materials); // Collect materials
+            // è·å–éª¨éª¼çš„æ‰€æœ‰éª¨éª¸
+            List<Transform> transforms = new List<Transform>();
+            transforms.AddRange(skeleton.GetComponentsInChildren<Transform>(true));
 
-            // Collect meshes
-            for (int sub = 0; sub < smr.sharedMesh.subMeshCount; sub++)
+            List<Material> materials = new List<Material>();
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+            List<Transform> bones = new List<Transform>();
+
+            // ä»¥ä¸‹ä¿¡æ¯ä»…ç”¨äºåˆå¹¶ææ–™ï¼ˆbool combine = trueï¼‰
+            List<Vector2[]> oldUV = null;
+            Material newMaterial = null;
+            Texture2D newDiffuseTex = null;
+
+            // ä»ç½‘æ ¼ä¸­æ”¶é›†ä¿¡æ¯
+            for (int i = 0; i < meshes.Length; i++)
             {
-                CombineInstance ci = new CombineInstance();
-                ci.mesh = smr.sharedMesh;
-                ci.subMeshIndex = sub;
-                combineInstances.Add(ci);
-            }
+                SkinnedMeshRenderer smr = meshes[i];
+                materials.AddRange(smr.materials);
 
-            // Collect bones
-            for (int j = 0; j < smr.bones.Length; j++)
-            {
-
-                for (int tBase = 0; tBase < transforms.Count; tBase++)
+                for (int sub = 0; sub < smr.sharedMesh.subMeshCount; sub++)
                 {
-                    if (smr.bones[j].name.Equals(transforms[tBase].name))
+                    CombineInstance ci = new CombineInstance();
+                    ci.mesh = smr.sharedMesh;
+                    ci.subMeshIndex = sub;
+                    combineInstances.Add(ci);
+                }
+
+                for (int j = 0; j < smr.bones.Length; j++)
+                {
+
+                    for (int tBase = 0; tBase < transforms.Count; tBase++)
                     {
-                        bones.Add(transforms[tBase]);
-                        break;
+                        if (smr.bones[j].name.Equals(transforms[tBase].name))
+                        {
+                            bones.Add(transforms[tBase]);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        // merge materials
-        // ºÏ²¢²ÄÖÊ
-        if (combine)
-        {
-            newMaterial = new Material(Shader.Find(combine_default_shader));
-            oldUV = new List<Vector2[]>();
-            // merge the texture
-            // ºÏ²¢ÌùÍ¼
-            List<Texture2D> Textures = new List<Texture2D>();
-            for (int i = 0; i < materials.Count; i++)
+            // åˆå¹¶æè´¨
+            if (combine)
             {
-                Textures.Add(materials[i].GetTexture(combine_diffuse_texture) as Texture2D);
-            }
-
-            newDiffuseTex = new Texture2D(combine_texture_max, combine_texture_max, TextureFormat.RGBA32, true);
-            Rect[] uvs = newDiffuseTex.PackTextures(Textures.ToArray(), 0);
-            newMaterial.mainTexture = newDiffuseTex;
-
-            // reset uv
-            // ÖØÖÃ uv 
-            Vector2[] uva, uvb;
-            for (int j = 0; j < combineInstances.Count; j++)
-            {
-                uva = combineInstances[j].mesh.uv;
-                uvb = new Vector2[uva.Length];
-                for (int k = 0; k < uva.Length; k++)
+                newMaterial = new Material(Shader.Find(combine_default_shader));
+                oldUV = new List<Vector2[]>();
+                // åˆå¹¶è´´å›¾
+                List<Texture2D> Textures = new List<Texture2D>();
+                for (int i = 0; i < materials.Count; i++)
                 {
-                    uvb[k] = new Vector2((uva[k].x * uvs[j].width) + uvs[j].x, (uva[k].y * uvs[j].height) + uvs[j].y);// ¼ÆËãºÏ²¢ºóµÄ uv Î»ÖÃ£¨¸ù¾İÆ«ÒÆ¼ÆËã£©
+                    Textures.Add(materials[i].GetTexture(combine_diffuse_texture) as Texture2D);
                 }
-                oldUV.Add(combineInstances[j].mesh.uv); // ¼ÇÂ¼Ô­ uv 
-                combineInstances[j].mesh.uv = uvb;      // Ó¦ÓÃ¼ÆËãºóµÄ uv 
+
+                newDiffuseTex = new Texture2D(combine_texture_max, combine_texture_max, TextureFormat.RGBA32, true);
+                Rect[] uvs = newDiffuseTex.PackTextures(Textures.ToArray(), 0);
+                newMaterial.mainTexture = newDiffuseTex;
+
+                // é‡ç½® uv 
+                Vector2[] uva, uvb;
+                for (int j = 0; j < combineInstances.Count; j++)
+                {
+                    uva = combineInstances[j].mesh.uv;
+                    uvb = new Vector2[uva.Length];
+                    for (int k = 0; k < uva.Length; k++)
+                    {
+                        // è®¡ç®—åˆå¹¶åçš„ uv ä½ç½®ï¼ˆæ ¹æ®åç§»è®¡ç®—ï¼‰
+                        uvb[k] = new Vector2((uva[k].x * uvs[j].width) + uvs[j].x, (uva[k].y * uvs[j].height) + uvs[j].y);
+                    }
+                    oldUV.Add(combineInstances[j].mesh.uv); // è®°å½•åŸ uv 
+                    combineInstances[j].mesh.uv = uvb;           // åº”ç”¨è®¡ç®—åçš„ uv 
+                }
             }
-        }
 
-        // ´´½¨Ò»¸öĞÂµÄ SkinnedMeshRenderer
-        SkinnedMeshRenderer oldSKinned = skeleton.GetComponent<SkinnedMeshRenderer>();
-        if (oldSKinned != null)
-        {
-            GameObject.DestroyImmediate(oldSKinned);
-        }
-        SkinnedMeshRenderer r = skeleton.AddComponent<SkinnedMeshRenderer>();
-        r.sharedMesh = new Mesh();
-        r.sharedMesh.name = "merge";
-        r.sharedMesh.CombineMeshes(combineInstances.ToArray(), combine, false);// Combine meshes
-        r.bones = bones.ToArray();// Use new bones
-
-        if (combine)
-        {
-            r.material = newMaterial;
-            for (int i = 0; i < combineInstances.Count; i++)
+            // åˆ›å»ºä¸€ä¸ªæ–°çš„ SkinnedMeshRenderer
+            SkinnedMeshRenderer oldSKinned = skeleton.GetComponent<SkinnedMeshRenderer>();
+            if (oldSKinned != null)
             {
-                combineInstances[i].mesh.uv = oldUV[i];
+                GameObject.DestroyImmediate(oldSKinned);
             }
-        }
-        else
-        {
-            r.materials = materials.ToArray();
-        }
-    }
+            SkinnedMeshRenderer r = skeleton.AddComponent<SkinnedMeshRenderer>();
+            r.sharedMesh = new Mesh();
+            r.sharedMesh.name = "merge";
+            r.sharedMesh.CombineMeshes(combineInstances.ToArray(), combine, false);// Combine meshes
+            r.bones = bones.ToArray();// Use new bones
 
-
-    /// <summary>
-    /// ÓëÄ¿±ê¹²Ïí¹Ç÷À
-    /// <para>ÇĞ»»ÒÂ·şµÈ°ó¶¨¹Ç÷ÀµÄÄ£ĞÍ£¬ÓëÖ÷Ä£ĞÍ¹Ç÷À°ó¶¨£¬ÒÑÍ¬²½¶¯»­</para>
-    /// </summary>
-    /// <param name="selfSkin"></param>
-    /// <param name="target"></param>
-    public static void ShareSkeletonInstanceWith(SkinnedMeshRenderer selfSkin, GameObject target)
-    {
-        Transform[] newBones = new Transform[selfSkin.bones.Length];
-        for (int i = 0; i < selfSkin.bones.GetLength(0); ++i)
-        {
-            GameObject bone = selfSkin.bones[i].gameObject;
-
-            // Ä¿±êµÄSkinnedMeshRenderer.bones±£´æµÄÖ»ÊÇÄ¿±êmeshÏà¹ØµÄ¹Ç÷À,Òª»ñµÃÄ¿±êÈ«²¿¹Ç÷À,¿ÉÒÔÍ¨¹ı²éÕÒµÄ·½Ê½.
-            newBones[i] = FindChildRecursion(target.transform, bone.name);
-        }
-
-        selfSkin.bones = newBones;
-    }
-
-    // µİ¹é²éÕÒ
-    public static Transform FindChildRecursion(Transform t, string name)
-    {
-        foreach (Transform child in t)
-        {
-            if (child.name == name)
+            if (combine)
             {
-                return child;
+                r.material = newMaterial;
+                for (int i = 0; i < combineInstances.Count; i++)
+                {
+                    combineInstances[i].mesh.uv = oldUV[i];
+                }
             }
             else
             {
-                Transform ret = FindChildRecursion(child, name);
-                if (ret != null)
-                    return ret;
+                r.materials = materials.ToArray();
             }
         }
 
-        return null;
+        /// <summary>ä¸ç›®æ ‡å…±äº«éª¨éª¼
+        /// <para>åˆ‡æ¢è¡£æœç­‰ç»‘å®šéª¨éª¼çš„æ¨¡å‹ï¼Œä¸ä¸»æ¨¡å‹éª¨éª¼ç»‘å®šï¼Œå·²åŒæ­¥åŠ¨ç”»</para>
+        /// </summary>
+        public static void ShareSkeletonInstanceWith(SkinnedMeshRenderer selfSkin, GameObject target)
+        {
+            Transform[] newBones = new Transform[selfSkin.bones.Length];
+            for (int i = 0; i < selfSkin.bones.GetLength(0); ++i)
+            {
+                GameObject bone = selfSkin.bones[i].gameObject;
+
+                // ç›®æ ‡çš„SkinnedMeshRenderer.bonesä¿å­˜çš„åªæ˜¯ç›®æ ‡meshç›¸å…³çš„éª¨éª¼,è¦è·å¾—ç›®æ ‡å…¨éƒ¨éª¨éª¼,å¯ä»¥é€šè¿‡æŸ¥æ‰¾çš„æ–¹å¼.
+                newBones[i] = FindChildRecursion(target.transform, bone.name);
+            }
+
+            selfSkin.bones = newBones;
+        }
+
+        // é€’å½’æŸ¥æ‰¾
+        public static Transform FindChildRecursion(Transform t, string name)
+        {
+            foreach (Transform child in t)
+            {
+                if (child.name == name)
+                {
+                    return child;
+                }
+                else
+                {
+                    Transform ret = FindChildRecursion(child, name);
+                    if (ret != null)
+                        return ret;
+                }
+            }
+            return null;
+        }
     }
 }

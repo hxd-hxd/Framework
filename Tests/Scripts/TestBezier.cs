@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Framework.Test
 {
@@ -19,7 +20,7 @@ namespace Framework.Test
         void Update()
         {
             paths.Clear();
-            BezierUtility.GetBezierPath(start, mid, end, count, paths);
+            BezierUtility.GetBezierPath(start.position, mid.position, end.position, count, paths);
             if (paths.Count > 1)
             {
                 for (int i = 0; i < paths.Count - 1; i++)

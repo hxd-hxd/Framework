@@ -1,4 +1,4 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2024/11/12 14:40:46
 // -------------------------
 
@@ -7,9 +7,7 @@ using System.Numerics;
 
 namespace Framework
 {
-    /// <summary>
-    /// 字节大小相关的实用函数集
-    /// </summary>
+    /// <summary>字节大小相关的实用函数集</summary>
     public static class BytesUtility
     {
         // 字节单位
@@ -67,12 +65,7 @@ namespace Framework
             return r;
         }
 
-        /// <summary>
-        /// 将字节转换成合适大小的单位（1024 b = 1 kb）
-        /// </summary>
-        /// <param name="byteSize"></param>
-        /// <param name="value"></param>
-        /// <param name="unit"></param>
+        /// <summary>将字节转换成合适大小的单位（1024 b = 1 kb）</summary>
         public static void ToUnit(long byteSize, out float value, out ByteUnitType unit)
         {
             value = 0;

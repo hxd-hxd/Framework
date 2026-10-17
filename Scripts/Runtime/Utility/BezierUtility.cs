@@ -2,9 +2,6 @@
 // 创建日期：2024/8/12 14:56:19
 // -------------------------
 
-using System;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,10 +10,9 @@ namespace Framework
     /// <summary>贝塞尔曲线</summary>
     public static class BezierUtility
     {
-        /// <summary>
-        /// 计算曲线位置
+        /// <summary>计算曲线位置
+        /// <para><paramref name="t"/>：曲线进度比率 0 到 1</para>
         /// </summary>
-        /// <param name="t">曲线进度比率 0 到 1</param>
         public static Vector3 Bezier(Vector3 start, Vector3 mid, Vector3 end, float t)
         {
             Vector3 p0p1 = (1 - t) * start + t * mid;
@@ -25,23 +21,10 @@ namespace Framework
             return result;
         }
 
-        /// <summary>
-        /// 获取贝塞尔曲线路径，计算的路径点存入 paths
-        /// </summary>
-        public static bool GetBezierPath(Transform start, Transform mid, Transform end, int count, List<Vector3> paths)
+        /// <summary>获取贝塞尔曲线路径，计算的路径点存入 paths</summary>
+        public static void GetBezierPath(Vector3 start, Vector3 mid, Vector3 end, int step, List<Vector3> paths)
         {
-            if (!start || !end) return false;
-
-            GetBezierPath(start.position, mid ? mid.position : Vector3.zero, end.position, count, paths);
-            return true;
-        }
-
-        /// <summary>
-        /// 获取贝塞尔曲线路径，计算的路径点存入 paths
-        /// </summary>
-        public static void GetBezierPath(Vector3 start, Vector3 mid, Vector3 end, int count, List<Vector3> paths)
-        {
-            int num = count < 1 ? 1 : count;
+            int num = step < 1 ? 1 : step;
             float u = 1f / num;
             for (float i = 0; i < 1; i += u)
             {
@@ -51,56 +34,29 @@ namespace Framework
             paths.Add(end);
         }
 
-        /// <summary>
-        /// 三个控制点的贝塞尔曲线
-        /// </summary>
-        /// <returns>返回贝塞尔曲线路径点表</returns>
-        public static List<Vector3> BezierCurveWithThree(Transform[] handles, int vertexCount)
+        /// <summary>超过三个控制点的贝塞尔曲线</summary>
+        public static List<Vector3> BezierCurveWithUnlimitPoints(Vector3[] handlesPositions, int vertexCount, List<Vector3> pointList)
         {
-            List<Vector3> pointList = new List<Vector3>();
-            for (float ratio = 0; ratio <= 1; ratio += 1.0f / vertexCount)
-            {
-                Vector3 tangentLineVertex1 = Vector3.Lerp(handles[0].position, handles[1].position, ratio);
-                Vector3 tangentLineVertex2 = Vector3.Lerp(handles[1].position, handles[2].position, ratio);
-                Vector3 bezierPoint = Vector3.Lerp(tangentLineVertex1, tangentLineVertex2, ratio);
-                pointList.Add(bezierPoint);
-            }
-            pointList.Add(handles[2].position);
-
-            return pointList;
-        }
-
-        /// <summary>
-        /// 超过三个控制点的贝塞尔曲线
-        /// </summary>
-        public static List<Vector3> BezierCurveWithUnlimitPoints(Transform[] handlesPositions, int vertexCount)
-        {
-            List<Vector3> pointList = new List<Vector3>();
             for (float ratio = 0; ratio <= 1; ratio += 1.0f / vertexCount)
             {
                 pointList.Add(UnlimitBezierCurve(handlesPositions, ratio));
             }
-            pointList.Add(handlesPositions[handlesPositions.Length - 1].position);
+            pointList.Add(handlesPositions[handlesPositions.Length - 1]);
 
             return pointList;
         }
 
-        public static Vector3 UnlimitBezierCurve(Transform[] trans, float t)
+        public static Vector3 UnlimitBezierCurve(Vector3[] handlesPositions, float t)
         {
-            Vector3[] temp = new Vector3[trans.Length];
-            for (int i = 0; i < temp.Length; i++)
-            {
-                temp[i] = trans[i].position;
-            }
-            int n = temp.Length - 1;
+            int n = handlesPositions.Length - 1;
             for (int i = 0; i < n; i++)
             {
                 for (int j = 0; j < n - i; j++)
                 {
-                    temp[j] = Vector3.Lerp(temp[j], temp[j + 1], t);
+                    handlesPositions[j] = Vector3.Lerp(handlesPositions[j], handlesPositions[j + 1], t);
                 }
             }
-            return temp[0];
+            return handlesPositions[0];
         }
     }
 }

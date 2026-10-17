@@ -43,21 +43,6 @@ namespace Framework.UI
             }
 
             _items.Add(item);
-            //// 按顺序插入
-            //int index = int.MaxValue;
-            //for (int i = _items.Count - 1; i >= 0; i--)
-            //{
-            //    var itemL = _items[i];
-            //    if (item.sortOrder >= itemL.sortOrder)
-            //    {
-            //        index = i;
-            //        break;
-            //    }
-            //}
-            //if (index != int.MaxValue)
-            //{
-            //    _items.Insert(index - 1, item);
-            //}
         }
 
         public virtual void RemoveItem(IUIGroupItem item)
@@ -106,6 +91,7 @@ namespace Framework.UI
             return _items.GetEnumerator();
         }
 
+        /// <summary>根性获取子节点中的项</summary>
         internal void InternalUpdateGetChildItem()
         {
             _items.Clear();

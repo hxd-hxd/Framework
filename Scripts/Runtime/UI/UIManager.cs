@@ -15,6 +15,12 @@ namespace Framework
         internal Dictionary<Type, IUI> _uis = new Dictionary<Type, IUI>(20);
         internal Dictionary<string, IUIGroup> _groups = new Dictionary<string, IUIGroup>(4);
 
+        /// <summary>已注册的 <see cref="IUI"/></summary>
+        public IReadOnlyDictionary<Type, IUI> uis => _uis;
+
+        /// <summary>已注册的 <see cref="IUIGroup"/></summary>
+        public IReadOnlyDictionary<string, IUIGroup> groups => _groups;
+
         /// <summary>指定界面是否存在实例，会尝试获取实例 <see cref="ExpectGetUI{T}"/></summary>
         public bool IsExistInstance<T>() where T : class, IUI
         {
@@ -401,8 +407,9 @@ namespace Framework
             IUIGroup topGroup = null;
             foreach (var item in _groups)
             {
-                if (!item.Value.isEnable) continue;
-                if (topGroup == null || topGroup.HasEnableItem() && topGroup.sortOrder <= item.Value.sortOrder)
+                var group = item.Value;
+                if (!group.isEnable) continue;
+                if (topGroup == null || group.HasEnableItem() && group.sortOrder >= topGroup.sortOrder)
                 {
                     topGroup = item.Value;
                 }
@@ -466,7 +473,7 @@ namespace Framework
                 else
                 {
                     // 没有非组 UI 就在组之间找
-                    if (topGroup == null || topGroup.HasEnableItem() && group.sortOrder > topGroup.sortOrder)
+                    if (topGroup == null || group.HasEnableItem() && group.sortOrder > topGroup.sortOrder)
                     {
                         topGroup = group;
                     }

@@ -16,6 +16,9 @@ namespace Framework.UI
         /// <summary>所属分组</summary>
         IUIGroup group { get; set; }
 
+        /// <summary>根分组</summary>
+        IUIGroup rootGroup { get; }
+
         /// <summary>在被覆盖时触发，例如当前在最上面，其他 ui 变成了最上面</summary>
         void OnCovered();
 

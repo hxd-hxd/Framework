@@ -17,7 +17,14 @@ namespace Framework.UI
 
         public override int sortOrder
         {
-            get => _sortOrder;
+            get
+            {
+                if (!isRootGroup)
+                {
+                    return transform.GetSiblingIndex();
+                }
+                return _sortOrder;
+            }
             set
             {
                 bool needUpdate = _sortOrder != value;
@@ -27,6 +34,24 @@ namespace Framework.UI
         }
 
         public string itemName => groupName;
+
+        public IUIGroup rootGroup
+        {
+            get
+            {
+                var g = group;
+                while (true)
+                {
+                    if (g is IUIGroupItem groupItem && groupItem.group != null)
+                    {
+                        g = groupItem.group;
+                        continue;
+                    }
+                    break;
+                }
+                return g;
+            }
+        }
 
         public IUIGroup group { get => _group; set => _group = value as UIGroupBase; }
 
@@ -43,6 +68,7 @@ namespace Framework.UI
                 _canvas.overrideSorting = true;
             }
 
+            _sortOrder = sortOrder;
             UpdateParentGroup();
         }
 
@@ -55,7 +81,7 @@ namespace Framework.UI
         private void OnTransformParentChanged()
         {
             //Debug.Log($"{name} 父级切换");
-            if (Application.isPlaying) return;
+            if (!Application.isEditor) return;
 
             UpdateParentGroup();
         }
@@ -73,36 +99,30 @@ namespace Framework.UI
 
         public override IUIGroupItem GetTopItem()
         {
-            //return base.GetTopItem();
-
-            // TODO：获取顶部项时要添加子组检测
+            // 同级中如果顶部项是 UI，就不需要往下找了
+            // 获取顶部项时要添加子组检测
             IUIGroupItem topItem = null;
             for (int i = internalItems.Count - 1; i >= 0; i--)
             {
                 var item = internalItems[i];
                 if (!item.isEnable) continue;
 
-                if (topItem == null)
-                {
-                    topItem = item;
-                    continue;
-                }
-
                 // 如果是子组
                 if (item is IUIGroup iGroup)
                 {
-                    if (iGroup.HasEnableItem())
-                        if (iGroup.sortOrder > topItem.sortOrder)
-                        {
-                            topItem = item;
-                        }
+                    if (!iGroup.HasEnableItem()) continue;
+                    if (topItem == null || iGroup.sortOrder > topItem.sortOrder)
+                        topItem = item;
                     continue;
                 }
 
-                if (item.sortOrder > topItem.sortOrder)
-                {
+                if (topItem == null || item.sortOrder > topItem.sortOrder)
                     topItem = item;
-                }
+            }
+            // 继续往下找
+            if (topItem is IUIGroup tGroup)
+            {
+                topItem = tGroup.GetTopItem();
             }
             return topItem;
         }
@@ -116,6 +136,7 @@ namespace Framework.UI
                 if (item is IUIGroup iGroup)
                 {
                     if (iGroup.HasEnableItem()) return true;
+                    continue;
                 }
                 return true;
             }
@@ -161,8 +182,18 @@ namespace Framework.UI
 
         private void UpdateParentGroup()
         {
-            transform.parent.TryGetComponent(out UIGroup group);
+            // 缓存旧的
+            UIGroupBase oldGroup = null;
+            if (this.group is UIGroupBase g) oldGroup = g;
+
+            // 设置所属分组
+            transform.parent.TryGetComponent(out UIGroupBase group);
             this.group = group;
+
+            // 更新所属分组
+            if (oldGroup == group) return;
+            if (oldGroup) oldGroup.InternalUpdateGetChildItem();
+            if (group) group.InternalUpdateGetChildItem();
         }
 
         internal void UpdateSiblingIndex()
@@ -179,7 +210,7 @@ namespace Framework.UI
                     var t = transform.parent.GetChild(min);
                     if (t.TryGetComponent(out IUIGroup group))
                     {
-                        if (sortOrder < group.sortOrder)
+                        if (_sortOrder < group.sortOrder)
                         {
                             target = t.GetSiblingIndex();
                             continue;
@@ -203,7 +234,7 @@ namespace Framework.UI
                     var t = transform.parent.GetChild(max);
                     if (t.TryGetComponent(out IUIGroup group))
                     {
-                        if (sortOrder > group.sortOrder)
+                        if (_sortOrder > group.sortOrder)
                         {
                             target = t.GetSiblingIndex();
                             continue;

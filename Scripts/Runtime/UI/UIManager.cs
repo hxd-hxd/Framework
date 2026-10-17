@@ -266,16 +266,47 @@ namespace Framework
         }
 
         /// <summary>启用 ui</summary>
-        public bool EnableUI<T>(bool enable) where T : class, IUI
+        public void EnableUI<T>(bool enable) where T : class, IUI
         {
             T ui = ExpectGetUI<T>();
+            EnableUI(ui, enable);
+        }
+
+        /// <summary>启用 ui</summary>
+        public void EnableUI(IUI ui, bool enable)
+        {
             if (!ObjectUtility.IsNull(ui))
             {
-                ui.Enable(enable);
-                return true;
-            }
+                // TODO：启用，触发置顶、覆盖
+                // TODO：禁用，触发恢复覆盖
 
-            return false;
+                // 置顶
+                // 全局置顶
+                if (ui is IUIGroupItem groupItem && groupItem.group != null)
+                {
+                    // 目标启用
+                    if (enable)
+                    {
+                        // 已启用
+                        if (groupItem.isEnable)
+                        {
+                            // 全局搜索
+                        }
+                        // 已禁用
+                        else
+                        {
+
+                        }
+                    }
+                    // 目标禁用
+                    else
+                    {
+
+                    }
+                }
+                ui.OnEnabled(enable);
+
+            }
         }
 
         /// <summary>UI 置顶</summary>
@@ -302,14 +333,14 @@ namespace Framework
             本地：
                 只在组内置顶，不会影响组外 UI。
             */
-            
+
             if (ObjectUtility.IsNull(ui)) return;
 
             // 这里获取当前的顶部 UI 有坑，
             // 如果在置顶之前启用了 ui，而 ui 再启用后正好是顶部 UI，那么覆盖逻辑就不对，
             // 应该在启用前就获取当前的顶部 UI，启用后先置顶
             var coveredUI = GetTopUI();
-            if(ui == coveredUI) return;
+            if (ui == coveredUI) return;
 
             // 区分全局置顶和局部置顶
             if (true)
@@ -397,14 +428,11 @@ namespace Framework
             {
                 var uil = item.Value;
                 if (!uil.isEnable) continue;
-                if (uil is IUIGroupItem groupItem)
+                if (uil is IUIGroupItem groupItem && groupItem.group == null)
                 {
-                    if (groupItem.group == null)
+                    if (notGroupTopUI == null || notGroupTopUI.sortOrder >= uil.sortOrder)
                     {
-                        if (notGroupTopUI == null || notGroupTopUI.sortOrder >= uil.sortOrder)
-                        {
-                            notGroupTopUI = uil;
-                        }
+                        notGroupTopUI = uil;
                     }
                 }
             }

@@ -10,7 +10,8 @@ namespace Framework
     /// <summary>UI 基类</summary>
     public abstract partial class UIBase : MonoBehaviour, IUI, IUIGroupItem
     {
-        private IUIGroup _owner;
+        [SerializeField]
+        private UIGroupBase _group;
 
         public virtual bool isEnable
         {
@@ -20,7 +21,25 @@ namespace Framework
 
         public string itemName => name;
 
-        public virtual IUIGroup group { get => _owner; set => _owner = value; }
+        public IUIGroup rootGroup
+        {
+            get
+            {
+                var g = group;
+                while (true)
+                {
+                    if (g is IUIGroupItem groupItem && groupItem.group != null)
+                    {
+                        g = groupItem.group;
+                        continue;
+                    }
+                    break;
+                }
+                return g;
+            }
+        }
+
+        public virtual IUIGroup group { get => _group; set => _group = value as UIGroupBase; }
 
         public virtual int sortOrder
         {
@@ -67,14 +86,23 @@ namespace Framework
             
         }
 
+        private void OnTransformParentChanged()
+        {
+            //Debug.Log($"{name} 父级切换");
+            if (!Application.isEditor) return;
+
+            UpdateParentGroup();
+        }
+
         public virtual void Init()
         {
 
         }
 
+        /// <summary>启用或禁用，如重写，需和 <see cref="isEnable"/> 相 配合</summary>
         public virtual void Enable(bool isEnable)
         {
-            this.isEnable = isEnable;
+            UIManager.Instance.EnableUI(this, isEnable);
         }
 
         /// <summary>刷新</summary>
@@ -87,6 +115,11 @@ namespace Framework
         public virtual void Destroy()
         {
 
+        }
+
+        public virtual void OnEnabled(bool isEnable)
+        {
+            this.isEnable = isEnable;
         }
 
         public virtual void OnRefresh()
@@ -115,6 +148,22 @@ namespace Framework
             {
                 btn.onClick.AddListener(e);
             }
+        }
+
+        private void UpdateParentGroup()
+        {
+            // 缓存旧的
+            UIGroupBase oldGroup = null;
+            if (this.group is UIGroupBase g) oldGroup = g;
+
+            // 设置所属分组
+            transform.parent.TryGetComponent(out UIGroupBase group);
+            this.group = group;
+
+            // 更新所属分组
+            if (oldGroup == group) return;
+            if (oldGroup) oldGroup.InternalUpdateGetChildItem();
+            if (group) group.InternalUpdateGetChildItem();
         }
     }
 }

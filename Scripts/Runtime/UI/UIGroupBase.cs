@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,13 +28,7 @@ namespace Framework.UI
         protected virtual void Awake()
         {
             // 自动收集子节点项
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var child = transform.GetChild(i);
-                if (child.TryGetComponent(out IUIGroupItem item))
-                    _items.Add(item);
-            }
-            //gameObject.GetComponentsInChildren(_items);
+            InternalUpdateGetChildItem();
         }
 
         public virtual void AddItem(IUIGroupItem item)
@@ -109,6 +104,20 @@ namespace Framework.UI
         public IEnumerator<IUIGroupItem> GetEnumerator()
         {
             return _items.GetEnumerator();
+        }
+
+        internal void InternalUpdateGetChildItem()
+        {
+            _items.Clear();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.TryGetComponent(out IUIGroupItem item))
+                {
+                    item.group = this;
+                    _items.Add(item);
+                }
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

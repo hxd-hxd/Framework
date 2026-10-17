@@ -24,6 +24,9 @@ namespace Framework
         /// <summary>启用</summary>
         void Enable(bool isEnable);
 
+        /// <summary>在启用时调用</summary>
+        void OnEnabled(bool isEnable);
+
         /// <summary>在刷新的时候触发</summary>
         void OnRefresh();
 

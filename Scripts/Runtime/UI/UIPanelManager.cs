@@ -14,13 +14,11 @@ namespace Framework
     /// <summary>UGUI 界面管理器，用于管理派生自 <see cref="UIPanelBase"/> 的界面</summary>
     public partial class UIPanelManager : MonoSingleton<UIPanelManager>
     {
-        static Dictionary<Type, UIPanelBase> panelDic = new Dictionary<Type, UIPanelBase>();
-
         /// <summary>主画布</summary>
         private static Canvas mainCanvas;
         private static bool _findMainCanvas = true;
 
-        static GameObject otherUIParent;
+        private static GameObject otherUIParent;
 
         /// <summary>其他 UI 的父节点（其他 UI 界面会加载到此节点下）</summary>
         public static GameObject OtherUIParent
@@ -36,6 +34,7 @@ namespace Framework
             }
             set => otherUIParent = value;
         }
+
         /// <summary>主画布</summary>
         public static Canvas MainCanvas
         {
@@ -50,20 +49,12 @@ namespace Framework
 #if UNITY_2020_3_OR_NEWER
                         mc = Object.FindObjectOfType<MainCanvas>(true);
 #else
-                    mc = Object.FindObjectOfType<MainCanvas>();
+                        mc = Object.FindObjectOfType<MainCanvas>();
 #endif
                         if (mc)
                             mainCanvas = mc.m_mainCanvas;
                     }
                 }
-
-                //if (!mainCanvas)
-                //{
-                //    var mc = ResourcesManager.Load<GameObject>(Path.Combine(panelLoadPath, "MainCanvas"));
-                //    if (mc)
-                //        mainCanvas = Object.Instantiate(mc).GetComponent<Canvas>();
-                //}
-
                 return mainCanvas;
             }
             set
@@ -73,11 +64,12 @@ namespace Framework
         }
 
         /// <summary>指定界面是否存在</summary>
-        public static bool ExistPanel<T>() where T : UIPanelBase
+        public static bool ExistPanel<T>()
         {
             UIPanelBase panel = GetPanel(typeof(T));
             return panel != null;
         }
+
         /// <summary>指定界面是否存在</summary>
         public static bool ExistPanel(Type type)
         {
@@ -88,29 +80,18 @@ namespace Framework
         /// <summary>注册界面</summary>
         public static void Register<T>(T panel) where T : UIPanelBase
         {
-            Register(panel.GetType(), panel);
+            UIManager.Instance.Register(panel);
         }
+
         /// <summary>注册界面</summary>
+        [Obsolete("使用 UIPanelManager.Register<T>(T panel) 替代")]
         public static void Register(Type type, UIPanelBase panel)
         {
-            if (!panelDic.ContainsKey(type))
-            {
-                panelDic.Add(type, panel);
-
-                //Debug.Log($"界面 {panel.name} 注册成功！");
-            }
-            else
-            {
-                if (panelDic[type] == panel) return;
-
-                //Debug.Log($"已注册过界面 {panel.name} ， 旧界面为 {panelDic[type]} ， 将替换旧的已注册界面！");
-
-                panelDic[type] = panel;
-            }
+            UIManager.Instance.Register(panel);
         }
 
         /// <summary>获取界面
-        /// <para>注意：预制体名称要与类名一致，才能自动加载成功</para>
+        /// <para>注意：预制体名称要与类名一致，才能加载成功</para>
         /// </summary>
         public static T GetPanel<T>() where T : UIPanelBase
         {
@@ -130,18 +111,20 @@ namespace Framework
 
             return null;
         }
+
         /// <summary>获取界面
-        /// <para>注意：预制体名称要与类名一致，才能自动加载成功</para>
+        /// <para>注意：预制体名称要与类名一致，才能加载成功</para>
         /// </summary>
         public static UIPanelBase GetPanel(Type type)
         {
             return GetPanel(type, type.Name);
         }
+
         /// <summary>获取界面</summary>
-        /// <param name="assetName">界面资产名</param>
+        /// <param name="assetName">界面资产名，仅用于加载界面资源</param>
         public static UIPanelBase GetPanel(Type type, string assetName)
         {
-            panelDic.TryGetValue(type, out UIPanelBase panel);
+            var panel = (UIPanelBase)UIManager.Instance.GetUI(type);
 
             if (!panel)
             {
@@ -165,7 +148,7 @@ namespace Framework
 
                 if (panel)
                 {
-                    Register(type, panel);
+                    Register(panel);
 
                     GetCanvas(panel);
                 }
@@ -185,6 +168,7 @@ namespace Framework
 
             return null;
         }
+
         /// <summary>获取界面</summary>
         /// <param name="assetName">用于加载，界面资产名</param>
         public static async Task<T> GetPanelAsync<T>(string assetName) where T : UIPanelBase
@@ -195,6 +179,7 @@ namespace Framework
 
             return null;
         }
+
         /// <summary>获取界面
         /// <para>注意：预制体名称要与类名一致，才能自动加载成功</para>
         /// </summary>
@@ -202,11 +187,12 @@ namespace Framework
         {
             return await GetPanelAsync(type, type.Name);
         }
+
         /// <summary>获取界面</summary>
         /// <param name="assetName">界面资产名</param>
         public static async Task<UIPanelBase> GetPanelAsync(Type type, string assetName)
         {
-            panelDic.TryGetValue(type, out UIPanelBase panel);
+            var panel = (UIPanelBase)UIManager.Instance.GetUI(type);
 
             if (!panel)
             {
@@ -235,7 +221,7 @@ namespace Framework
 
                 if (panel)
                 {
-                    Register(type, panel);
+                    Register(panel);
 
                     GetCanvas(panel);
                 }
@@ -245,13 +231,10 @@ namespace Framework
         }
 
         /// <summary>关闭所有界面</summary>
+        [Obsolete("不再支持", true)]
         public static void CloseAllPanel()
         {
-            foreach (var item in panelDic)
-            {
-                if (item.Value == null) continue;
-                item.Value.Enable(false);
-            }
+            
         }
 
         private static UIPanelBase InstantiatePanel(GameObject temlate)
@@ -269,14 +252,14 @@ namespace Framework
         /// <summary>获取画布</summary>
         public static Canvas GetCanvas<T>() where T : UIPanelBase
         {
-            return GetCanvas(typeof(T));
+            var panel = GetPanel<T>();
+            return GetCanvas(panel);
         }
 
         /// <summary>获取画布</summary>
         public static Canvas GetCanvas(Type type)
         {
-            panelDic.TryGetValue(type, out UIPanelBase panel);
-
+            var panel = GetPanel(type);
             return GetCanvas(panel);
         }
 
@@ -311,14 +294,14 @@ namespace Framework
         /// <summary>销毁界面</summary>
         public static bool DestroyPanel<T>() where T : UIPanelBase
         {
-            return DestroyPanel(typeof(T));
+            var panel = GetPanel<T>();
+            return DestroyPanel(panel);
         }
 
         /// <summary>销毁界面</summary>
         public static bool DestroyPanel(Type type)
         {
-            panelDic.TryGetValue(type, out UIPanelBase panel);
-
+            var panel = GetPanel(type);
             return DestroyPanel(panel);
         }
 
@@ -327,81 +310,34 @@ namespace Framework
         {
             if (panel)
             {
-                RemovePanel(panel.GetType());
+                RemovePanel(panel);
                 Object.Destroy(panel.gameObject);
                 return true;
             }
-
-            Debug.LogWarning($"试图销毁 不存在的界面 {panel}");
-
             return false;
         }
 
         /// <summary>移除界面</summary>
         public static bool RemovePanel<T>() where T : UIPanelBase
         {
-            return RemovePanel(typeof(T));
+            return UIManager.Instance.Unregister<T>();
         }
 
         /// <summary>移除界面</summary>
         public static bool RemovePanel(Type type)
         {
-            if (panelDic.ContainsKey(type))
-            {
-                return panelDic.Remove(type);
-            }
-
-            Debug.LogWarning($"试图移除 不存在的界面 {type.Name}");
-
-            return false;
+            return UIManager.Instance.Unregister(type);
         }
 
         /// <summary>移除界面</summary>
         public static bool RemovePanel(UIPanelBase panel)
         {
-            return RemovePanel(panel.GetType());
+            return UIManager.Instance.Unregister(panel);
         }
 
         /// <summary>将指定界面调整到最上层</summary>
-        public static void PanelTopmost(UIPanelBase panel) 
-            //=> PanelTopmost(panel, false);
+        public static void PanelTopmost(UIPanelBase panel)
             => UIManager.Instance.TopmostUI(panel);
-
-        /// <summary>检查是否有非常驻界面启用</summary>
-        public static bool HasNoPermanentPanelEnable()
-        {
-            bool h = NoPermanentPanelEnableNum() > 0;
-            return h;
-        }
-
-        /// <summary>获取非常驻界面启用的数量</summary>
-        public static int NoPermanentPanelEnableNum()
-        {
-            int num = 0;
-            foreach (var item in panelDic)
-            {
-                if (item.Value == null) continue;
-                if (item.Value.Permanent && item.Value.isEnable)
-                {
-                    num++;
-                }
-            }
-            return num;
-        }
-
-        /// <summary>获取非常驻界面数量</summary>
-        public static int GetNoPermanentPanelNum()
-        {
-            int num = 0;
-            foreach (var item in panelDic)
-            {
-                if (!item.Value.Permanent)
-                {
-                    num++;
-                }
-            }
-            return num;
-        }
 
     }
 

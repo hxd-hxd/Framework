@@ -11,6 +11,19 @@ namespace Framework.UI
         [SerializeField]
         private UIBase _ui;
 
+        public UIBase ui
+        {
+            get => _ui;
+            set
+            {
+                if (_ui == value) return;
+                if (_ui)
+                {
+                    _ui.ExpectComponent<UIBaseUnregister>();
+                }
+            }
+        }
+
         private void Awake()
         {
             if (!_ui) TryGetComponent(out _ui);

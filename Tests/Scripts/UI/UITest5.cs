@@ -5,7 +5,7 @@ using Framework.UI;
 
 namespace Framework.Test
 {
-    public class UITestPlayerInfo : UIPanelBase
+    public class UITest5 : UIPanelBase
     {
         
     }

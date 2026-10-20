@@ -3,20 +3,18 @@
 // -------------------------
 
 using System;
+using Framework.UI;
 
 namespace Framework
 {
     /// <summary>UI 接口</summary>
-    public interface IUI
+    public interface IUI : IUIGroupItem
     {
         /// <summary>名称</summary>
         string name { get; set; }
 
-        /// <summary>是否启用</summary>
-        bool isEnable { get; set; }
-
-        /// <summary>排序</summary>
-        int sortOrder { get; set; }
+        /// <summary>在启用时置顶</summary>
+        bool topmostInEnabled { get; set; }
 
         /// <summary>初始化</summary>
         void Init();
@@ -30,14 +28,8 @@ namespace Framework
         /// <summary>在刷新的时候触发</summary>
         void OnRefresh();
 
-        /// <summary>在置顶时触发</summary>
+        /// <summary>在全局置顶时触发</summary>
         void OnTopmost();
-
-        /// <summary>在被覆盖时触发，例如当前在最上面，其他 ui 变成了最上面</summary>
-        void OnCovered();
-
-        /// <summary>在没有被覆盖时触发，例如当前在最上面的其他 ui 变成了没有了，自己变成了最上面</summary>
-        void OnNotCovered();
 
     }
 }

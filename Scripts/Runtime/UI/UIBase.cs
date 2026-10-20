@@ -3,43 +3,51 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 using Framework.UI;
 
 namespace Framework
 {
     /// <summary>UI 基类</summary>
-    public abstract partial class UIBase : MonoBehaviour, IUI, IUIGroupItem
+    public abstract partial class UIBase : MonoBehaviour, IUI
     {
         [SerializeField]
         private UIGroupBase _group;
 
+        [SerializeField]
+        [HideInInspector]
+        private TopmostIgnoreComp _topmostIgnoreComp;
+
+        [Tooltip("自动置顶")]
+        [SerializeField]
+        [FormerlySerializedAs("_autoPanelTopmost")]
+        private bool _topmostInEnabled = true;// 自动置顶
+
+        /// <summary>控制此 UI 自身的启用，如要置顶等请调用 <see cref="Enable(bool)"/></summary>
         public virtual bool isEnable
         {
             get => gameObject.activeSelf;
             set => gameObject.SetActive(value);
         }
 
-        public string itemName => name;
-
-        public IUIGroup rootGroup
+        public virtual IUIGroup group
         {
-            get
+            get => _group;
+            set
             {
-                var g = group;
-                while (true)
-                {
-                    if (g is IUIGroupItem groupItem && groupItem.group != null)
-                    {
-                        g = groupItem.group;
-                        continue;
-                    }
-                    break;
-                }
-                return g;
+                if (Equals(_group, value)) return;
+
+                // 缓存旧的
+                var oldGroup = _group;
+
+                // 设置所属分组
+                _group = value as UIGroupBase;
+
+                // 更新所属分组
+                if (oldGroup) oldGroup.RemoveItem(this);
+                if (_group) _group.AddItem(this);
             }
         }
-
-        public virtual IUIGroup group { get => _group; set => _group = value as UIGroupBase; }
 
         public virtual int sortOrder
         {
@@ -49,9 +57,42 @@ namespace Framework
                 // 只在有父节点时才调整排序，不然没有意义
                 if (transform.parent)
                 {
-                    int so = Mathf.Clamp(value, 0, transform.parent.childCount - 1);
-                    transform.SetSiblingIndex(so);
+                    transform.SetSiblingIndex(value);
                 }
+            }
+        }
+
+        public virtual bool topmostIgnore => _topmostIgnoreComp != null;
+
+        public virtual bool topmostInEnabled { get => _topmostInEnabled; set => _topmostInEnabled = value; }
+
+        public IUIGroup rootGroup
+        {
+            get
+            {
+                var g = group;
+                while (!ObjectUtility.IsNull(g))
+                {
+                    // 溯源
+                    if (!ObjectUtility.IsNull(g.group))
+                    {
+                        g = g.group;
+                        continue;
+                    }
+                    break;
+                }
+                return g;
+            }
+        }
+
+        public int globalSortOrder
+        {
+            get
+            {
+                // 这里用分组判空主要是节省性能
+                if (!ObjectUtility.IsNull(group))
+                    return rootGroup.sortOrder;
+                return sortOrder;
             }
         }
 
@@ -60,10 +101,12 @@ namespace Framework
             get => name;
             set => name = value;
         }
+        string IUIGroupItem.itemName { get => name; set => name = value; }
 
         protected virtual void Awake()
         {
-            
+            if (_topmostIgnoreComp == null) TryGetComponent(out _topmostIgnoreComp);
+
         }
 
         protected virtual void Start()
@@ -73,7 +116,7 @@ namespace Framework
 
         protected virtual void OnEnable()
         {
-
+            
         }
 
         protected virtual void OnDisable()
@@ -83,7 +126,7 @@ namespace Framework
 
         protected virtual void OnDestroy()
         {
-            
+
         }
 
         private void OnTransformParentChanged()
@@ -120,6 +163,7 @@ namespace Framework
         public virtual void OnEnabled(bool isEnable)
         {
             this.isEnable = isEnable;
+            OnRefresh();
         }
 
         public virtual void OnRefresh()
@@ -129,17 +173,20 @@ namespace Framework
 
         public virtual void OnTopmost()
         {
-            transform.SetAsLastSibling();
+            //transform.SetAsLastSibling();
+
+            Debug.Log($"{name} 置顶");
         }
 
         public virtual void OnCovered()
         {
-
+            Debug.Log($"{name} 被覆盖");
         }
 
         public virtual void OnNotCovered()
         {
-
+            // 这里的未覆盖其实就是自身又到顶部了，所以直接通知置顶就行了
+            OnTopmost();
         }
 
         public static void AddEvent(Button btn, UnityAction e)
@@ -159,11 +206,6 @@ namespace Framework
             // 设置所属分组
             transform.parent.TryGetComponent(out UIGroupBase group);
             this.group = group;
-
-            // 更新所属分组
-            if (oldGroup == group) return;
-            if (oldGroup) oldGroup.InternalUpdateGetChildItem();
-            if (group) group.InternalUpdateGetChildItem();
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Framework.Editor
 {
     /// <summary>
     /// <see cref="UIMoniter"/> 检视面板：保持默认绘制，并显示已注册的 <see cref="IUI"/>、
-    /// <see cref="IUIGroup"/> 以及 <see cref="UIManager.GetTopUI"/>。
+    /// <see cref="IUIGroup"/>、<see cref="IUIGroupItem.topmostIgnore"/> 以及 <see cref="UIManager.GetTopUI"/>。
     /// </summary>
     [CustomEditor(typeof(UIMoniter))]
     public class UIMoniterInspector : UnityEditor.Editor
@@ -186,6 +186,8 @@ namespace Framework.Editor
             string label = $"{ui.name}（{TypeName(type)}，{EnableText(ui.isEnable)}，排序 {ui.sortOrder}";
             if (ui is IUIGroupItem item)
                 label += ObjectUtility.IsNull(item.group) ? "，无分组" : $"，{item.group.groupName}";
+            if (ui.topmostIgnore)
+                label += "，置顶忽略";
             if (IsSame(ui, topUI))
                 label += "，顶部";
             return label + "）";
@@ -197,6 +199,8 @@ namespace Framework.Editor
                 return $"{key}（空）";
 
             string label = $"{group.groupName}（{EnableText(group.isEnable)}，排序 {group.sortOrder}，项 {group.itemCount}";
+            if (group.topmostIgnore)
+                label += "，置顶忽略";
             if (IsSame(group, topGroup))
                 label += "，顶部组";
             return label + "）";
@@ -209,6 +213,8 @@ namespace Framework.Editor
 
             string name = string.IsNullOrEmpty(item.itemName) ? index.ToString() : item.itemName;
             string label = $"{name}（{EnableText(item.isEnable)}，排序 {item.sortOrder}";
+            if (item.topmostIgnore)
+                label += "，置顶忽略";
             if (IsSame(item, topItem))
                 label += "，顶部项";
             return label + "）";

@@ -281,37 +281,59 @@ namespace Framework
         /// <summary>启用 ui</summary>
         public void EnableUI(IUI ui, bool enable)
         {
-            if (!ObjectUtility.IsNull(ui))
+            if (ObjectUtility.IsNull(ui)) return;
+
+            // 启用，触发置顶、覆盖
+            // 禁用，触发恢复覆盖
+
+            // 获取当前顶部
+            var oldTopUI = GetTopUI();
+
+            // 启用
+            if (enable)
             {
-                // TODO：启用，触发置顶、覆盖
-                // TODO：禁用，触发恢复覆盖
-
-                // 置顶
-                // 全局置顶
-                if (ui is IUIGroupItem groupItem && groupItem.group != null)
+                // 已启用
+                if (ui.isEnable)
                 {
-                    // 目标启用
-                    if (enable)
-                    {
-                        // 已启用
-                        if (groupItem.isEnable)
-                        {
-                            // 全局搜索
-                        }
-                        // 已禁用
-                        else
-                        {
+                    // 只需要置顶
+                    if (ui.topmostInEnabled)
+                        TopmostUI(ui);
+                }
+                // 已禁用
+                else
+                {
+                    ui.OnEnabled(enable);
 
-                        }
-                    }
-                    // 目标禁用
-                    else
-                    {
+                    if (ui.topmostInEnabled)
+                        TopmostUI(ui);
 
+                    // 如果启用后直接是顶部，上面的置顶是不会通知的，所以这里还要检测一次通知
+                    var newTopUI = GetTopUI();
+                    if (newTopUI == ui)
+                    {
+                        ui.OnTopmost();
+                        if (!ObjectUtility.IsNull(oldTopUI))
+                            oldTopUI.OnCovered();
                     }
                 }
-                ui.OnEnabled(enable);
+            }
+            // 禁用
+            else
+            {
+                // 已启用
+                if (ui.isEnable)
+                {
+                    ui.OnEnabled(enable);
 
+                    var newTopUI = GetTopUI();
+                    if (newTopUI != oldTopUI)
+                    {
+                        newTopUI.OnNotCovered();
+                    }
+                    // 如果本来不在顶部，不做任何通知
+                }
+
+                // 已禁用什么都不做
             }
         }
 
@@ -337,48 +359,52 @@ namespace Framework
             全局：
                 根 UI 在所有根 UI 和根组中调整排序。
             本地：
-                只在组内置顶，不会影响组外 UI。
-            */
+                只在组内置顶，只会影响同级和下级组 UI。
 
-            if (ObjectUtility.IsNull(ui)) return;
+            置顶和覆盖都是影响全局的，就是说如果要置顶的 UI 在置顶后不是全局的当前顶部 UI，才不会发通知 
+            */
 
             // 这里获取当前的顶部 UI 有坑，
             // 如果在置顶之前启用了 ui，而 ui 再启用后正好是顶部 UI，那么覆盖逻辑就不对，
             // 应该在启用前就获取当前的顶部 UI，启用后先置顶
-            var coveredUI = GetTopUI();
-            if (ui == coveredUI) return;
+            // 涉及启用的置顶和覆盖等逻辑单独做
+            // 所以这里要求置顶 UI 必须启用
+            if (ObjectUtility.IsNull(ui) || !ui.isEnable) return;
 
-            // 区分全局置顶和局部置顶
-            if (true)
+            // 当前顶部 UI
+            var oldTopUI = GetTopUI();
+
+            // 本来就在顶部，不做任何事
+            // 如果当前顶部 UI 是空的，说明没有任何 UI 被启用，不做任何事
+            if (ui == oldTopUI) return;
+
+            // 全局
+            if (ObjectUtility.IsNull(ui.group))
             {
-
+                // 因为当前顶部 UI 可能在分组中，必须获取全局排序
+                if (!ObjectUtility.IsNull(oldTopUI))
+                    ui.sortOrder = oldTopUI.globalSortOrder + 1;
             }
-            int max = ui.sortOrder;
-            foreach (var item in _uis)
+            // 本地
+            else
             {
-                if (ObjectUtility.IsNull(item.Value)
-                    || item.Value == ui
-                    ) continue;
-
-                int sortingOrder = item.Value.sortOrder;
-                if (sortingOrder >= max)
-                {
-                    max = sortingOrder + 1;
-                }
+                var maxUI = ui.group.GetMaxSortOrderItem();
+                if (!ObjectUtility.IsNull(maxUI))
+                    ui.sortOrder = maxUI.sortOrder + 1;
             }
-            ui.sortOrder = max;
-            ui.OnTopmost();
 
-            if (coveredUI != null) coveredUI.OnCovered();
+            var newTopUI = GetTopUI();
+            if (newTopUI == ui)
+            {
+                ui.OnTopmost();
+                if (!ObjectUtility.IsNull(oldTopUI))
+                    oldTopUI.OnCovered();
+            }
         }
 
         /// <summary>注册分组</summary>
         public void RegisterGroup(IUIGroup group)
         {
-            if (_groups.TryGetValue(group.groupName, out var oldGroup))
-            {
-                // TODO：处理同名旧分组，例如将旧分组里的项移到新分组
-            }
             _groups[group.groupName] = group;
         }
 
@@ -408,7 +434,7 @@ namespace Framework
             foreach (var item in _groups)
             {
                 var group = item.Value;
-                if (!group.isEnable) continue;
+                if (!group.isEnable || group.topmostIgnore) continue;
                 if (topGroup == null || group.HasEnableItem() && group.sortOrder >= topGroup.sortOrder)
                 {
                     topGroup = item.Value;
@@ -434,22 +460,30 @@ namespace Framework
             foreach (var item in _uis)
             {
                 var uil = item.Value;
-                if (!uil.isEnable) continue;
-                if (uil is IUIGroupItem groupItem && groupItem.group == null)
+                if (ObjectUtility.IsNull(uil)
+                    || uil.topmostIgnore
+                    || !ObjectUtility.IsNull(uil.group)
+                    || !uil.isEnable)
+                    continue;
+
+                if (notGroupTopUI == null || uil.sortOrder >= notGroupTopUI.sortOrder)
                 {
-                    if (notGroupTopUI == null || notGroupTopUI.sortOrder >= uil.sortOrder)
-                    {
-                        notGroupTopUI = uil;
-                    }
+                    notGroupTopUI = uil;
                 }
             }
 
-            // 找出组中比非组 UI 排序小的顶部组 UI
+            // 找出组中比非组 UI 排序大的顶部组 UI
             IUIGroup topGroup = default;
             foreach (var item in _groups)
             {
                 var group = item.Value;
-                if (!group.isEnable) continue;
+                if (ObjectUtility.IsNull(group)
+                    || group.topmostIgnore
+                    || !group.isEnable
+                    || !group.isRootGroup
+                    || !group.HasEnableItem())
+                    continue;
+
                 // 有非组 UI
                 if (notGroupTopUI != null)
                 {
@@ -473,7 +507,12 @@ namespace Framework
                 else
                 {
                     // 没有非组 UI 就在组之间找
-                    if (topGroup == null || group.HasEnableItem() && group.sortOrder > topGroup.sortOrder)
+                    if (topGroup == null)
+                    {
+                        topGroup = group;
+                        continue;
+                    }
+                    if (group.sortOrder > topGroup.sortOrder)
                     {
                         topGroup = group;
                     }

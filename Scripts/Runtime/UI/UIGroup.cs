@@ -6,7 +6,7 @@ namespace Framework.UI
     /// <summary>UI 分组</summary>
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
-    public class UIGroup : UIGroupBase, IUIGroupItem
+    public sealed class UIGroup : UIGroupBase
     {
         [SerializeField]
         private int _sortOrder;
@@ -33,18 +33,17 @@ namespace Framework.UI
             }
         }
 
-        public string itemName => groupName;
-
-        public IUIGroup rootGroup
+        public override IUIGroup rootGroup
         {
             get
             {
-                var g = group;
+                IUIGroup g = this;
                 while (true)
                 {
-                    if (g is IUIGroupItem groupItem && groupItem.group != null)
+                    // 溯源
+                    if (!ObjectUtility.IsNull(g.group))
                     {
-                        g = groupItem.group;
+                        g = g.group;
                         continue;
                     }
                     break;
@@ -53,11 +52,28 @@ namespace Framework.UI
             }
         }
 
-        public IUIGroup group { get => _group; set => _group = value as UIGroupBase; }
+        public override IUIGroup group
+        {
+            get => _group;
+            set
+            {
+                if (Equals(_group, value)) return;
+
+                // 缓存旧的
+                var oldGroup = _group;
+
+                // 设置所属分组
+                _group = value as UIGroupBase;
+
+                // 更新所属分组
+                if (oldGroup) oldGroup.RemoveItem(this);
+                if (_group) _group.AddItem(this);
+            }
+        }
+
+        public string itemName => groupName;
 
         public Canvas canvas { get => _canvas; set => _canvas = value; }
-
-        public bool isRootGroup => group == null;
 
         protected override void Awake()
         {
@@ -97,38 +113,24 @@ namespace Framework.UI
             }
         }
 
-        public override IUIGroupItem GetTopItem()
+        public override IUIGroup CreateSubGroup(string name)
         {
-            // 同级中如果顶部项是 UI，就不需要往下找了
-            // 获取顶部项时要添加子组检测
-            IUIGroupItem topItem = null;
-            for (int i = internalItems.Count - 1; i >= 0; i--)
-            {
-                var item = internalItems[i];
-                if (!item.isEnable) continue;
+            // 不能同名
+            if (!ObjectUtility.IsNull(internalItems.Find(item => item is IUIGroup iGroup && iGroup.itemName == name)))
+                new System.Exception("创建失败，已有同名子组");
 
-                // 如果是子组
-                if (item is IUIGroup iGroup)
-                {
-                    if (!iGroup.HasEnableItem()) continue;
-                    if (topItem == null || iGroup.sortOrder > topItem.sortOrder)
-                        topItem = item;
-                    continue;
-                }
-
-                if (topItem == null || item.sortOrder > topItem.sortOrder)
-                    topItem = item;
-            }
-            // 继续往下找
-            if (topItem is IUIGroup tGroup)
-            {
-                topItem = tGroup.GetTopItem();
-            }
-            return topItem;
+            var go = new GameObject(name);
+            go.transform.SetParent(transform);
+            go.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            var group = go.AddComponent<UIGroup>();
+            group.groupName = name;
+            internalItems.Add(group);
+            return group;
         }
 
         public override bool HasEnableItem()
         {
+            RemoveDestroyedItems();
             // 检查子组有效项
             foreach (var item in internalItems)
             {
@@ -163,23 +165,6 @@ namespace Framework.UI
                 UpdateSiblingIndex();
         }
 
-        public void OnCovered()
-        {
-            // 当是子组时，转发覆盖通知
-            IUIGroupItem topItem = GetTopItem();
-
-            if (topItem != null)
-            {
-                topItem.OnCovered();
-            }
-        }
-
-        public void OnNotCovered()
-        {
-            // TODO：转发非覆盖通知
-            throw new System.NotImplementedException();
-        }
-
         private void UpdateParentGroup()
         {
             // 缓存旧的
@@ -189,11 +174,6 @@ namespace Framework.UI
             // 设置所属分组
             transform.parent.TryGetComponent(out UIGroupBase group);
             this.group = group;
-
-            // 更新所属分组
-            if (oldGroup == group) return;
-            if (oldGroup) oldGroup.InternalUpdateGetChildItem();
-            if (group) group.InternalUpdateGetChildItem();
         }
 
         internal void UpdateSiblingIndex()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Framework.Localization;
 
@@ -19,21 +19,6 @@ namespace Framework
 
         [SerializeField]
         private Language m_EditorLanguage = Language.Unspecified;
-
-        [SerializeField]
-        private string m_TextHelperTypeName = "UnityGameFramework.Runtime.DefaultTextHelper";
-
-        [SerializeField]
-        private string m_VersionHelperTypeName = "UnityGameFramework.Runtime.DefaultVersionHelper";
-
-        [SerializeField]
-        private string m_LogHelperTypeName = "UnityGameFramework.Runtime.DefaultLogHelper";
-
-        [SerializeField]
-        private string m_CompressionHelperTypeName = "UnityGameFramework.Runtime.DefaultCompressionHelper";
-
-        [SerializeField]
-        private string m_JsonHelperTypeName = "UnityGameFramework.Runtime.DefaultJsonHelper";
 
         [SerializeField]
         private int m_FrameRate = 30;

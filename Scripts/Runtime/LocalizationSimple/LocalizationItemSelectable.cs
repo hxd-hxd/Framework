@@ -5,6 +5,8 @@ using Framework.Localization;
 using UnityEngine;
 using UnityEngine.UI;
 
+#pragma warning disable CS0618 // 类型或成员已过时
+
 namespace Framework.LocalizationSimple
 {
     using LocalizationData = LocalizationDataSelectableSprite;
@@ -89,3 +91,5 @@ namespace Framework.LocalizationSimple
         }
     }
 }
+
+#pragma warning restore CS0618 // 类型或成员已过时

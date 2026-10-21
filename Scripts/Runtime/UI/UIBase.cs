@@ -199,10 +199,6 @@ namespace Framework
 
         private void UpdateParentGroup()
         {
-            // 缓存旧的
-            UIGroupBase oldGroup = null;
-            if (this.group is UIGroupBase g) oldGroup = g;
-
             // 设置所属分组
             transform.parent.TryGetComponent(out UIGroupBase group);
             this.group = group;

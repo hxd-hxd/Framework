@@ -1160,16 +1160,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 9038994987835382997, guid: b7a9db265f6b1354b880d1031e709216, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 7256171436116194513, guid: b7a9db265f6b1354b880d1031e709216, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1112813759}
+      addedObject: {fileID: 1145853991}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b7a9db265f6b1354b880d1031e709216, type: 3}
---- !u!4 &913699436 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 9038994987835382997, guid: b7a9db265f6b1354b880d1031e709216, type: 3}
-  m_PrefabInstance: {fileID: 913699435}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &923202827
 GameObject:
   m_ObjectHideFlags: 0
@@ -1305,51 +1300,11 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!1 &1112813758
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1112813759}
-  - component: {fileID: 1112813760}
-  m_Layer: 0
-  m_Name: UI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1112813759
+--- !u!4 &1112813759 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 7256171436116194513, guid: b7a9db265f6b1354b880d1031e709216, type: 3}
+  m_PrefabInstance: {fileID: 913699435}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112813758}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1145853991}
-  m_Father: {fileID: 913699436}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1112813760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112813758}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f28ab2ac4bf4d645b9eefaac6c51129, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1122532935
 GameObject:
   m_ObjectHideFlags: 0

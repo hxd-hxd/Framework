@@ -75,6 +75,8 @@ namespace Framework.UI
 
         public Canvas canvas { get => _canvas; set => _canvas = value; }
 
+        public bool useCanvasSortOrder => isRootGroup || _canvas.isRootCanvas || (!_canvas.isRootCanvas && _canvas.overrideSorting);
+
         protected override void Awake()
         {
             base.Awake();

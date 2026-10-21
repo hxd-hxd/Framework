@@ -328,7 +328,8 @@ namespace Framework
                     var newTopUI = GetTopUI();
                     if (newTopUI != oldTopUI)
                     {
-                        newTopUI.OnNotCovered();
+                        if (!ObjectUtility.IsNull(newTopUI))
+                            newTopUI.OnNotCovered();
                     }
                     // 如果本来不在顶部，不做任何通知
                 }

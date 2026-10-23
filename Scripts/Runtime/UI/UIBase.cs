@@ -18,7 +18,7 @@ namespace Framework
         [HideInInspector]
         private TopmostIgnoreComp _topmostIgnoreComp;
 
-        [Tooltip("自动置顶")]
+        [Tooltip("在启用时置顶")]
         [SerializeField]
         [FormerlySerializedAs("_autoPanelTopmost")]
         private bool _topmostInEnabled = true;// 自动置顶
@@ -116,7 +116,7 @@ namespace Framework
 
         protected virtual void OnEnable()
         {
-            
+
         }
 
         protected virtual void OnDisable()
@@ -200,8 +200,11 @@ namespace Framework
         private void UpdateParentGroup()
         {
             // 设置所属分组
-            transform.parent.TryGetComponent(out UIGroupBase group);
-            this.group = group;
+            if (transform.parent)
+            {
+                transform.parent.TryGetComponent(out UIGroupBase group);
+                this.group = group;
+            }
         }
     }
 }

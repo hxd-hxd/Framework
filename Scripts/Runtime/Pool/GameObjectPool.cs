@@ -362,6 +362,10 @@ namespace Framework
 
         /// <summary>从对象池获取</summary>
         public virtual GameObject Get(GameObject template, Transform parent)
+            => Get(_template, parent, returnParent);
+
+        /// <summary>从对象池获取</summary>
+        public virtual GameObject Get(GameObject template, Transform parent, Transform returnParent)
         {
             if (template == null) return null;
 
@@ -375,10 +379,7 @@ namespace Framework
             {
                 while (tPool.Count > 0 && obj == null)
                 {
-                    //tPool.TryDequeue(out obj);
                     obj = FetchLast(tPool);
-                    //if (obj != null)
-                    //    obj.transform.SetParent(null);
                 }
             }
             else
@@ -394,7 +395,7 @@ namespace Framework
             if (!prc) prc = obj.AddComponent<PoolRecordComponent>();
             prc.record.pool = this;
             prc.record.template = template;
-            prc.record.parent = parent;
+            prc.record.parent = returnParent;
             prc.record.instance = obj;
 
             InitializeObject(obj);

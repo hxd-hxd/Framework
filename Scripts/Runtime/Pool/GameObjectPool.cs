@@ -362,7 +362,7 @@ namespace Framework
 
         /// <summary>从对象池获取</summary>
         public virtual GameObject Get(GameObject template, Transform parent)
-            => Get(_template, parent, returnParent);
+            => Get(template, parent, returnParent);
 
         /// <summary>从对象池获取</summary>
         public virtual GameObject Get(GameObject template, Transform parent, Transform returnParent)

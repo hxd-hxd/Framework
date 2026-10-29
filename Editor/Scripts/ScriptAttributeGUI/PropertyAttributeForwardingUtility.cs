@@ -17,6 +17,8 @@ namespace Framework.Editor
 
     /// <summary>
     /// 将外层字段上的 <see cref="PropertyAttribute"/>（已注册 PropertyDrawer）转发到子 <see cref="SerializedProperty"/> 绘制。
+    /// Unity 内置特性按类型匹配：TextArea/Multiline 仅字符串，Range/Delayed 仅对应数值或字符串，
+    /// Min 仅数值和向量，ColorUsage 仅颜色，GradientUsage 仅渐变。同一侧多个特性时靠下的生效。
     /// </summary>
     internal static class PropertyAttributeForwardingUtility
     {
@@ -24,6 +26,31 @@ namespace Framework.Editor
         {
             public Type DrawerType;
             public PropertyAttribute Attribute;
+        }
+
+        private struct DrawerInstanceKey : IEquatable<DrawerInstanceKey>
+        {
+            public FieldInfo Field;
+            public Type AttributeType;
+
+            public bool Equals(DrawerInstanceKey other)
+            {
+                return Field == other.Field && AttributeType == other.AttributeType;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is DrawerInstanceKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    int hash = Field != null ? Field.GetHashCode() : 0;
+                    return (hash * 397) ^ (AttributeType != null ? AttributeType.GetHashCode() : 0);
+                }
+            }
         }
 
         private static readonly HashSet<Type> SkipAttributeTypes = new HashSet<Type>
@@ -38,13 +65,15 @@ namespace Framework.Editor
         /// <summary>特性 → 真正的 Drawer 类型；value 为 null 表示确认没有 PropertyDrawer（负缓存）。</summary>
         private static readonly Dictionary<Type, Type> s_drawerTypeByAttribute = new Dictionary<Type, Type>();
 
-        /// <summary>字段 → 转发规格；null 表示该字段没有可转发 Drawer。</summary>
-        private static readonly Dictionary<FieldInfo, FieldDrawerSpec?> s_fieldSpecCache =
-            new Dictionary<FieldInfo, FieldDrawerSpec?>();
+        /// <summary>字段上可转发的特性，靠下的排在前面；同类型只保留靠下的一个。</summary>
+        private static readonly Dictionary<FieldInfo, FieldDrawerSpec[]> s_fieldSpecCache =
+            new Dictionary<FieldInfo, FieldDrawerSpec[]>();
 
-        /// <summary>按 FieldInfo 缓存 Drawer 实例，保证同字段 GetPropertyHeight / OnGUI 共用宽度状态。</summary>
-        private static readonly Dictionary<FieldInfo, PropertyDrawer> s_drawerInstanceCache =
-            new Dictionary<FieldInfo, PropertyDrawer>();
+        /// <summary>按字段和特性类型缓存 Drawer 实例，保证同字段测高与绘制共用。</summary>
+        private static readonly Dictionary<DrawerInstanceKey, PropertyDrawer> s_drawerInstanceCache =
+            new Dictionary<DrawerInstanceKey, PropertyDrawer>();
+
+        static readonly FieldDrawerSpec[] EmptySpecs = Array.Empty<FieldDrawerSpec>();
 
         static PropertyAttributeForwardingUtility()
         {
@@ -120,6 +149,30 @@ namespace Framework.Editor
                 return true;
             }
 
+            if (drawer.attribute is ColorUsageAttribute colorUsage)
+            {
+                DrawColorUsage(position, property, label, colorUsage);
+                return true;
+            }
+
+            if (drawer.attribute is GradientUsageAttribute gradientUsage)
+            {
+                DrawGradientUsage(position, property, label, gradientUsage);
+                return true;
+            }
+
+            if (drawer.attribute is MinAttribute minAttribute)
+            {
+                DrawMin(position, property, label, minAttribute);
+                return true;
+            }
+
+            if (drawer.attribute is DelayedAttribute)
+            {
+                DrawDelayed(position, property, label);
+                return true;
+            }
+
             return false;
         }
 
@@ -148,6 +201,22 @@ namespace Framework.Editor
                 return property.propertyType == SerializedPropertyType.Float
                     || property.propertyType == SerializedPropertyType.Integer;
             }
+
+            if (attribute is MinAttribute)
+                return IsMinType(property.propertyType);
+
+            if (attribute is DelayedAttribute)
+            {
+                return property.propertyType == SerializedPropertyType.Integer
+                    || property.propertyType == SerializedPropertyType.Float
+                    || property.propertyType == SerializedPropertyType.String;
+            }
+
+            if (attribute is ColorUsageAttribute)
+                return property.propertyType == SerializedPropertyType.Color;
+
+            if (attribute is GradientUsageAttribute)
+                return property.propertyType == SerializedPropertyType.Gradient;
 
             return true;
         }
@@ -210,6 +279,123 @@ namespace Framework.Editor
             EditorGUI.indentLevel = oldIndent;
         }
 
+        static void DrawColorUsage(Rect position, SerializedProperty property, GUIContent label, ColorUsageAttribute colorUsage)
+        {
+            if (property.propertyType != SerializedPropertyType.Color)
+                return;
+
+            label = EditorGUI.BeginProperty(position, label, property);
+            EditorGUI.BeginChangeCheck();
+            Color newColor = EditorGUI.ColorField(
+                position,
+                label,
+                property.colorValue,
+                true,
+                colorUsage.showAlpha,
+                colorUsage.hdr);
+            if (EditorGUI.EndChangeCheck())
+                property.colorValue = newColor;
+            EditorGUI.EndProperty();
+        }
+
+        static void DrawGradientUsage(Rect position, SerializedProperty property, GUIContent label, GradientUsageAttribute gradientUsage)
+        {
+            if (property.propertyType != SerializedPropertyType.Gradient)
+                return;
+
+            label = EditorGUI.BeginProperty(position, label, property);
+            EditorGUI.BeginChangeCheck();
+            Gradient gradient = EditorGUI.GradientField(position, label, property.gradientValue, gradientUsage.hdr);
+            if (EditorGUI.EndChangeCheck())
+                property.gradientValue = gradient;
+            EditorGUI.EndProperty();
+        }
+
+        static void DrawMin(Rect position, SerializedProperty property, GUIContent label, MinAttribute minAttribute)
+        {
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.PropertyField(position, property, label, true);
+            if (EditorGUI.EndChangeCheck())
+                ApplyMin(property, minAttribute.min);
+        }
+
+        static void DrawDelayed(Rect position, SerializedProperty property, GUIContent label)
+        {
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    EditorGUI.DelayedIntField(position, property, label);
+                    break;
+                case SerializedPropertyType.Float:
+                    EditorGUI.DelayedFloatField(position, property, label);
+                    break;
+                case SerializedPropertyType.String:
+                    EditorGUI.DelayedTextField(position, property, label);
+                    break;
+            }
+        }
+
+        static bool IsMinType(SerializedPropertyType type)
+        {
+            switch (type)
+            {
+                case SerializedPropertyType.Integer:
+                case SerializedPropertyType.Float:
+                case SerializedPropertyType.Vector2:
+                case SerializedPropertyType.Vector3:
+                case SerializedPropertyType.Vector4:
+                case SerializedPropertyType.Vector2Int:
+                case SerializedPropertyType.Vector3Int:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        static void ApplyMin(SerializedProperty property, float min)
+        {
+            int minInt = Mathf.RoundToInt(min);
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    property.intValue = Mathf.Max(minInt, property.intValue);
+                    break;
+                case SerializedPropertyType.Float:
+                    property.floatValue = Mathf.Max(min, property.floatValue);
+                    break;
+                case SerializedPropertyType.Vector2:
+                    var vector2 = property.vector2Value;
+                    property.vector2Value = new Vector2(Mathf.Max(min, vector2.x), Mathf.Max(min, vector2.y));
+                    break;
+                case SerializedPropertyType.Vector2Int:
+                    var vector2Int = property.vector2IntValue;
+                    property.vector2IntValue = new Vector2Int(Mathf.Max(minInt, vector2Int.x), Mathf.Max(minInt, vector2Int.y));
+                    break;
+                case SerializedPropertyType.Vector3:
+                    var vector3 = property.vector3Value;
+                    property.vector3Value = new Vector3(
+                        Mathf.Max(min, vector3.x),
+                        Mathf.Max(min, vector3.y),
+                        Mathf.Max(min, vector3.z));
+                    break;
+                case SerializedPropertyType.Vector3Int:
+                    var vector3Int = property.vector3IntValue;
+                    property.vector3IntValue = new Vector3Int(
+                        Mathf.Max(minInt, vector3Int.x),
+                        Mathf.Max(minInt, vector3Int.y),
+                        Mathf.Max(minInt, vector3Int.z));
+                    break;
+                case SerializedPropertyType.Vector4:
+                    var vector4 = property.vector4Value;
+                    property.vector4Value = new Vector4(
+                        Mathf.Max(min, vector4.x),
+                        Mathf.Max(min, vector4.y),
+                        Mathf.Max(min, vector4.z),
+                        Mathf.Max(min, vector4.w));
+                    break;
+            }
+        }
+
         /// <summary>偏窄估算宽：无 pos 时宁可略高，避免 Hint 叠到下一控件。</summary>
         public static float EstimateLayoutWidth()
         {
@@ -224,48 +410,58 @@ namespace Framework.Editor
             out PropertyDrawer drawer)
         {
             drawer = null;
-            if (sourceFieldInfo == null)
+            if (sourceFieldInfo == null || property == null)
                 return false;
 
-            if (s_drawerInstanceCache.TryGetValue(sourceFieldInfo, out drawer))
-                return true;
-
-            if (!TryGetFieldDrawerSpec(sourceFieldInfo, out var spec))
+            if (!TryGetFieldDrawerSpecs(sourceFieldInfo, out var specs))
                 return false;
 
-            drawer = CreateDrawer(spec.DrawerType, sourceFieldInfo, spec.Attribute);
-            if (drawer == null)
-                return false;
-
-            s_drawerInstanceCache[sourceFieldInfo] = drawer;
-            return true;
-        }
-
-        private static bool TryGetFieldDrawerSpec(
-            FieldInfo sourceFieldInfo,
-            out FieldDrawerSpec spec)
-        {
-            if (s_fieldSpecCache.TryGetValue(sourceFieldInfo, out var cached))
+            for (int i = 0; i < specs.Length; i++)
             {
-                if (cached.HasValue)
-                {
-                    spec = cached.Value;
-                    return true;
-                }
+                var spec = specs[i];
+                if (!CanSafelyUseAttribute(spec.Attribute, property))
+                    continue;
 
-                spec = default;
-                return false;
+                drawer = GetOrCreateDrawer(sourceFieldInfo, spec);
+                return drawer != null;
             }
 
-            spec = default;
-            FieldDrawerSpec? resolved = null;
+            return false;
+        }
+
+        static PropertyDrawer GetOrCreateDrawer(FieldInfo sourceFieldInfo, FieldDrawerSpec spec)
+        {
+            var key = new DrawerInstanceKey
+            {
+                Field = sourceFieldInfo,
+                AttributeType = spec.Attribute != null ? spec.Attribute.GetType() : null,
+            };
+            if (s_drawerInstanceCache.TryGetValue(key, out var drawer))
+                return drawer;
+
+            drawer = CreateDrawer(spec.DrawerType, sourceFieldInfo, spec.Attribute);
+            if (drawer != null)
+                s_drawerInstanceCache[key] = drawer;
+            return drawer;
+        }
+
+        /// <summary>收集字段上全部可转发特性。靠下的优先，便于同一侧多个特性时仍沿用原来的覆盖规则。</summary>
+        private static bool TryGetFieldDrawerSpecs(
+            FieldInfo sourceFieldInfo,
+            out FieldDrawerSpec[] specs)
+        {
+            if (s_fieldSpecCache.TryGetValue(sourceFieldInfo, out specs))
+                return specs != null && specs.Length > 0;
+
             bool allAttributesResolved = true;
             var attributes = sourceFieldInfo.GetCustomAttributes(typeof(PropertyAttribute), true);
+            var resolved = new List<FieldDrawerSpec>(attributes.Length);
+            var seen = new HashSet<Type>();
             for (int i = attributes.Length - 1; i >= 0; i--)
             {
                 var attribute = (PropertyAttribute)attributes[i];
                 var attrType = attribute.GetType();
-                if (SkipAttributeTypes.Contains(attrType))
+                if (SkipAttributeTypes.Contains(attrType) || !seen.Add(attrType))
                     continue;
 
                 var drawerType = GetDrawerType(attrType);
@@ -276,25 +472,17 @@ namespace Framework.Editor
                     continue;
                 }
 
-                resolved = new FieldDrawerSpec
+                resolved.Add(new FieldDrawerSpec
                 {
                     DrawerType = drawerType,
                     Attribute = attribute,
-                };
-                break;
+                });
             }
 
-            if (resolved.HasValue)
-            {
-                s_fieldSpecCache[sourceFieldInfo] = resolved;
-                spec = resolved.Value;
-                return true;
-            }
-
+            specs = resolved.Count > 0 ? resolved.ToArray() : EmptySpecs;
             if (allAttributesResolved)
-                s_fieldSpecCache[sourceFieldInfo] = null;
-
-            return false;
+                s_fieldSpecCache[sourceFieldInfo] = specs;
+            return specs.Length > 0;
         }
 
         private static PropertyDrawer CreateDrawer(

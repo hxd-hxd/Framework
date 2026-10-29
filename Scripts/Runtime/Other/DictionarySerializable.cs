@@ -15,6 +15,10 @@ namespace Framework
         [NonSerialized]
         private Dictionary<TKey, TValue> _dict;
 
+        /// <summary>代码改过字典后，下次序列化才把字典回写到列表。</summary>
+        [NonSerialized]
+        private bool _dictMutated;
+
         // 可序列化列表
         [SerializeField]
         [HideInInspector]
@@ -37,10 +41,12 @@ namespace Framework
         public DictionarySerializable(IDictionary<TKey, TValue> dictionary)
         {
             _dict = new Dictionary<TKey, TValue>(dictionary);
+            Touch();
         }
         public DictionarySerializable(IEnumerable<KeyValuePair<TKey, TValue>> collection)
         {
             _dict = new Dictionary<TKey, TValue>(collection);
+            Touch();
         }
         public DictionarySerializable(IEqualityComparer<TKey> comparer)
         {
@@ -55,11 +61,13 @@ namespace Framework
         {
             _dict = new Dictionary<TKey, TValue>(dictionary, comparer);
             RememberComparer(comparer);
+            Touch();
         }
         public DictionarySerializable(IEnumerable<KeyValuePair<TKey, TValue>> collection, IEqualityComparer<TKey> comparer)
         {
             _dict = new Dictionary<TKey, TValue>(collection, comparer);
             RememberComparer(comparer);
+            Touch();
         }
         public DictionarySerializable(int capacity, IEqualityComparer<TKey> comparer)
         {
@@ -75,6 +83,7 @@ namespace Framework
             set
             {
                 _dict[key] = value;
+                Touch();
             }
         }
 
@@ -89,10 +98,12 @@ namespace Framework
         public void Add(TKey key, TValue value)
         {
             _dict.Add(key, value);
+            Touch();
         }
         public void Clear()
         {
             _dict.Clear();
+            Touch();
         }
         public bool ContainsKey(TKey key) => _dict.ContainsKey(key);
         public bool ContainsValue(TValue value) => _dict.ContainsValue(value);
@@ -101,11 +112,15 @@ namespace Framework
         public bool Remove(TKey key, out TValue value)
         {
             var result = _dict.Remove(key, out value);
+            if (result)
+                Touch();
             return result;
         }
         public bool Remove(TKey key)
         {
             var result = _dict.Remove(key);
+            if (result)
+                Touch();
             return result;
         }
         public void TrimExcess()
@@ -123,10 +138,23 @@ namespace Framework
         public bool TryAdd(TKey key, TValue value)
         {
             bool result = _dict.TryAdd(key, value);
+            if (result)
+                Touch();
             return result;
         }
         public bool TryGetValue(TKey key, out TValue value) => _dict.TryGetValue(key, out value);
         #endregion
+
+        /// <summary>标记字典已被代码修改，序列化前需要回写列表。</summary>
+        private void Touch() => _dictMutated = true;
+
+        private static bool IsAbsentKey(TKey key)
+        {
+            if (Equals(key, null))
+                return true;
+
+            return key is UnityEngine.Object unityObject && unityObject == null;
+        }
 
         private void RememberComparer(IEqualityComparer<TKey> comparer)
         {
@@ -195,9 +223,9 @@ namespace Framework
             for (int i = 0; i < count; i++)
             {
                 var key = _keys[i];
-                if (Equals(key, null)) continue;
-                var value = _values[i];
-                _dict[key] = value;
+                if (IsAbsentKey(key) || _dict.ContainsKey(key))
+                    continue;
+                _dict.Add(key, _values[i]);
             }
         }
 
@@ -216,7 +244,7 @@ namespace Framework
         }
 
         #region Unity 序列化处理
-        // 反序列化之后
+        // 反序列化之后。列表是检视面板编辑的数据源。
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             try
@@ -226,11 +254,19 @@ namespace Framework
             finally
             {
                 SyncToDict();
+                _dictMutated = false;
             }
         }
 
-        // 序列化之前
-        void ISerializationCallbackReceiver.OnBeforeSerialize() => SyncToList();
+        // 序列化之前。只有代码改过字典才回写列表，避免刷新检视面板时覆盖列表。
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            if (!_dictMutated || _dict == null)
+                return;
+
+            SyncToList();
+            _dictMutated = false;
+        }
         #endregion
 
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => (_dict as ICollection<KeyValuePair<TKey, TValue>>).IsReadOnly;
@@ -261,6 +297,7 @@ namespace Framework
             set
             {
                 (_dict as IDictionary)[key] = value;
+                Touch();
             }
         }
 
@@ -282,6 +319,8 @@ namespace Framework
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             var result = (_dict as ICollection<KeyValuePair<TKey, TValue>>).Remove(item);
+            if (result)
+                Touch();
             return result;
         }
 
@@ -303,11 +342,17 @@ namespace Framework
         void IDictionary.Add(object key, object value)
         {
             (_dict as IDictionary).Add(key, value);
+            Touch();
         }
 
         void IDictionary.Remove(object key)
         {
-            (_dict as IDictionary).Remove(key);
+            var dict = (IDictionary)_dict;
+            if (!dict.Contains(key))
+                return;
+
+            dict.Remove(key);
+            Touch();
         }
 
         bool IDictionary.Contains(object key)

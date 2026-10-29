@@ -21,25 +21,21 @@ namespace Framework
     public static partial class ExtendUtility
     {
         #region Unity 物体查找扩展
-        /// <summary>
-        /// 查找对应的物体，并获取组件
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <summary>查找对应的物体，并获取组件</summary>
         public static T Find<T>(this Transform obj, string name)
         {
             var t = obj.Find(name);
             return t ? t.GetComponent<T>() : default(T);
         }
+        /// <summary>查找对应的物体，并获取组件</summary>
+        public static bool TryFind<T>(this Transform obj, string name, out T result)
+        {
+            result = default;
+            var t = obj.Find(name);
+            return t && t.TryGetComponent(out result);
+        }
 
-        /// <summary>
-        /// 在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中找到指定名称的第一个</summary>
         public static Transform FindOf(this Transform obj, string name)
         {
             Transform target = obj.Find(name);
@@ -55,20 +51,14 @@ namespace Framework
 
             return target;
         }
-        /// <summary>
-        /// 尝试在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>尝试在所有子节点中找到指定名称的第一个</summary>
         public static bool TryFindOf(this Transform obj, string name, out Transform result)
         {
             result = obj.FindOf(name);
 
             return result;
         }
-        /// <summary>
-        /// 尝试在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>尝试在所有子节点中找到指定名称的第一个</summary>
         public static bool TryFindOf(this Transform obj, string name, out GameObject result)
         {
             result = null;
@@ -79,56 +69,33 @@ namespace Framework
             return result;
         }
 
-        /// <summary>
-        /// 在所有子节点中找到指定名称的第一个，并获取其上指定组件
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中找到指定名称的第一个，并获取其上指定组件</summary>
         public static T FindOf<T>(this Transform obj, string name)
         {
             var t = FindOf(obj, name);
             return t ? t.GetComponent<T>() : default(T);
         }
-        /// <summary>
-        /// 在所有子节点中找到指定名称的第一个，并获取其上指定组件
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中找到指定名称的第一个，并获取其上指定组件</summary>
         public static bool TryFindOf<T>(this Transform obj, string name, out T result)
         {
             result = obj.FindOf<T>(name);
             return IsNull(result);
         }
 
-        /// <summary>
-        /// 在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中找到指定名称的第一个</summary>
         public static GameObject FindOf(this GameObject obj, string name)
         {
             var t = FindOf(obj.transform, name);
             return t ? t.gameObject : default;
             //return FindOf(obj.transform, name);
         }
-        /// <summary>
-        /// 尝试在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>尝试在所有子节点中找到指定名称的第一个</summary>
         public static bool TryFindOf(this GameObject obj, string name, out GameObject result)
         {
             result = obj.FindOf(name);
             return result;
         }
-        /// <summary>
-        /// 尝试在所有子节点中找到指定名称的第一个
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>尝试在所有子节点中找到指定名称的第一个</summary>
         public static bool TryFindOf(this GameObject obj, string name, out Transform result)
         {
             result = null;
@@ -139,45 +106,27 @@ namespace Framework
             return result;
         }
 
-        /// <summary>
-        /// 在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/>
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/></summary>
         public static T FindOf<T>(this GameObject obj, string name)
         {
             var t = FindOf(obj, name);
             return t ? t.GetComponent<T>() : default(T);
             //return FindOf(obj.transform, name);
         }
-        /// <summary>
-        /// 尝试在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/>
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>尝试在所有子节点中找到指定名称的第一个，并获取 <typeparamref name="T"/></summary>
         public static bool TryFindOf<T>(this GameObject obj, string name, out T result)
         {
             result = obj.FindOf<T>(name);
             return IsNull(result);
         }
 
-        /// <summary>
-        /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="containName"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写</summary>
         public static Transform FindOfContainName(this GameObject obj, string containName, bool fuzzySearch = true)
         {
             return FindOfContainName(obj.transform, containName, fuzzySearch);
         }
 
-        /// <summary>
-        /// 在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="containName"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中，找到名称中包含指定名字的第一个，默认采用模糊搜索，不区分大小写</summary>
         public static Transform FindOfContainName(this Transform obj, string containName, bool fuzzySearch = true)
         {
             if (!obj) return null;
@@ -206,21 +155,14 @@ namespace Framework
 
             return target;
         }
-        /// <summary>
-        /// 在所有子节点中，找到名称中包含指定名字的第一个对应的组件，默认采用模糊搜索，不区分大小写
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="containName"></param>
-        /// <returns></returns>
+        /// <summary>在所有子节点中，找到名称中包含指定名字的第一个对应的组件，默认采用模糊搜索，不区分大小写</summary>
         public static T FindOfContainName<T>(this Transform obj, string containName, bool fuzzySearch = true) where T : Component
         {
             var t = FindOfContainName(obj, containName, fuzzySearch);
             return t ? t.GetComponent<T>() : null;
         }
 
-        /// <summary>
-        /// 尝试找到指定索引的子节点，并获取其上指定组件
-        /// </summary>
+        /// <summary>尝试找到指定索引的子节点，并获取其上指定组件</summary>
         public static bool TryGetChildComponent<T>(this Transform obj, int index, out T result)
         {
             result = default;
@@ -233,40 +175,26 @@ namespace Framework
             return IsNull(result);
         }
 
-        /// <summary>
-        /// 尝试找到指定索引的子节点，并获取其上指定组件
-        /// </summary>
+        /// <summary>尝试找到指定索引的子节点，并获取其上指定组件</summary>
         public static bool TryGetChildComponent<T>(this GameObject obj, int index, out T result)
         {
             return TryGetChildComponent(obj.transform, index, out result);
         }
         #endregion
 
-        /// <summary>
-        /// 检查是否空对象，由于 unity 对其定义的 UnityEngine.Object 做了特殊处理，这里也处理了unity 的这种特殊情况
-        /// </summary>
+        /// <summary>检查是否空对象，由于 unity 对其定义的 UnityEngine.Object 做了特殊处理，这里也处理了unity 的这种特殊情况</summary>
         private static bool IsNull<T>(T obj)
         {
             if (obj is UnityEngine.Object uobj) return uobj == null;
             return obj == null;
         }
 
-        /// <summary>
-        /// 期望有此组件，没有则添加
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="transform"></param>
-        /// <returns></returns>
+        /// <summary>期望有此组件，没有则添加</summary>
         public static T ExpectComponent<T>(this Component self) where T : Component
         {
             return ExpectComponent<T>(self.gameObject);
         }
-        /// <summary>
-        /// 期望有此组件，没有则添加
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="transform"></param>
-        /// <returns></returns>
+        /// <summary>期望有此组件，没有则添加</summary>
         public static T ExpectComponent<T>(this GameObject self) where T : Component
         {
             //T cp = self.GetComponent<T>() ?? self.AddComponent<T>();
@@ -279,10 +207,7 @@ namespace Framework
         }
 
         public static void ResetTransformLocal(this GameObject t) => ResetTransformLocal(t.transform);
-        /// <summary>
-        /// 重置 <see cref="Transform"/> 本地变换
-        /// </summary>
-        /// <param name="t"></param>
+        /// <summary>重置 <see cref="Transform"/> 本地变换</summary>
         public static void ResetTransformLocal(this Transform t)
         {
             t.localEulerAngles = Vector3.zero;
@@ -297,39 +222,23 @@ namespace Framework
         }
 
 
-        /// <summary>
-        /// 获取宽度，考虑缩放 <see cref="Transform.lossyScale"/> 的影响
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
+        /// <summary>获取宽度，考虑缩放 <see cref="Transform.lossyScale"/> 的影响</summary>
         public static float GetWidth(this RectTransform self)
         {
             return self ? self.rect.width * self.lossyScale.x : 0;
         }
-        /// <summary>
-        /// 获取宽度，考虑缩放 <see cref="Transform.lossyScale"/> 的影响
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
+        /// <summary>获取宽度，考虑缩放 <see cref="Transform.lossyScale"/> 的影响</summary>
         public static float GetHeight(this RectTransform self)
         {
             return self ? self.rect.height * self.lossyScale.y : 0;
         }
-        /// <summary>
-        /// 获取宽高，考虑缩放 <see cref="Transform.lossyScale"/> 的影响
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
+        /// <summary>获取宽高，考虑缩放 <see cref="Transform.lossyScale"/> 的影响</summary>
         public static Vector2 GetWidthHeight(this RectTransform self)
         {
             if (!self) return default;
             return new Vector2(self.rect.width * self.lossyScale.x, self.rect.height * self.lossyScale.y);
         }
-        /// <summary> 
-        /// 获取视觉上的（矩形的）中心世界坐标，该坐标无视 <see cref="RectTransform.pivot"/> 的偏移
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
+        /// <summary>获取视觉上的（矩形的）中心世界坐标，该坐标无视 <see cref="RectTransform.pivot"/> 的偏移</summary>
         public static Vector2 GetVisionCentralPosition(this RectTransform self)
         {
             if (self == null) return default;
@@ -346,11 +255,7 @@ namespace Framework
 
             return newPos;
         }
-        /// <summary> 
-        /// 获取视觉上的矩形的主要顶点，该坐标无视 <see cref="RectTransform.pivot"/> 的偏移
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
+        /// <summary>获取视觉上的矩形的主要顶点，该坐标无视 <see cref="RectTransform.pivot"/> 的偏移</summary>
         public static void GetRectPrimaryVertex(this RectTransform self
             , out Vector3 center
             , out Vector3 leftDown
@@ -380,42 +285,23 @@ namespace Framework
                center.x + wHalf, center.y - hHalf, center.z);
         }
 
-        /// <summary>
-        /// 计算中点坐标
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
+        /// <summary>计算中点坐标</summary>
         public static Vector2 Midpoint(this Vector2 target, Vector2 v)
         {
             return (target - v) / 2 + v;
         }
-        /// <summary>
-        /// 计算中点坐标
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
+        /// <summary>计算中点坐标</summary>
         public static Vector3 Midpoint(this Vector3 target, Vector3 v)
         {
             return (target - v) / 2 + v;
         }
-        /// <summary>
-        /// 计算中点坐标
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
+        /// <summary>计算中点坐标</summary>
         public static Vector3 Midpoint(this Vector4 target, Vector4 v)
         {
             return (target - v) / 2 + v;
         }
 
-        /// <summary>
-        /// 转为 Texture2D
-        /// </summary>
-        /// <param name="sprite"></param>
-        /// <returns></returns>
+        /// <summary>转为 Texture2D</summary>
         public static Texture2D ToTexture2D(this Sprite sprite)
         {
             var targetTex = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
@@ -428,36 +314,22 @@ namespace Framework
             targetTex.Apply();
             return targetTex;
         }
-        /// <summary>
-        /// 转为 Sprite
-        /// </summary>
-        /// <param name="t2d"></param>
-        /// <returns></returns>
+        /// <summary>转为 Sprite</summary>
         public static Sprite ToSprite(this Texture2D t2d)
         {
             Sprite s = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
             return s;
         }
 
-        /// <summary>
-        /// 循环播放动画
-        /// </summary>
-        /// <param name="animator"></param>
-        /// <param name="animCallBack"></param>
+        /// <summary>循环播放动画</summary>
         /// <param name="judge">自定义判断</param>
-        /// <returns>Coroutine</returns>
         public static Coroutine LoopPlayAnim(this Animator animator, Action animCallBack, Func<bool> judge)
         {
             Coroutine coroutine = Coroutines.BeginCoroutine(LoopPlayAnimCoroutine(animator, animCallBack, judge));
             return coroutine;
         }
-        /// <summary>
-        /// 循环播放动画
-        /// </summary>
-        /// <param name="animator"></param>
-        /// <param name="animCallBack"></param>
+        /// <summary>循环播放动画</summary>
         /// <param name="judge">自定义判断</param>
-        /// <returns></returns>
         public static IEnumerator LoopPlayAnimCoroutine(this Animator animator, Action animCallBack, Func<bool> judge)
         {
             if (!animator)

@@ -22,9 +22,19 @@ namespace Framework.Editor
         private PropertyDrawer _cachedDrawer;
         private Type _cachedDrawerType;
         private int _boundGeneration = -1;
+        private PropertyDrawer _dictionaryDrawer;
+        private FieldInfo _dictionaryField;
+        private PropertyAttribute _dictionaryAttribute;
+        static readonly Dictionary<Type, bool> s_dictionaryTypeCache = new Dictionary<Type, bool>();
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            if (TryGetDictionaryDrawer(property, out var dictionaryDrawer))
+            {
+                dictionaryDrawer.OnGUI(position, property, label);
+                return;
+            }
+
             if (ShouldNestCurrent(property))
             {
                 EditorGUI.PropertyField(position, property, label, true);
@@ -51,6 +61,9 @@ namespace Framework.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            if (TryGetDictionaryDrawer(property, out var dictionaryDrawer))
+                return dictionaryDrawer.GetPropertyHeight(property, label);
+
             if (ShouldNestCurrent(property))
                 return EditorGUI.GetPropertyHeight(property, label, true);
 
@@ -95,6 +108,84 @@ namespace Framework.Editor
 
             drawer = _cachedDrawer;
             return drawer != null;
+        }
+
+        /// <summary>
+        /// 特性绘制器优先于字典绘制器。字典字段改交给 <see cref="DictionarySerializableDrawer"/>，
+        /// 再由它把 TextArea、Range 等转到匹配的键或值上。
+        /// </summary>
+        bool TryGetDictionaryDrawer(SerializedProperty property, out PropertyDrawer drawer)
+        {
+            drawer = null;
+            if (!IsDictionarySerializableProperty(property))
+                return false;
+
+            if (_dictionaryDrawer == null || _dictionaryField != fieldInfo || _dictionaryAttribute != attribute)
+            {
+                _dictionaryDrawer = PropertyVariableAttributeNesting.CreateDrawer(
+                    typeof(DictionarySerializableDrawer), fieldInfo, attribute);
+                _dictionaryField = fieldInfo;
+                _dictionaryAttribute = attribute;
+            }
+
+            drawer = _dictionaryDrawer;
+            return drawer != null;
+        }
+
+        bool IsDictionarySerializableProperty(SerializedProperty property)
+        {
+            if (property == null || fieldInfo == null || property.propertyType != SerializedPropertyType.Generic)
+                return false;
+            if (!IsDictionarySerializableType(fieldInfo.FieldType))
+                return false;
+            return property.FindPropertyRelative("_keys") != null;
+        }
+
+        static bool IsDictionarySerializableType(Type type)
+        {
+            if (type == null)
+                return false;
+            if (s_dictionaryTypeCache.TryGetValue(type, out bool cached))
+                return cached;
+
+            bool result = false;
+            var current = UnwrapCollection(type);
+            while (current != null)
+            {
+                if (current.IsGenericType
+                    && current.GetGenericTypeDefinition() == typeof(DictionarySerializable<,>))
+                {
+                    result = true;
+                    break;
+                }
+
+                current = current.BaseType;
+            }
+
+            s_dictionaryTypeCache[type] = result;
+            return result;
+        }
+
+        static Type UnwrapCollection(Type type)
+        {
+            while (type != null)
+            {
+                if (type.IsArray)
+                {
+                    type = type.GetElementType();
+                    continue;
+                }
+
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    type = type.GetGenericArguments()[0];
+                    continue;
+                }
+
+                break;
+            }
+
+            return type;
         }
 
         bool ShouldNestCurrent(SerializedProperty property)

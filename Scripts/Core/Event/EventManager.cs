@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+//using System.Linq;
 
 namespace Framework.Event
 {
@@ -13,11 +14,12 @@ namespace Framework.Event
     /// </summary>
     public partial class EventManager<TID> : IEventManager<TID>, ITypePoolObject
     {
-        private Dictionary<TID, List<Delegate>> _entrepot;
+        //private Dictionary<TID, List<Delegate>> _entrepot;
+        private Dictionary<TID, List<EventListener>> _entrepot;
 
         public EventManager()
         {
-            _entrepot = new Dictionary<TID, List<Delegate>>(20);
+            _entrepot = new Dictionary<TID, List<EventListener>>(20);
         }
 
         #region 添加侦听
@@ -26,10 +28,24 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener(TID id, Action listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1>(TID id, Action<T1> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1>(TID id, Action<T1> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
 
         #region 添加侦听，多参数
@@ -38,10 +54,24 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2>(TID id, Action<T1, T2> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3>(TID id, Action<T1, T2, T3> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3>(TID id, Action<T1, T2, T3> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4>(TID id,
@@ -49,11 +79,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4>(TID id,
+            Action<T1, T2, T3, T4> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5>(TID id,
             Action<T1, T2, T3, T4, T5> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5>(TID id,
+            Action<T1, T2, T3, T4, T5> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6>(TID id,
@@ -61,11 +107,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6>(TID id,
+            Action<T1, T2, T3, T4, T5, T6> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8>(TID id,
@@ -73,11 +135,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id,
@@ -85,11 +163,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id,
@@ -97,11 +191,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id,
@@ -109,11 +219,27 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id,
             Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> listener)
         {
             AddListener(id, listener as Delegate);
+        }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
         }
         /// <summary>添加侦听</summary>
         public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id,
@@ -121,18 +247,87 @@ namespace Framework.Event
         {
             AddListener(id, listener as Delegate);
         }
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public void AddListener<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(TID id,
+            Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> listener, int priority)
+        {
+            AddListener(id, listener as Delegate, priority);
+        }
 
         #endregion
 
-        /// <summary>添加侦听</summary>
         public virtual void AddListener(TID id, Delegate listener)
         {
             if (listener == null) return;
 
-            if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
-                _entrepot[id] = new List<Delegate>();
-            if (!_entrepot[id].Contains(listener))
-                _entrepot[id].Add(listener);
+            //if (!_entrepot.ContainsKey(id) || _entrepot[id] == null)
+            //    _entrepot[id] = new List<EventListener>();
+            //if (!_entrepot[id].Contains(listener))
+            //    _entrepot[id].Add(listener);
+
+            // 已注册，未指定优先级则不允许按默认优先级修改
+            if (IsListening(id, listener)) return;
+
+            var el = new EventListener();
+            el.listener = listener;
+            AddListener(id, el);
+        }
+
+        public virtual void AddListener(TID id, Delegate listener, int priority)
+        {
+            if (listener == null) return;
+
+            var el = new EventListener();
+            el.listener = listener;
+            el.priority = priority;
+            AddListener(id, el);
+        }
+
+        internal void AddListener(TID id, EventListener el)
+        {
+            if (!_entrepot.TryGetValue(id, out var events) || events == null)
+                events = _entrepot[id] = new List<EventListener>();
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                var item = events[i];
+                // 不允许重复侦听
+                //if (item.listener == el.listener)
+                if (item == el) 
+                    return;
+                // 允许修改优先级
+                if (item.listener == el.listener && item.priority != el.priority)
+                {
+                    events.RemoveAt(i);
+                    break;
+                }
+            }
+
+            if (events.Count == 0)
+            {
+                events.Add(el);
+                return;
+            }
+
+            // 优先级在列表中的顺序：前大后小
+            // 优先看是否在最前端
+            if (el.priority > events[0].priority)
+            {
+                // 放到最前面
+                events.Insert(0, el);
+                return;
+            }
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                var item = events[i];
+                if (el.priority <= item.priority)
+                {
+                    events.Insert(i + 1, el);
+                    return;
+                }
+            }
         }
         #endregion
 
@@ -246,9 +441,21 @@ namespace Framework.Event
         {
             if (listener == null) return;
 
-            if (_entrepot.ContainsKey(id))
-                //if (_entrepot[id].Contains(listener))
-                _entrepot[id].Remove(listener);
+            //if (_entrepot.ContainsKey(id))
+            //    _entrepot[id].Remove(listener);
+
+            if (_entrepot.TryGetValue(id, out var events))
+            {
+                for (int i = 0; i < events.Count; i++)
+                {
+                    var item = events[i];
+                    if (item.listener == listener)
+                    {
+                        events.RemoveAt(i);
+                        return;
+                    }
+                }
+            }
         }
         #endregion
 
@@ -264,7 +471,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action ea)
+                    if (msgs[i].listener is Action ea)
                         ea.Invoke();
                 }
             }
@@ -279,7 +486,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1> ea)
+                    if (msgs[i].listener is Action<T1> ea)
                         ea.Invoke(msg1);
                 }
             }
@@ -296,7 +503,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2> ea)
+                    if (msgs[i].listener is Action<T1, T2> ea)
                         ea.Invoke(msg1, msg2);
                 }
             }
@@ -311,7 +518,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3> ea)
                         ea.Invoke(msg1, msg2, msg3);
                 }
             }
@@ -327,7 +534,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4);
                 }
             }
@@ -343,7 +550,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5);
                 }
             }
@@ -359,7 +566,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6);
                 }
             }
@@ -375,7 +582,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7);
                 }
             }
@@ -391,7 +598,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8);
                 }
             }
@@ -407,7 +614,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9);
                 }
             }
@@ -423,7 +630,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
                 }
             }
@@ -439,7 +646,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11);
                 }
             }
@@ -455,7 +662,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12);
                 }
             }
@@ -471,7 +678,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13);
                 }
             }
@@ -487,7 +694,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14);
                 }
             }
@@ -503,7 +710,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15);
                 }
             }
@@ -519,7 +726,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    if (msgs[i] is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ea)
+                    if (msgs[i].listener is Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> ea)
                         ea.Invoke(msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11, msg12, msg13, msg14, msg15, msg16);
                 }
             }
@@ -547,7 +754,7 @@ namespace Framework.Event
             {
                 for (int i = 0; i < msgs.Count; i++)
                 {
-                    msgs[i].DynamicInvoke(args);
+                    msgs[i].listener?.DynamicInvoke(args);
                 }
             }
 
@@ -591,8 +798,18 @@ namespace Framework.Event
 
         public bool IsListening(TID id, Delegate listener)
         {
-            if (_entrepot.ContainsKey(id))
-                return _entrepot[id].Contains(listener);
+            //if (_entrepot.ContainsKey(id))
+            //    return _entrepot[id].Contains(listener); 
+
+            if (_entrepot.TryGetValue(id, out var events))
+            {
+                for (int i = 0; i < events.Count; i++)
+                {
+                    var item = events[i];
+                    if (item.listener == listener)
+                        return true;
+                }
+            }
             return false;
         }
 
@@ -616,6 +833,13 @@ namespace Framework.Event
         {
             if (id is TID tid)
                 AddListener(tid, listener);
+            else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
+        }
+
+        void IEventManager.AddListener<TID1>(TID1 id, Delegate listener, int priority)
+        {
+            if (id is TID tid)
+                AddListener(tid, listener, priority);
             else throw new TypeAccessException($"类型必须是“{typeof(TID)}”，而不是“{typeof(TID1)}”");
         }
 

@@ -1,11 +1,7 @@
-﻿// -------------------------
+// -------------------------
 // 创建日期：2024/7/17 14:05:47
 // -------------------------
 
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,11 +10,8 @@ namespace Framework
     /// <summary>
     /// 碰撞器事件
     /// </summary>
-    [ExecuteAlways]
     public class ColliderEvent : MonoBehaviour
     {
-        //public Collider _collider;
-
         public UnityEvent<Collider> onTriggerEnterEvent, onTriggerExitEvent, onTriggerStayEvent;
         public UnityEvent<Collider2D> onTriggerEnter2DEvent, onTriggerExit2DEvent, onTriggerStay2DEvent;
 
@@ -27,13 +20,9 @@ namespace Framework
 
         protected virtual void Start()
         {
-            //if (!_collider)
-            //{
-            //    _collider = GetComponent<Collider>();
-            //}
+            
         }
 
-        //protected virtual void 
         private void OnTriggerEnter(Collider other)
         {
             onTriggerEnterEvent?.Invoke(other);

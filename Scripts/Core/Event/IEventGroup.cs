@@ -23,6 +23,11 @@ namespace Framework.Event
         /// <summary>添加侦听</summary>
         void AddListener<TID>(TID id, Delegate listener);
 
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        void AddListener<TID>(TID id, Delegate listener, int priority);
+
         /// <summary>移除侦听</summary>
         void RemoveListener<TID>(TID id, Delegate listener);
     }
@@ -37,6 +42,11 @@ namespace Framework.Event
 
         /// <summary>添加侦听</summary>
         void AddListener(TID id, Delegate listener);
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        void AddListener(TID id, Delegate listener, int priority);
 
         /// <summary>移除侦听</summary>
         void RemoveListener(TID id, Delegate listener);

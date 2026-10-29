@@ -35,6 +35,14 @@ namespace Framework.Event
             EventCenter.AddListener(listener);
         }
 
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
+        }
+
         public static void RemoveListener(Action<T> listener)
         {
             EventCenter.RemoveListener(listener);
@@ -95,6 +103,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -160,6 +176,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -228,6 +252,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -299,6 +331,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -373,6 +413,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -450,6 +498,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -530,6 +586,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -613,6 +677,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -699,6 +771,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -788,6 +868,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -880,6 +968,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -975,6 +1071,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -1073,6 +1177,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -1174,6 +1286,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -1278,6 +1398,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)
@@ -1385,6 +1513,14 @@ namespace Framework.Event
         public static void AddListener(Action<T> listener)
         {
             EventCenter.AddListener(listener);
+        }
+
+        /// <summary>添加侦听
+        /// <para><paramref name="priority"/>：监听执行优先级，数值越大越先执行，同优先级遵循先来后到原则</para>
+        /// </summary>
+        public static void AddListener(Action<T> listener, int priority)
+        {
+            EventCenter.AddListener(listener, priority);
         }
 
         public static void RemoveListener(Action<T> listener)

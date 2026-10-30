@@ -43,11 +43,11 @@ namespace Framework
             _dict = new Dictionary<TKey, TValue>(dictionary);
             Touch();
         }
-        public DictionarySerializable(IEnumerable<KeyValuePair<TKey, TValue>> collection)
-        {
-            _dict = new Dictionary<TKey, TValue>(collection);
-            Touch();
-        }
+        //public DictionarySerializable(IEnumerable<KeyValuePair<TKey, TValue>> collection)
+        //{
+        //    _dict = new Dictionary<TKey, TValue>(collection);
+        //    Touch();
+        //}
         public DictionarySerializable(IEqualityComparer<TKey> comparer)
         {
             _dict = new Dictionary<TKey, TValue>(comparer);
@@ -65,7 +65,12 @@ namespace Framework
         }
         public DictionarySerializable(IEnumerable<KeyValuePair<TKey, TValue>> collection, IEqualityComparer<TKey> comparer)
         {
+#if NET_STANDARD_2_1
             _dict = new Dictionary<TKey, TValue>(collection, comparer);
+#else
+            // Unity 2020.3 的 .NET Standard 2.0 / .NET 4.x 没有这个构造函数。
+            _dict = CreateFromCollection(collection, comparer);
+#endif
             RememberComparer(comparer);
             Touch();
         }
@@ -74,6 +79,34 @@ namespace Framework
             _dict = new Dictionary<TKey, TValue>(capacity, comparer);
             RememberComparer(comparer);
         }
+
+#if !NET_STANDARD_2_1
+        /// <summary>按 .NET Standard 2.1 的 Dictionary(IEnumerable, comparer) 填充。重复键同样抛出。</summary>
+        static Dictionary<TKey, TValue> CreateFromCollection(IEnumerable<KeyValuePair<TKey, TValue>> collection, IEqualityComparer<TKey> comparer)
+        {
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
+
+            int capacity = 0;
+            if (collection is ICollection<KeyValuePair<TKey, TValue>> genericCollection)
+                capacity = genericCollection.Count;
+            else if (collection is ICollection collectionBase)
+                capacity = collectionBase.Count;
+
+            var dict = new Dictionary<TKey, TValue>(capacity, comparer);
+            foreach (var pair in collection)
+                dict.Add(pair.Key, pair.Value);
+            return dict;
+        }
+
+        Dictionary<TKey, TValue> CopyWithCapacity(int capacity)
+        {
+            var copy = new Dictionary<TKey, TValue>(capacity, _dict.Comparer);
+            foreach (var pair in _dict)
+                copy.Add(pair.Key, pair.Value);
+            return copy;
+        }
+#endif
         #endregion
 
         #region 属性
@@ -107,11 +140,32 @@ namespace Framework
         }
         public bool ContainsKey(TKey key) => _dict.ContainsKey(key);
         public bool ContainsValue(TValue value) => _dict.ContainsValue(value);
-        public int EnsureCapacity(int capacity) => _dict.EnsureCapacity(capacity);
+        public int EnsureCapacity(int capacity)
+        {
+#if NET_STANDARD_2_1
+            return _dict.EnsureCapacity(capacity);
+#else
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+
+            // 旧版 Dictionary 不暴露容量。元素个数已经不少于请求值时，容量必然足够。
+            if (capacity <= _dict.Count)
+                return _dict.Count;
+
+            _dict = CopyWithCapacity(capacity);
+            return capacity;
+#endif
+        }
         public Dictionary<TKey, TValue>.Enumerator GetEnumerator() => _dict.GetEnumerator();
         public bool Remove(TKey key, out TValue value)
         {
+#if NET_STANDARD_2_1
             var result = _dict.Remove(key, out value);
+#else
+            var result = _dict.TryGetValue(key, out value);
+            if (result)
+                _dict.Remove(key);
+#endif
             if (result)
                 Touch();
             return result;
@@ -125,19 +179,38 @@ namespace Framework
         }
         public void TrimExcess()
         {
+#if NET_STANDARD_2_1
             _dict.TrimExcess(_dict.Count);
+#else
+            _dict = CopyWithCapacity(_dict.Count);
+#endif
             _keys?.TrimExcess();
             _values?.TrimExcess();
         }
         public void TrimExcess(int capacity)
         {
+#if NET_STANDARD_2_1
             _dict.TrimExcess(capacity);
+#else
+            if (capacity < _dict.Count)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+
+            _dict = CopyWithCapacity(capacity);
+#endif
             SetListCapacity(_keys, capacity);
             SetListCapacity(_values, capacity);
         }
         public bool TryAdd(TKey key, TValue value)
         {
+#if NET_STANDARD_2_1
             bool result = _dict.TryAdd(key, value);
+#else
+            if (_dict.ContainsKey(key))
+                return false;
+
+            _dict.Add(key, value);
+            bool result = true;
+#endif
             if (result)
                 Touch();
             return result;

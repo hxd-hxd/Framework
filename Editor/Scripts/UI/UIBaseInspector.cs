@@ -49,7 +49,7 @@ namespace Framework.Editor
             Undo.RecordObject(ui.gameObject, "Enable");
             Undo.RecordObject(ui, "Enable");
             if (ui.transform.parent)
-                Undo.RegisterChildrenOrderUndo(ui.transform.parent, "Enable");
+                RegisterChildrenOrderUndo(ui.transform.parent, "Enable");
 
             if (ui is UIPanelBase panel && panel.canvas)
                 Undo.RecordObject(panel.canvas, "Enable");
@@ -62,6 +62,19 @@ namespace Framework.Editor
                 EditorUtility.SetDirty(dirtyPanel.canvas);
 
             Undo.CollapseUndoOperations(undoGroup);
+        }
+
+        /// <summary>
+        /// 记录父节点的子物体顺序。
+        /// <see cref="Undo.RegisterChildrenOrderUndo"/> 从 Unity 2021.2 才有；更早版本用完整对象撤销，同样能还原兄弟顺序。
+        /// </summary>
+        protected static void RegisterChildrenOrderUndo(Transform parent, string name)
+        {
+#if UNITY_2021_2_OR_NEWER
+            Undo.RegisterChildrenOrderUndo(parent, name);
+#else
+            Undo.RegisterCompleteObjectUndo(parent, name);
+#endif
         }
     }
 }

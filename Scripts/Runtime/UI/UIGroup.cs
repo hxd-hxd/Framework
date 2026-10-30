@@ -123,7 +123,12 @@ namespace Framework.UI
 
             var go = new GameObject(name);
             go.transform.SetParent(transform);
+#if UNITY_2022_1_OR_NEWER
             go.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+#else
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+#endif
             var group = go.AddComponent<UIGroup>();
             group.groupName = name;
             internalItems.Add(group);

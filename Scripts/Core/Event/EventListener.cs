@@ -24,7 +24,11 @@ namespace Framework.Event
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(listener, priority);
+            unchecked
+            {
+                int hash = EqualityComparer<Delegate>.Default.GetHashCode(listener);
+                return (hash * 397) ^ priority;
+            }
         }
 
         public static bool operator ==(EventListener l, EventListener r)

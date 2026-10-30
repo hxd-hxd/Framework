@@ -305,11 +305,48 @@ namespace Framework.Editor
 
             label = EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginChangeCheck();
-            Gradient gradient = EditorGUI.GradientField(position, label, property.gradientValue, gradientUsage.hdr);
+            Gradient gradient = GetGradientValue(property) ?? new Gradient();
+#if UNITY_2020_2_OR_NEWER
+            gradient = EditorGUI.GradientField(position, label, gradient, gradientUsage.hdr, gradientUsage.colorSpace);
+#else
+            gradient = EditorGUI.GradientField(position, label, gradient, gradientUsage.hdr);
+#endif
             if (EditorGUI.EndChangeCheck())
-                property.gradientValue = gradient;
+                SetGradientValue(property, gradient);
             EditorGUI.EndProperty();
         }
+
+        /// <summary>
+        /// SerializedProperty.gradientValue 从 2022.1 起才公开。更早版本同名属性是 internal，用反射读写。
+        /// </summary>
+#if UNITY_2022_1_OR_NEWER
+        static Gradient GetGradientValue(SerializedProperty property)
+        {
+            return property.gradientValue;
+        }
+
+        static void SetGradientValue(SerializedProperty property, Gradient value)
+        {
+            property.gradientValue = value;
+        }
+#else
+        static readonly PropertyInfo GradientValueProperty = typeof(SerializedProperty).GetProperty(
+            "gradientValue",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        static Gradient GetGradientValue(SerializedProperty property)
+        {
+            return GradientValueProperty != null
+                ? GradientValueProperty.GetValue(property, null) as Gradient
+                : null;
+        }
+
+        static void SetGradientValue(SerializedProperty property, Gradient value)
+        {
+            if (GradientValueProperty != null)
+                GradientValueProperty.SetValue(property, value, null);
+        }
+#endif
 
         static void DrawMin(Rect position, SerializedProperty property, GUIContent label, MinAttribute minAttribute)
         {

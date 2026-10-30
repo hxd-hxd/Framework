@@ -32,7 +32,7 @@ namespace Framework.Editor
             if (panel.canvas)
                 Undo.RecordObject(panel.canvas, "置顶界面");
             if (panel.transform.parent)
-                Undo.RegisterChildrenOrderUndo(panel.transform.parent, "置顶界面");
+                RegisterChildrenOrderUndo(panel.transform.parent, "置顶界面");
 
             panel.PanelTopmost();
         }

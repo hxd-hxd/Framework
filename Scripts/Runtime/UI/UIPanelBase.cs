@@ -74,7 +74,11 @@ namespace Framework
         {
             base.Awake();
 
+#if UNITY_2022_1_OR_NEWER
             if (!_canvas) _canvas = GetComponentInParent<Canvas>(true);
+#else
+            if (!_canvas) _canvas = GetComponentInParent<Canvas>();
+#endif
 
             UIPanelManager.Register(this);
         }

@@ -1316,7 +1316,9 @@ namespace Framework.Editor
                 case SerializedPropertyType.RectInt:
                 case SerializedPropertyType.Character:
                 case SerializedPropertyType.Quaternion:
+#if UNITY_2022_1_OR_NEWER
                 case SerializedPropertyType.Hash128:
+#endif
                 case SerializedPropertyType.Gradient:
                 case SerializedPropertyType.AnimationCurve:
                     return true;
@@ -1365,6 +1367,7 @@ namespace Framework.Editor
                 case "RectInt":
                 case "Bounds":
                 case "BoundsInt":
+                case "Hash128":
                     return true;
                 default:
                     return false;
@@ -1535,7 +1538,7 @@ namespace Framework.Editor
                         return true;
                     return key.objectReferenceValue == null;
                 case SerializedPropertyType.ManagedReference:
-                    return key.managedReferenceId == -1;
+                    return IsAbsentManagedReference(key);
                 default:
                     return false;
             }
@@ -1618,7 +1621,7 @@ namespace Framework.Editor
 
             long hash = Mix(FnvOffset, (long)root.propertyType);
             if (root.propertyType == SerializedPropertyType.ManagedReference)
-                hash = Mix(hash, root.managedReferenceId);
+                hash = Mix(hash, ManagedReferenceHash(root));
             if (includeExpanded)
                 hash = Mix(hash, root.isExpanded ? 1L : 2L);
             if (!root.hasChildren)
@@ -1716,15 +1719,17 @@ namespace Framework.Editor
                     hash = Mix(Mix(Mix(FnvOffset, boundsInt.x), boundsInt.y), boundsInt.z);
                     hash = Mix(Mix(Mix(hash, boundsInt.size.x), boundsInt.size.y), boundsInt.size.z);
                     return true;
+#if UNITY_2022_1_OR_NEWER
                 case SerializedPropertyType.Hash128:
                     hash = property.hash128Value.GetHashCode();
                     return true;
+#endif
                 case SerializedPropertyType.AnimationCurve:
                 case SerializedPropertyType.Gradient:
                     hash = (long)property.propertyType;
                     return true;
                 default:
-                    return false;
+                    return TryHash128Fallback(property, out hash);
             }
         }
 
@@ -1789,15 +1794,17 @@ namespace Framework.Editor
                 case SerializedPropertyType.BoundsInt:
                     equal = a.boundsIntValue.Equals(b.boundsIntValue);
                     return true;
+#if UNITY_2022_1_OR_NEWER
                 case SerializedPropertyType.Hash128:
                     equal = a.hash128Value == b.hash128Value;
                     return true;
+#endif
                 case SerializedPropertyType.AnimationCurve:
                 case SerializedPropertyType.Gradient:
                     equal = false;
                     return true;
                 default:
-                    return false;
+                    return TryHash128FallbackEquals(a, b, out equal);
             }
         }
 
@@ -1866,17 +1873,126 @@ namespace Framework.Editor
 
         static bool TryReadKey(SerializedProperty key, out object value)
         {
+            return TryGetBoxedValue(key, out value);
+        }
+
+        /// <summary>
+        /// boxedValue 从 2022.1 起才有。更早版本按属性路径读目标对象。
+        /// </summary>
+        static bool TryGetBoxedValue(SerializedProperty property, out object value)
+        {
             value = null;
+            if (property == null)
+                return false;
+
             try
             {
-                value = key.boxedValue;
+#if UNITY_2022_1_OR_NEWER
+                value = property.boxedValue;
                 return true;
+#else
+                var target = property.serializedObject.targetObject;
+                if (target == null)
+                    return false;
+                value = ReadSerializedValue(target, property.propertyPath);
+                return true;
+#endif
             }
             catch (Exception)
             {
+                value = null;
                 return false;
             }
         }
+
+        /// <summary>
+        /// managedReferenceId 从 2021.2 起才有。空引用是 -2，未知是 -1。
+        /// </summary>
+        static bool IsAbsentManagedReference(SerializedProperty property)
+        {
+#if UNITY_2021_2_OR_NEWER
+            return property.managedReferenceId < 0L;
+#else
+            return string.IsNullOrEmpty(property.managedReferenceFullTypename);
+#endif
+        }
+
+        static long ManagedReferenceHash(SerializedProperty property)
+        {
+#if UNITY_2021_2_OR_NEWER
+            return property.managedReferenceId;
+#else
+            return HashString(property.managedReferenceFullTypename);
+#endif
+        }
+
+        /// <summary>
+        /// 2022.1 之前 Hash128 不是 <see cref="SerializedPropertyType"/>，序列化类型名仍是 Hash128。
+        /// </summary>
+        static bool TryHash128Fallback(SerializedProperty property, out long hash)
+        {
+            hash = 0;
+#if UNITY_2022_1_OR_NEWER
+            return false;
+#else
+            if (property.type != "Hash128" || !TryGetBoxedValue(property, out object boxed) || !(boxed is Hash128 hash128))
+                return false;
+            hash = hash128.GetHashCode();
+            return true;
+#endif
+        }
+
+        static bool TryHash128FallbackEquals(SerializedProperty a, SerializedProperty b, out bool equal)
+        {
+            equal = false;
+#if UNITY_2022_1_OR_NEWER
+            return false;
+#else
+            if (a.type != "Hash128")
+                return false;
+            equal = TryGetBoxedValue(a, out object left)
+                && TryGetBoxedValue(b, out object right)
+                && left is Hash128 hashA
+                && right is Hash128 hashB
+                && hashA == hashB;
+            return true;
+#endif
+        }
+
+#if !UNITY_2022_1_OR_NEWER
+        static object ReadSerializedValue(object root, string path)
+        {
+            object current = root;
+            int start = 0;
+            while (start < path.Length)
+            {
+                if (current == null)
+                    return null;
+
+                int dot = path.IndexOf('.', start);
+                string part = dot >= 0 ? path.Substring(start, dot - start) : path.Substring(start);
+                start = dot >= 0 ? dot + 1 : path.Length;
+                if (part == "Array")
+                    continue;
+                if (part.StartsWith("data[", StringComparison.Ordinal) && part.EndsWith("]"))
+                {
+                    if (!int.TryParse(part.Substring(5, part.Length - 6), out int index))
+                        return null;
+                    if (!(current is IList list) || (uint)index >= (uint)list.Count)
+                        return null;
+                    current = list[index];
+                    continue;
+                }
+
+                var field = FindField(current.GetType(), part);
+                if (field == null)
+                    return null;
+                current = field.GetValue(current);
+            }
+
+            return current;
+        }
+#endif
 
         static bool IsNullKey(object key)
         {

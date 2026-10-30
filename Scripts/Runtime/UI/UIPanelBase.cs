@@ -10,7 +10,6 @@ using UnityEngine;
 namespace Framework
 {
     /// <summary>UGUI 界面基类</summary>
-    [ExecuteInEditMode]
     public abstract partial class UIPanelBase : UIBase
     {
         [Tooltip("所属画布")]
@@ -70,6 +69,7 @@ namespace Framework
             }
         }
 
+        [ExecuteInEditMode]
         protected override void Awake()
         {
             base.Awake();
@@ -88,7 +88,7 @@ namespace Framework
         {
             base.OnEnable();
 
-            UIPanelManager.GetCanvas(this);
+            //UIPanelManager.GetCanvas(this);
 
             if (Application.isPlaying)
             {

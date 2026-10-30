@@ -64,8 +64,11 @@ namespace Framework.Editor
             { typeof(float), "float" },
             { typeof(double), "double" },
             { typeof(decimal), "decimal" },
+#if UNITY_2021_2_OR_NEWER
+            // nint / nuint 是 C# 9 关键字，对应 IntPtr / UIntPtr。Unity 2021.2 起才支持。
             { typeof(nint), "nint" },
             { typeof(nuint), "nuint" },
+#endif
             { typeof(string), "string" },
             { typeof(object), "object" },
         };

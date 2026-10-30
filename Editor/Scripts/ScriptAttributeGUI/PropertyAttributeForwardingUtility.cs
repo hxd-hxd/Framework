@@ -307,7 +307,11 @@ namespace Framework.Editor
             EditorGUI.BeginChangeCheck();
             Gradient gradient = GetGradientValue(property) ?? new Gradient();
 #if UNITY_2020_2_OR_NEWER
-            gradient = EditorGUI.GradientField(position, label, gradient, gradientUsage.hdr, gradientUsage.colorSpace);
+            // Uninitialized 表示沿用项目颜色空间。直接传给 GradientField 会每帧警告。
+            ColorSpace colorSpace = gradientUsage.colorSpace;
+            if (colorSpace == ColorSpace.Uninitialized)
+                colorSpace = QualitySettings.activeColorSpace;
+            gradient = EditorGUI.GradientField(position, label, gradient, gradientUsage.hdr, colorSpace);
 #else
             gradient = EditorGUI.GradientField(position, label, gradient, gradientUsage.hdr);
 #endif

@@ -19,13 +19,29 @@ namespace Framework
         [NonSerialized]
         private bool _dictMutated;
 
-        // 可序列化列表
+        /// <summary>序列化用的一条键值。运行时查找仍走内部字典。</summary>
+        [Serializable]
+        public struct Entry
+        {
+            [SerializeField]
+            private TKey _key;
+            [SerializeField]
+            private TValue _value;
+
+            public Entry(TKey key, TValue value)
+            {
+                _key = key;
+                _value = value;
+            }
+
+            public TKey Key => _key;
+            public TValue Value => _value;
+        }
+
+        // 可序列化列表。一条记录同时保存键和值，避免两个数组下标错位。
         [SerializeField]
         [HideInInspector]
-        private List<TKey> _keys;
-        [SerializeField]
-        [HideInInspector]
-        private List<TValue> _values;
+        private List<Entry> _entries;
 
         [SerializeField]
         [HideInInspector]
@@ -184,8 +200,7 @@ namespace Framework
 #else
             _dict = CopyWithCapacity(_dict.Count);
 #endif
-            _keys?.TrimExcess();
-            _values?.TrimExcess();
+            _entries?.TrimExcess();
         }
         public void TrimExcess(int capacity)
         {
@@ -197,8 +212,7 @@ namespace Framework
 
             _dict = CopyWithCapacity(capacity);
 #endif
-            SetListCapacity(_keys, capacity);
-            SetListCapacity(_values, capacity);
+            SetListCapacity(_entries, capacity);
         }
         public bool TryAdd(TKey key, TValue value)
         {
@@ -290,30 +304,26 @@ namespace Framework
             _dict ??= new Dictionary<TKey, TValue>();
             _dict.Clear();
 
-            if (_keys == null || _values == null) return;
+            if (_entries == null)
+                return;
 
-            int count = Math.Min(_keys.Count, _values.Count);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < _entries.Count; i++)
             {
-                var key = _keys[i];
+                var item = _entries[i];
+                var key = item.Key;
                 if (IsAbsentKey(key) || _dict.ContainsKey(key))
                     continue;
-                _dict.Add(key, _values[i]);
+                _dict.Add(key, item.Value);
             }
         }
 
         private void SyncToList()
         {
-            _keys ??= new List<TKey>(_dict.Count);
-            _values ??= new List<TValue>(_dict.Count);
-            _keys.Clear();
-            _values.Clear();
+            _entries ??= new List<Entry>(_dict.Count);
+            _entries.Clear();
 
             foreach (var item in _dict)
-            {
-                _keys.Add(item.Key);
-                _values.Add(item.Value);
-            }
+                _entries.Add(new Entry(item.Key, item.Value));
         }
 
         #region Unity 序列化处理

@@ -138,7 +138,7 @@ namespace Framework.Editor
                 return false;
             if (!IsDictionarySerializableType(fieldInfo.FieldType))
                 return false;
-            return property.FindPropertyRelative("_keys") != null;
+            return property.FindPropertyRelative("_entries") != null;
         }
 
         static bool IsDictionarySerializableType(Type type)

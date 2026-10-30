@@ -53,7 +53,6 @@ namespace Framework.Editor
         sealed class Entry
         {
             public ReorderableList list;
-            public SerializedProperty values;
             public float layoutWidth;
             public object comparer;
             public Type keyType;
@@ -86,6 +85,7 @@ namespace Framework.Editor
             public float constantHeight = -1f;
             public float[] heights = Array.Empty<float>();
             public int cursor = -1;
+            public SerializedProperty cursorElement;
             public SerializedProperty cursorKey;
             public SerializedProperty cursorValue;
             public int page;
@@ -110,18 +110,17 @@ namespace Framework.Editor
             label = EditorGUI.BeginProperty(position, label, property);
             try
             {
-                var keys = property.FindPropertyRelative("_keys");
-                var values = property.FindPropertyRelative("_values");
+                var entries = property.FindPropertyRelative("_entries");
                 float line = EditorGUIUtility.singleLineHeight;
                 var foldRect = new Rect(position.x, position.y, position.width, line);
 
-                if (keys == null || values == null)
+                if (entries == null)
                 {
                     EditorGUI.LabelField(foldRect, label, new GUIContent("缺少序列化列表"));
                     return;
                 }
 
-                if (keys.hasMultipleDifferentValues || values.hasMultipleDifferentValues)
+                if (entries.hasMultipleDifferentValues)
                 {
                     EditorGUI.LabelField(foldRect, label);
                     int indent = EditorGUI.indentLevel;
@@ -136,15 +135,14 @@ namespace Framework.Editor
                 if (!property.isExpanded)
                     return;
 
-                AlignSize(keys, values);
                 string id = CacheId(property);
                 var entry = GetEntry(id);
                 if (position.width > 1f)
                     entry.layoutWidth = position.width;
 
-                var list = GetList(entry, keys, id);
-                Refresh(entry, property, keys, values, ContentWidth(entry));
-                int count = Mathf.Min(keys.arraySize, values.arraySize);
+                var list = GetList(entry, entries, id);
+                Refresh(entry, property, entries, ContentWidth(entry));
+                int count = entries.arraySize;
 
                 float y = foldRect.yMax + EditorGUIUtility.standardVerticalSpacing;
                 int listIndent = EditorGUI.indentLevel;
@@ -173,25 +171,23 @@ namespace Framework.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             float height = EditorGUIUtility.singleLineHeight;
-            var keys = property.FindPropertyRelative("_keys");
-            var values = property.FindPropertyRelative("_values");
-            if (keys == null || values == null)
+            var entries = property.FindPropertyRelative("_entries");
+            if (entries == null)
                 return height;
 
             float width = _layoutWidth > 1f ? _layoutWidth : EditorGUIUtility.currentViewWidth;
             width = Mathf.Max(1f, width - EditorGUI.indentLevel * 15f);
-            if (keys.hasMultipleDifferentValues || values.hasMultipleDifferentValues)
+            if (entries.hasMultipleDifferentValues)
                 return height + EditorGUIUtility.standardVerticalSpacing + MessageHeight(MultiEditContent, width);
 
             if (!property.isExpanded)
                 return height;
 
-            AlignSize(keys, values);
             string id = CacheId(property);
             var entry = GetEntry(id);
-            var list = GetList(entry, keys, id);
-            Refresh(entry, property, keys, values, ContentWidth(entry));
-            int count = Mathf.Min(keys.arraySize, values.arraySize);
+            var list = GetList(entry, entries, id);
+            Refresh(entry, property, entries, ContentWidth(entry));
+            int count = entries.arraySize;
             height += EditorGUIUtility.standardVerticalSpacing + VisibleListHeight(entry, list, count);
             if (entry.anyConflict)
                 height += EditorGUIUtility.standardVerticalSpacing + MessageHeight(ConflictContent, ContentWidth(entry));
@@ -209,11 +205,11 @@ namespace Framework.Editor
             return entry;
         }
 
-        ReorderableList GetList(Entry entry, SerializedProperty keys, string id)
+        ReorderableList GetList(Entry entry, SerializedProperty entries, string id)
         {
             if (entry.list == null)
             {
-                entry.list = new ReorderableList(keys.serializedObject, keys, true, true, true, true)
+                entry.list = new ReorderableList(entries.serializedObject, entries, true, true, true, true)
                 {
                     drawHeaderCallback = rect =>
                     {
@@ -227,21 +223,19 @@ namespace Framework.Editor
                     },
                     elementHeightCallback = index => ElementHeight(id, index),
                     onAddCallback = AddPair,
-                    onRemoveCallback = RemovePair,
-                    onReorderCallbackWithDetails = ReorderValues
+                    onRemoveCallback = RemovePair
                 };
             }
 
-            entry.list.serializedProperty = keys;
+            entry.list.serializedProperty = entries;
             entry.list.draggable = true;
             return entry.list;
         }
 
-        void Refresh(Entry entry, SerializedProperty property, SerializedProperty keys, SerializedProperty values, float width)
+        void Refresh(Entry entry, SerializedProperty property, SerializedProperty entries, float width)
         {
-            entry.values = values;
             EnsureComparer(entry, property);
-            int count = Mathf.Min(keys.arraySize, values.arraySize);
+            int count = entries.arraySize;
             if (count <= 0)
             {
                 entry.conflictCount = 0;
@@ -256,19 +250,23 @@ namespace Framework.Editor
                 return;
             }
 
-            EnsureShape(entry, keys, values);
-            long keyFp = Scan(entry, keys, values, count, !entry.allLeaf, out long valueFp);
-            UpdateConflicts(entry, keys, count, keyFp);
+            EnsureShape(entry, entries);
+            long keyFp = Scan(entry, entries, count, !entry.allLeaf, out long valueFp);
+            UpdateConflicts(entry, entries, count, keyFp);
             if (entry.allLeaf)
             {
                 bool wide = EditorGUIUtility.wideMode;
                 if (!entry.heightsReady || entry.heightCount != count || entry.measuredWide != wide)
                 {
-                    float row = Mathf.Max(
-                        EditorGUI.GetPropertyHeight(keys.GetArrayElementAtIndex(0), GUIContent.none, true),
-                        EditorGUI.GetPropertyHeight(values.GetArrayElementAtIndex(0), GUIContent.none, true));
-                    FillHeights(entry, count, row);
-                    entry.measuredWide = wide;
+                    var element = entries.GetArrayElementAtIndex(0);
+                    if (TryGetPair(element, out var key, out var value))
+                    {
+                        float row = Mathf.Max(
+                            EditorGUI.GetPropertyHeight(key, GUIContent.none, true),
+                            EditorGUI.GetPropertyHeight(value, GUIContent.none, true));
+                        FillHeights(entry, count, row);
+                        entry.measuredWide = wide;
+                    }
                 }
 
                 BuildPages(entry, count);
@@ -281,7 +279,7 @@ namespace Framework.Editor
             heightFp = Mix(heightFp, FloatBits(EditorGUIUtility.standardVerticalSpacing));
             if (!entry.heightsReady || entry.heightFp != heightFp || entry.heightCount != count)
             {
-                RebuildHeights(entry, keys, values, count);
+                RebuildHeights(entry, entries, count);
                 entry.heightFp = heightFp;
                 entry.heightsReady = true;
                 entry.heightCount = count;
@@ -290,16 +288,27 @@ namespace Framework.Editor
             BuildPages(entry, count);
         }
 
-        static long Scan(Entry entry, SerializedProperty keys, SerializedProperty values, int count, bool hashValues, out long valueFp)
+        static long Scan(Entry entry, SerializedProperty entries, int count, bool hashValues, out long valueFp)
         {
             EnsureLength(ref entry.keyHashes, count);
             EnsureLength(ref entry.absent, count);
             long keyFp = FnvOffset;
             valueFp = FnvOffset;
-            var key = keys.GetArrayElementAtIndex(0);
-            SerializedProperty value = hashValues ? values.GetArrayElementAtIndex(0) : null;
+            var element = entries.GetArrayElementAtIndex(0);
             for (int i = 0; i < count; i++)
             {
+                if (!TryGetPair(element, out var key, out var value))
+                {
+                    for (int j = i; j < count; j++)
+                    {
+                        entry.absent[j] = true;
+                        entry.keyHashes[j] = 0;
+                        keyFp = Mix(keyFp, 1L);
+                    }
+
+                    break;
+                }
+
                 bool absent = IsAbsentProperty(key);
                 entry.absent[i] = absent;
                 long hash = HashSubtree(key, false);
@@ -312,7 +321,7 @@ namespace Framework.Editor
 
                 if (i + 1 >= count)
                     break;
-                if (!key.Next(false) || (hashValues && !value.Next(false)))
+                if (!element.Next(false))
                 {
                     for (int j = i + 1; j < count; j++)
                     {
@@ -328,22 +337,22 @@ namespace Framework.Editor
             return keyFp;
         }
 
-        void UpdateConflicts(Entry entry, SerializedProperty keys, int count, long keyFp)
+        void UpdateConflicts(Entry entry, SerializedProperty entries, int count, long keyFp)
         {
             if (entry.conflictsReady && entry.keyFp == keyFp && entry.conflictCount == count)
                 return;
 
             if (entry.comparer != null)
-                RebuildComparerConflicts(entry, keys, count);
+                RebuildComparerConflicts(entry, entries, count);
             else
-                RebuildSerializedConflicts(entry, keys, count);
+                RebuildSerializedConflicts(entry, entries, count);
 
             entry.keyFp = keyFp;
             entry.conflictCount = count;
             entry.conflictsReady = true;
         }
 
-        static void RebuildSerializedConflicts(Entry entry, SerializedProperty keys, int count)
+        static void RebuildSerializedConflicts(Entry entry, SerializedProperty entries, int count)
         {
             EnsureLength(ref entry.conflicts, count);
             entry.anyConflict = false;
@@ -357,7 +366,7 @@ namespace Framework.Editor
                     {
                         if (entry.absent[j] || entry.keyHashes[j] != hash)
                             continue;
-                        if (KeysContentEqual(keys, j, i))
+                        if (KeysContentEqual(entries, j, i))
                         {
                             conflict = true;
                             break;
@@ -371,15 +380,15 @@ namespace Framework.Editor
             }
         }
 
-        void RebuildComparerConflicts(Entry entry, SerializedProperty keys, int count)
+        void RebuildComparerConflicts(Entry entry, SerializedProperty entries, int count)
         {
             EnsureLength(ref entry.conflicts, count);
             var boxed = new object[count];
             var readable = new bool[count];
-            var element = keys.GetArrayElementAtIndex(0);
+            var element = entries.GetArrayElementAtIndex(0);
             for (int i = 0; i < count; i++)
             {
-                readable[i] = TryReadKey(element, out boxed[i]);
+                readable[i] = TryGetPair(element, out var key, out _) && TryReadKey(key, out boxed[i]);
                 if (i + 1 < count && !element.Next(false))
                     break;
             }
@@ -426,14 +435,20 @@ namespace Framework.Editor
             entry.heightFp = long.MinValue;
         }
 
-        static void RebuildHeights(Entry entry, SerializedProperty keys, SerializedProperty values, int count)
+        static void RebuildHeights(Entry entry, SerializedProperty entries, int count)
         {
             EnsureLength(ref entry.heights, count);
-            var key = keys.GetArrayElementAtIndex(0);
-            var value = values.GetArrayElementAtIndex(0);
+            var element = entries.GetArrayElementAtIndex(0);
             float line = EditorGUIUtility.singleLineHeight;
             for (int i = 0; i < count; i++)
             {
+                if (!TryGetPair(element, out var key, out var value))
+                {
+                    for (int j = i; j < count; j++)
+                        entry.heights[j] = line;
+                    break;
+                }
+
                 float keyHeight = entry.keyLeaf
                     ? line
                     : ContentHeight(key, entry.keyInline, entry.keyCheckHidden, entry.keyForward, entry.fieldInfo);
@@ -443,7 +458,7 @@ namespace Framework.Editor
                 entry.heights[i] = Mathf.Max(keyHeight, valueHeight);
                 if (i + 1 >= count)
                     break;
-                if (!key.Next(false) || !value.Next(false))
+                if (!element.Next(false))
                 {
                     for (int j = i + 1; j < count; j++)
                         entry.heights[j] = line;
@@ -454,13 +469,14 @@ namespace Framework.Editor
             entry.constantHeight = -1f;
         }
 
-        void EnsureShape(Entry entry, SerializedProperty keys, SerializedProperty values)
+        void EnsureShape(Entry entry, SerializedProperty entries)
         {
-            if (keys.arraySize <= 0 || values.arraySize <= 0)
+            if (entries.arraySize <= 0)
                 return;
 
-            var key = keys.GetArrayElementAtIndex(0);
-            var value = values.GetArrayElementAtIndex(0);
+            var element = entries.GetArrayElementAtIndex(0);
+            if (!TryGetPair(element, out var key, out var value))
+                return;
             int keyType = (int)key.propertyType;
             int valueType = (int)value.propertyType;
             entry.fieldInfo = fieldInfo;
@@ -517,12 +533,11 @@ namespace Framework.Editor
             if (!_entries.TryGetValue(id, out var entry) || entry.list == null)
                 return;
 
-            var keys = entry.list.serializedProperty;
-            var values = entry.values;
-            if (keys == null || values == null || index < 0 || index >= keys.arraySize || index >= values.arraySize)
+            var entries = entry.list.serializedProperty;
+            if (entries == null || index < 0 || index >= entries.arraySize)
                 return;
 
-            if (!TryElementAt(entry, keys, values, index, out var keySource, out var valueSource))
+            if (!TryElementAt(entry, entries, index, out var keySource, out var valueSource))
                 return;
 
             bool separated = ShowsPairSeparator(entry, index);
@@ -575,7 +590,7 @@ namespace Framework.Editor
             return entry.heights[index] > EditorGUIUtility.singleLineHeight + 0.5f;
         }
 
-        static bool TryElementAt(Entry entry, SerializedProperty keys, SerializedProperty values, int index, out SerializedProperty key, out SerializedProperty value)
+        static bool TryElementAt(Entry entry, SerializedProperty entries, int index, out SerializedProperty key, out SerializedProperty value)
         {
             if (entry.cursor == index && entry.cursorKey != null && entry.cursorValue != null)
             {
@@ -584,33 +599,45 @@ namespace Framework.Editor
                 return true;
             }
 
-            if (entry.cursor >= 0 && index == entry.cursor + 1 && entry.cursorKey != null && entry.cursorValue != null)
+            if (entry.cursor >= 0 && index == entry.cursor + 1 && entry.cursorElement != null)
             {
-                var nextKey = entry.cursorKey.Copy();
-                var nextValue = entry.cursorValue.Copy();
-                if (nextKey.Next(false) && nextValue.Next(false))
+                var next = entry.cursorElement.Copy();
+                if (next.Next(false) && TryGetPair(next, out key, out value))
                 {
-                    entry.cursorKey = nextKey;
-                    entry.cursorValue = nextValue;
+                    entry.cursorElement = next;
+                    entry.cursorKey = key;
+                    entry.cursorValue = value;
                     entry.cursor = index;
-                    key = nextKey;
-                    value = nextValue;
                     return true;
                 }
             }
 
-            if (index < 0 || index >= keys.arraySize || index >= values.arraySize)
+            if (index < 0 || index >= entries.arraySize)
             {
                 key = null;
                 value = null;
                 return false;
             }
 
-            entry.cursorKey = keys.GetArrayElementAtIndex(index);
-            entry.cursorValue = values.GetArrayElementAtIndex(index);
+            entry.cursorElement = entries.GetArrayElementAtIndex(index);
+            if (!TryGetPair(entry.cursorElement, out key, out value))
+            {
+                entry.cursor = -1;
+                entry.cursorKey = null;
+                entry.cursorValue = null;
+                return false;
+            }
+
+            entry.cursorKey = key;
+            entry.cursorValue = value;
             entry.cursor = index;
-            key = entry.cursorKey;
-            value = entry.cursorValue;
+            return true;
+        }
+
+        static bool TryGetPair(SerializedProperty element, out SerializedProperty key, out SerializedProperty value)
+        {
+            key = element != null ? element.FindPropertyRelative("_key") : null;
+            value = element != null ? element.FindPropertyRelative("_value") : null;
             return key != null && value != null;
         }
 
@@ -773,7 +800,7 @@ namespace Framework.Editor
                 if (entry.dragMoved && entry.dragFrom >= 0 && entry.dragTo >= 0 && entry.dragFrom != entry.dragTo)
                 {
                     MoveAnim(entry, entry.dragFrom, entry.dragTo);
-                    MovePair(list.serializedProperty, entry.values, entry.dragFrom, entry.dragTo);
+                    MovePair(list.serializedProperty, entry.dragFrom, entry.dragTo);
                     list.index = entry.dragTo;
                     entry.cursor = -1;
                     entry.conflictsReady = false;
@@ -1038,29 +1065,17 @@ namespace Framework.Editor
             return target;
         }
 
-        static void MovePair(SerializedProperty keys, SerializedProperty values, int from, int to)
+        static void MovePair(SerializedProperty entries, int from, int to)
         {
-            if (keys == null || values == null || from == to)
+            if (entries == null || from == to)
                 return;
 
-            int count = Mathf.Min(keys.arraySize, values.arraySize);
+            int count = entries.arraySize;
             if (from < 0 || to < 0 || from >= count || to >= count)
                 return;
 
-            keys.MoveArrayElement(from, to);
-            values.MoveArrayElement(from, to);
-            keys.serializedObject.ApplyModifiedProperties();
-        }
-
-        static void ReorderValues(ReorderableList list, int oldIndex, int newIndex)
-        {
-            var values = ValuesOf(list.serializedProperty);
-            if (values == null || oldIndex == newIndex)
-                return;
-            if (oldIndex < 0 || newIndex < 0 || oldIndex >= values.arraySize || newIndex >= values.arraySize)
-                return;
-
-            values.MoveArrayElement(oldIndex, newIndex);
+            entries.MoveArrayElement(from, to);
+            entries.serializedObject.ApplyModifiedProperties();
         }
 
         void ShowMoveMenu(Entry entry, ReorderableList list, int index, int count)
@@ -1082,7 +1097,7 @@ namespace Framework.Editor
         void ShiftPair(Entry entry, ReorderableList list, int from, int to)
         {
             MoveAnim(entry, from, to);
-            MovePair(list.serializedProperty, entry.values, from, to);
+            MovePair(list.serializedProperty, from, to);
             list.index = to;
             entry.cursor = -1;
             entry.conflictsReady = false;
@@ -1450,14 +1465,12 @@ namespace Framework.Editor
 
         void AddPair(ReorderableList list)
         {
-            var keys = list.serializedProperty;
-            var values = ValuesOf(keys);
-            if (keys == null || values == null)
+            var entries = list.serializedProperty;
+            if (entries == null)
                 return;
 
-            int count = Mathf.Max(keys.arraySize, values.arraySize) + 1;
-            keys.arraySize = count;
-            values.arraySize = count;
+            int count = entries.arraySize + 1;
+            entries.arraySize = count;
             list.index = count - 1;
             FocusLastPage(list);
         }
@@ -1475,22 +1488,19 @@ namespace Framework.Editor
 
         static void RemovePair(ReorderableList list)
         {
-            var keys = list.serializedProperty;
-            var values = ValuesOf(keys);
-            if (keys == null || values == null)
+            var entries = list.serializedProperty;
+            if (entries == null)
                 return;
 
-            AlignSize(keys, values);
             int index = list.index;
-            if (index < 0 || index >= keys.arraySize)
+            if (index < 0 || index >= entries.arraySize)
                 return;
 
-            DeleteElement(keys, index);
-            DeleteElement(values, index);
-            if (keys.arraySize == 0)
+            DeleteElement(entries, index);
+            if (entries.arraySize == 0)
                 list.index = -1;
-            else if (index >= keys.arraySize)
-                list.index = keys.arraySize - 1;
+            else if (index >= entries.arraySize)
+                list.index = entries.arraySize - 1;
         }
 
         static void DeleteElement(SerializedProperty array, int index)
@@ -1508,25 +1518,14 @@ namespace Framework.Editor
                 array.DeleteArrayElementAtIndex(index);
         }
 
-        static void AlignSize(SerializedProperty keys, SerializedProperty values)
+        static bool KeysContentEqual(SerializedProperty entries, int a, int b)
         {
-            int count = Mathf.Max(keys.arraySize, values.arraySize);
-            if (keys.arraySize == count && values.arraySize == count)
-                return;
+            if (!TryGetPair(entries.GetArrayElementAtIndex(a), out var first, out _))
+                return false;
+            if (!TryGetPair(entries.GetArrayElementAtIndex(b), out var other, out _))
+                return false;
 
-            keys.arraySize = count;
-            values.arraySize = count;
-        }
-
-        static SerializedProperty ValuesOf(SerializedProperty keys)
-        {
-            const string suffix = "._keys";
-            string path = keys.propertyPath;
-            if (!path.EndsWith(suffix))
-                return null;
-
-            var parent = keys.serializedObject.FindProperty(path.Substring(0, path.Length - suffix.Length));
-            return parent?.FindPropertyRelative("_values");
+            return ContentEquals(first, other);
         }
 
         static bool IsAbsentProperty(SerializedProperty key)
@@ -1542,26 +1541,6 @@ namespace Framework.Editor
                 default:
                     return false;
             }
-        }
-
-        static bool KeysContentEqual(SerializedProperty keys, int a, int b)
-        {
-            if (a > b)
-            {
-                int swap = a;
-                a = b;
-                b = swap;
-            }
-
-            var first = keys.GetArrayElementAtIndex(a);
-            var other = first.Copy();
-            for (int i = a; i < b; i++)
-            {
-                if (!other.Next(false))
-                    return false;
-            }
-
-            return ContentEquals(first, other);
         }
 
         static bool ContentEquals(SerializedProperty a, SerializedProperty b)

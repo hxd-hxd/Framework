@@ -111,7 +111,7 @@ namespace Framework
 
         protected virtual void Start()
         {
-
+            OnEnabled(isEnable);
         }
 
         protected virtual void OnEnable()

@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEngine;
 
 namespace Framework.Editor
 {
@@ -181,6 +183,92 @@ namespace Framework.Editor
                 && typed.searchText.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        protected override void RowGUI(RowGUIArgs args)
+        {
+            var item = args.item as Item;
+            if (item == null || !TypeSelectCache.TryGetKeywordAlias(item.type, out string alias))
+            {
+                base.RowGUI(args);
+                return;
+            }
+
+            string aliasLabel = "(" + alias + ")";
+            const float rightPad = 6f;
+            float aliasWidth = AliasStyle.CalcSize(new GUIContent(aliasLabel)).x + rightPad;
+            Rect row = args.rowRect;
+            float labelRight = row.xMax - aliasWidth;
+            args.rowRect.width = Mathf.Max(0f, labelRight - row.x);
+            base.RowGUI(args);
+
+            if (UnityEngine.Event.current.type != EventType.Repaint)
+                return;
+
+            var aliasRect = new Rect(labelRight, row.y, aliasWidth - rightPad, row.height);
+            Color previous = GUI.color;
+            GUI.color = args.selected
+                ? Color.white
+                : (EditorGUIUtility.isProSkin ? new Color(1f, 1f, 1f, 0.5f) : new Color(0f, 0f, 0f, 0.5f));
+            GUI.Label(aliasRect, aliasLabel, AliasStyle);
+            GUI.color = previous;
+        }
+
+        static GUIStyle s_aliasStyle;
+
+        static GUIStyle AliasStyle
+        {
+            get
+            {
+                if (s_aliasStyle == null)
+                {
+                    s_aliasStyle = new GUIStyle(EditorStyles.miniLabel)
+                    {
+                        alignment = TextAnchor.MiddleRight,
+                        clipping = TextClipping.Clip,
+                    };
+                }
+
+                return s_aliasStyle;
+            }
+        }
+
+        protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
+        {
+            IList<TreeViewItem> rows = base.BuildRows(root);
+            if (string.IsNullOrEmpty(searchString) || rows == null || rows.Count < 2)
+                return rows;
+
+            var exact = new List<TreeViewItem>();
+            var others = new List<TreeViewItem>(rows.Count);
+            for (int i = 0; i < rows.Count; i++)
+            {
+                TreeViewItem row = rows[i];
+                if (IsExactNameMatch(row as Item, searchString))
+                    exact.Add(row);
+                else
+                    others.Add(row);
+            }
+
+            if (exact.Count == 0)
+                return rows;
+
+            exact.AddRange(others);
+            return exact;
+        }
+
+        static bool IsExactNameMatch(Item item, string search)
+        {
+            if (item == null || item.type == null)
+                return false;
+
+            if (string.Equals(item.type.Name, search, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (!string.IsNullOrEmpty(item.fullName)
+                && string.Equals(item.fullName, search, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return TypeSelectCache.TryGetKeywordAlias(item.type, out string alias)
+                && string.Equals(alias, search, StringComparison.OrdinalIgnoreCase);
+        }
+
         protected override void SelectionChanged(IList<int> selectedIds)
         {
             Type type = null;
@@ -303,7 +391,7 @@ namespace Framework.Editor
                 type = type,
                 fullName = fullName,
                 searchText = string.IsNullOrEmpty(entry.name)
-                    ? type.Name + " " + fullName
+                    ? AppendAliasSearch(type, type.Name + " " + fullName)
                     : BuildSearchText(entry),
             };
             parent.AddChild(item);
@@ -330,9 +418,17 @@ namespace Framework.Editor
 
         static string BuildSearchText(TypeSelectCache.Entry entry)
         {
-            if (string.IsNullOrEmpty(entry.ns))
-                return entry.name + " " + entry.fullName;
-            return entry.name + " " + entry.ns + " " + entry.fullName;
+            string text = string.IsNullOrEmpty(entry.ns)
+                ? entry.name + " " + entry.fullName
+                : entry.name + " " + entry.ns + " " + entry.fullName;
+            return AppendAliasSearch(entry.type, text);
+        }
+
+        static string AppendAliasSearch(Type type, string text)
+        {
+            if (type != null && TypeSelectCache.TryGetKeywordAlias(type, out string alias))
+                return text + " " + alias;
+            return text;
         }
 
         static void SortRecursive(TreeViewItem item)

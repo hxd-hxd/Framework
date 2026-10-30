@@ -48,6 +48,28 @@ namespace Framework.Editor
 
         static readonly HashSet<Type> AlwaysVisible = new HashSet<Type>(AlwaysVisibleTypes);
 
+        /// <summary>CLR 类型名与 C# 关键字的对应，用于选项标注和搜索。</summary>
+        static readonly Dictionary<Type, string> KeywordAliases = new Dictionary<Type, string>
+        {
+            { typeof(bool), "bool" },
+            { typeof(byte), "byte" },
+            { typeof(sbyte), "sbyte" },
+            { typeof(char), "char" },
+            { typeof(short), "short" },
+            { typeof(ushort), "ushort" },
+            { typeof(int), "int" },
+            { typeof(uint), "uint" },
+            { typeof(long), "long" },
+            { typeof(ulong), "ulong" },
+            { typeof(float), "float" },
+            { typeof(double), "double" },
+            { typeof(decimal), "decimal" },
+            { typeof(nint), "nint" },
+            { typeof(nuint), "nuint" },
+            { typeof(string), "string" },
+            { typeof(object), "object" },
+        };
+
         static List<Entry> s_entries;
 
         public static IReadOnlyList<Entry> GetEntries()
@@ -219,6 +241,16 @@ namespace Framework.Editor
                 return ns;
             int name = string.CompareOrdinal(a.name, b.name);
             return name != 0 ? name : string.CompareOrdinal(a.fullName, b.fullName);
+        }
+
+        /// <summary>返回 C# 关键字别名，例如 <c>Int32</c> 对应 <c>int</c>。</summary>
+        public static bool TryGetKeywordAlias(Type type, out string alias)
+        {
+            if (type != null && KeywordAliases.TryGetValue(type, out alias))
+                return true;
+
+            alias = null;
+            return false;
         }
 
         public static string GetDisplayName(Type type)

@@ -584,10 +584,7 @@ namespace Framework.Editor
 
         static bool ShowsPairSeparator(Entry entry, int index)
         {
-            if (entry.heights == null || index < 0 || index + 1 >= entry.heightCount || index >= entry.heights.Length)
-                return false;
-
-            return entry.heights[index] > EditorGUIUtility.singleLineHeight + 0.5f;
+            return entry != null && index >= 0 && index + 1 < entry.heightCount;
         }
 
         static bool TryElementAt(Entry entry, SerializedProperty entries, int index, out SerializedProperty key, out SerializedProperty value)

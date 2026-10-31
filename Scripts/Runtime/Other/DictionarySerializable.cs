@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Framework
 {
@@ -326,9 +328,37 @@ namespace Framework
                 _entries.Add(new Entry(item.Key, item.Value));
         }
 
-        #region Unity 序列化处理
-        // 反序列化之后。列表是检视面板编辑的数据源。
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        #region 序列化处理
+        // Unity 反序列化之后。列表是检视面板编辑的数据源，空列表也表示字典为空。
+        void ISerializationCallbackReceiver.OnAfterDeserialize() => AcceptEntries();
+
+        // 序列化之前。只有代码改过字典才回写列表，避免刷新检视面板时覆盖列表。
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => FlushEntriesIfMutated();
+
+        // Newtonsoft 等会调用。字段序列化器写入 _entries；走 Add 的 JSON 库不会创建列表。
+        [Preserve]
+        [OnSerializing]
+        void OnBclSerializing(StreamingContext context) => FlushEntriesIfMutated();
+
+        [Preserve]
+        [OnDeserialized]
+        void OnBclDeserialized(StreamingContext context)
+        {
+            if (_entries != null)
+            {
+                AcceptEntries();
+                return;
+            }
+
+            if (_dict != null)
+                SyncToList();
+            else
+                _dict = new Dictionary<TKey, TValue>();
+
+            _dictMutated = false;
+        }
+
+        void AcceptEntries()
         {
             try
             {
@@ -341,8 +371,7 @@ namespace Framework
             }
         }
 
-        // 序列化之前。只有代码改过字典才回写列表，避免刷新检视面板时覆盖列表。
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        void FlushEntriesIfMutated()
         {
             if (!_dictMutated || _dict == null)
                 return;

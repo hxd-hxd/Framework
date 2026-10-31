@@ -352,6 +352,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4116145074490075793}
+  - component: {fileID: 8652989779876891957}
   - component: {fileID: 959241303141137385}
   m_Layer: 0
   m_Name: "\u5B58\u6863"
@@ -376,6 +377,19 @@ Transform:
   - {fileID: 5216995671705605242}
   m_Father: {fileID: 9038994987835382997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8652989779876891957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8959659113914666347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b71facd4c64f654f9e310b01ff246da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _autoSaveTime: -1
 --- !u!114 &959241303141137385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,5 +447,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccfd4632f8070684cad27429bc9f427a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _saveSlotKey: _SaveSlotKey_
+  _saveSlotDataKeysKey: _SaveSlotDataKeys_
   _rootName: Save
+  _saveSlot: 0
   _version: 
+  _keys: {fileID: 0}

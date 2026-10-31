@@ -226,7 +226,11 @@ namespace Framework.Save
                 return;
             }
 
+            // 第一次出现这个键时先写入 PlayerPrefs，键表和值一起留下。之后的修改仍等 Save 覆盖。
+            bool firstWrite = !_datas.ContainsKey(key) && !PlayerPrefs.HasKey(key);
             _datas[key] = value;
+            if (firstWrite)
+                PlayerPrefs.SetString(key, JsonUtility.ToJson(value));
         }
 
         public override void RemoveData(string key)
@@ -329,18 +333,23 @@ namespace Framework.Save
             }
         }
 
-        /// <summary>把当前 <see cref="saveSlot"/> 记入存档槽列表。列表键不走 <see cref="GetKey"/>，避免带上槽号后只能看到当前槽。</summary>
+        /// <summary>按键表登记当前 <see cref="saveSlot"/>。没有实际数据键时不登记，已登记的空槽会从列表里去掉。列表键不走 <see cref="GetKey"/>。</summary>
         private void RecordCurrentSaveSlot()
         {
             List<int> slots = LoadSaveSlots();
-            if (slots.Contains(_saveSlot))
+            if (LoadSlotDataKeys(_saveSlot).Count > 0)
             {
+                if (slots.Contains(_saveSlot))
+                    return;
+
+                slots.Add(_saveSlot);
+                slots.Sort();
+                _datas[GetSaveSlotRegistryKey()] = new SaveValue<List<int>> { value = slots };
                 return;
             }
 
-            slots.Add(_saveSlot);
-            slots.Sort();
-            _datas[GetSaveSlotRegistryKey()] = new SaveValue<List<int>> { value = slots };
+            if (slots.Remove(_saveSlot))
+                _datas[GetSaveSlotRegistryKey()] = new SaveValue<List<int>> { value = slots };
         }
 
         private List<int> LoadSaveSlots()

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Framework.Save
 {
@@ -76,7 +75,9 @@ namespace Framework.Save
         /// <summary>保存</summary>
         public void Save()
         {
+            EventSaveBefore.Send(this);
             dataProvider.Save();
+            EventSaveAfter.Send(this);
         }
 
         /// <summary>获取所有已保存的存档槽</summary>

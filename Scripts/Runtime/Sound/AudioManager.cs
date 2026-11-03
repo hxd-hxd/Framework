@@ -137,10 +137,8 @@ namespace Framework
         [Tooltip("通用音源池")]
         internal AudioSourcePool _audioSourcePool = new AudioSourcePool();
 
-        [Header("剪辑")]
-        public AudioClip button;
-        public List<AudioClip> _clips = new List<AudioClip>();
         public List<AudioClip> _bgmClips = new List<AudioClip>();
+        public List<AudioClip> _clips = new List<AudioClip>();
 
         public SoundSettings soundSettings { get => _soundSettings; }
         public AudioSource audioSourceBGM
@@ -271,7 +269,6 @@ namespace Framework
             }
         }
 
-        // Start is called before the first frame update
         void Start()
         {
             if (Application.isPlaying)
@@ -286,7 +283,7 @@ namespace Framework
 
                 if (!_audioSourcePool._parent)
                 {
-                    _audioSourcePool._parent = new GameObject("AudioSource - Common").GetComponent<Transform>();
+                    _audioSourcePool._parent = new GameObject("AudioSource - Common").transform;
                     _audioSourcePool._parent.SetParent(transform);
                 }
             }
@@ -295,68 +292,50 @@ namespace Framework
 
         public AudioClip GetClipByName(string name)
         {
-            //if (!Instance) return null;
             var c = _clips.Find(x => x.name == name);
             return c;
         }
 
-        /// <summary>
-        /// 使用通用音源播放音效
-        /// </summary>
-        /// <param name="clip"></param>
-        public void PlayAudioByName(string name)
+        /// <summary>使用通用音源播放音效</summary>
+        public void Play(string name)
         {
-            //if (!Instance) return;
             if (!soundSwitch) return;
 
-            PlayAudio(GetClipByName(name));
+            Play(GetClipByName(name));
         }
 
-        /// <summary>
-        /// 使用通用音源播放音效
-        /// </summary>
-        /// <param name="clip"></param>
-        public void PlayAudioByName(GameObject source, string name)
+        /// <summary>使用通用音源播放音效</summary>
+        public void Play(int index)
         {
-            //if (!Instance) return;
-            if (!soundSwitch) return;
-
-            PlayAudio(source, GetClipByName(name));
-        }
-
-        /// <summary>
-        /// 使用通用音源播放音效
-        /// </summary>
-        /// <param name="clip"></param>
-        public void PlayAudio(int index)
-        {
-            //if (!Instance) return;
             if (!soundSwitch) return;
 
             var clip = _clips[index];
-            PlayAudio(clip);
+            Play(clip);
         }
 
-        /// <summary>
-        /// 使用通用音源播放音效
-        /// </summary>
-        /// <param name="clip"></param>
-        public void PlayAudio(AudioClip clip)
+        /// <summary>使用通用音源播放音效</summary>
+        public void Play(AudioClip clip)
         {
-            //if (!Instance) return;
             if (!soundSwitch) return;
 
             var source = _audioSourcePool.Play(clip);
             source.volume = soundVolume;
         }
-        
-        /// <summary>
-        /// 指定物体播放 3d 音效
-        /// <para></para>2d、全局音效用 <see cref="PlayAudio(AudioClip)"/>
+
+        /// <summary>使用通用音源指定物体播放 3d 音效
+        /// <para></para>2d、全局音效用 <see cref="Play(AudioClip)"/>
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="clip"></param>
-        public void PlayAudio(GameObject source, AudioClip clip)
+        public void Play(GameObject source, string name)
+        {
+            if (!soundSwitch) return;
+
+            Play(source, GetClipByName(name));
+        }
+
+        /// <summary>使用通用音源指定物体播放 3d 音效
+        /// <para></para>2d、全局音效用 <see cref="Play(AudioClip)"/>
+        /// </summary>
+        public void Play(GameObject source, AudioClip clip)
         {
             if (!soundSwitch) return;
 
@@ -377,17 +356,39 @@ namespace Framework
             Play(a, clip);
         }
 
-        public void PlayAudio(Vector3 position, AudioClip clip)
+        /// <summary>使用通用音源指定物体播放 3d 音效
+        /// <para></para>2d、全局音效用 <see cref="Play(AudioClip)"/>
+        /// </summary>
+        public void Play(Vector3 position, string name)
+        {
+            if (!soundSwitch) return;
+            var clip = GetClipByName(name);
+            Play(position, clip);
+        }
+
+        /// <summary>使用通用音源指定物体播放 3d 音效
+        /// <para></para>2d、全局音效用 <see cref="Play(AudioClip)"/>
+        /// </summary>
+        public void Play(Vector3 position, AudioClip clip)
         {
             if (!soundSwitch) return;
 
             AudioSource.PlayClipAtPoint(clip, position, soundVolume);
         }
 
+        /// <summary>播放背景音乐</summary>
+        public void PlayBGM(string name)
+        {
+            var clip = _bgmClips.Find(x => x.name == name);
+            if (clip)
+            {
+                PlayBGM(clip);
+            }
+        }
+
+        /// <summary>通过索引播放背景音乐</summary>
         public void PlayBGM(int index)
         {
-            //if (!Instance) return;
-
             if (!_bgmClips.TryIndex(index, out var a))
             {
                 _bgmClips.TryIndex(0, out a);
@@ -396,17 +397,20 @@ namespace Framework
             PlayBGM(a);
         }
 
-        /// <summary>
-        /// 播放 bgm
-        /// </summary>
-        /// <param name="clip"></param>
+        /// <summary>播放 bgm</summary>
         public void PlayBGM(AudioClip clip)
         {
-            //if (!Instance) return;
             if (!bgmSwitch) return;
 
             audioSourceBGM.volume = bgmVolume;
+            audioSourceBGM.loop = true;
             Play(audioSourceBGM, clip);
+        }
+
+        /// <summary>停止背景音乐</summary>
+        public void StopBGM()
+        {
+            audioSourceBGM.Stop();
         }
 
         protected void Play(AudioSource source, AudioClip clip)

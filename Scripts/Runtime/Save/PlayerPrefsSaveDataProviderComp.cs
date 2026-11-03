@@ -257,6 +257,7 @@ namespace Framework.Save
         {
             _datas.Clear();
             PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
         }
 
         public override bool HasKey(string key)

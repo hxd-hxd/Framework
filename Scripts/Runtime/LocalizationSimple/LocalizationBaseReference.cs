@@ -32,7 +32,7 @@ namespace Framework.LocalizationSimple
 
             foreach (var l in _localizations)
             {
-                if (ObjectUtility.IsNull(l)) continue;
+                if (ObjectUtility.IsNull(l) || l == this) continue;
                 l._defaultLanguage = _defaultLanguage;
                 l.SetLanguage(language);
             }
@@ -44,7 +44,7 @@ namespace Framework.LocalizationSimple
 
             foreach (var l in _localizations)
             {
-                if (ObjectUtility.IsNull(l)) continue;
+                if (ObjectUtility.IsNull(l) || l == this) continue;
                 l._defaultProvider = _defaultProvider;
                 l.SetLanguage(languageProvider);
             }

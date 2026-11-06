@@ -13,5 +13,10 @@ namespace Framework.LocalizationSimple
         {
             LocalizationCurLanguage.Instance.curLanguage = _curLanguageOnAwake;
         }
+
+        private void Start()
+        {
+            
+        }
     }
 }

@@ -138,20 +138,15 @@ namespace Framework
     public class Yielder
     {
         static Dictionary<float, WaitForSeconds> waits = new Dictionary<float, WaitForSeconds>();
+        static Dictionary<float, WaitForSecondsRealtime> waitsRealtime = new Dictionary<float, WaitForSecondsRealtime>();
 
-        /// <summary>
-        /// 使用次数
-        /// </summary>
+        /// <summary>使用次数</summary>
         public static int UseNum
         {
             get; private set;
         }
 
-        /// <summary>
-        /// 使用缩放时间在给定的秒数内挂起协程执行。
-        /// </summary>
-        /// <param name="seconds">间隔</param>
-        /// <returns></returns>
+        /// <summary>使用缩放时间在给定的秒数内挂起协程执行。</summary>
         public static WaitForSeconds WaitForSeconds(float seconds)
         {
             UseNum++;
@@ -164,12 +159,24 @@ namespace Framework
             return waits[seconds];
         }
 
-        /// <summary>
-        /// 清除
-        /// </summary>
+        /// <summary>使用非缩放时间在给定的秒数内挂起协程执行。</summary>
+        public static WaitForSecondsRealtime WaitForSecondsRealtime(float seconds)
+        {
+            UseNum++;
+
+            if (!waitsRealtime.ContainsKey(seconds))
+            {
+                waitsRealtime.Add(seconds, new WaitForSecondsRealtime(seconds));
+            }
+
+            return waitsRealtime[seconds];
+        }
+
+        /// <summary>清除</summary>
         public static void Clear()
         {
             waits.Clear();
+            waitsRealtime.Clear();
         }
     }
 

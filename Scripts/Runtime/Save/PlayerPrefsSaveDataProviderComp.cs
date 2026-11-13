@@ -53,20 +53,21 @@ namespace Framework.Save
         public string version { get => _version; set => _version = value; }
 
         /// <summary>命名空间，会附加到键的前面。
-        /// <para>由 <see cref="rootName"/> 和 <see cref="version"/> 拼接而成，
-        /// 示例：Save/0/1.0 或 Save/0/，其中版本号是可选的。</para>
+        /// <para>由 <see cref="rootName"/>、应用名、<see cref="saveSlot"/> 和 <see cref="version"/> 拼接而成，
+        /// 示例：Save/应用名/0/1.0 或 Save/应用名/0/，其中版本号是可选的。</para>
         /// </summary>
-        public string nameSpace
+        public string nameSpace => BuildSlotPrefix(_saveSlot, _version);
+
+        /// <summary>存档根前缀：根名称/应用名。示例：Save/应用名。槽号和登记键都接在它后面。</summary>
+        public string rootPrefix
         {
             get
             {
                 var sb = TypePool.root.Get<StringBuilder>();
-                string fullKey = sb.Append(_rootName)
-                    .Append("/").Append(_saveSlot)
-                    .Append("/").Append(_version)
-                    .ToString();
+                AppendRootPrefix(sb);
+                string value = sb.ToString();
                 TypePool.root.Return(sb);
-                return fullKey;
+                return value;
             }
         }
 
@@ -310,7 +311,7 @@ namespace Framework.Save
         }
 
         /// <summary>获取完整键
-        /// <para>完整键名示例：Save/0/1.0/name 或 Save/0//name，其中版本号是可选的。</para>
+        /// <para>完整键名示例：Save/应用名/0/1.0/name 或 Save/应用名/0//name，其中版本号是可选的。</para>
         /// </summary>
         public string GetKey(string key)
         {
@@ -382,13 +383,13 @@ namespace Framework.Save
             return new List<int>();
         }
 
-        /// <summary>存档槽列表的完整键，示例：Save/_SaveSlotKey_</summary>
+        /// <summary>存档槽列表的完整键，示例：Save/应用名/_SaveSlotKey_</summary>
         private string GetSaveSlotRegistryKey()
         {
             var sb = TypePool.root.Get<StringBuilder>();
-            string key = sb.Append(_rootName)
-                .Append("/").Append(_saveSlotKey)
-                .ToString();
+            AppendRootPrefix(sb);
+            sb.Append('/').Append(_saveSlotKey);
+            string key = sb.ToString();
             TypePool.root.Return(sb);
             return key;
         }
@@ -635,51 +636,65 @@ namespace Framework.Save
             return null;
         }
 
-        /// <summary>完整键，示例：Save/0/1.0/name。版本为空时是 Save/0//name。</summary>
+        /// <summary>根前缀：根名称/应用名。应用名取 <see cref="Application.productName"/>。</summary>
+        private void AppendRootPrefix(StringBuilder sb)
+        {
+            sb.Append(_rootName).Append('/').Append(Application.productName);
+        }
+
+        /// <summary>指定槽和版本的前缀，示例：Save/应用名/0/1.0。版本为空时末尾保留分隔符：Save/应用名/0/。</summary>
+        private string BuildSlotPrefix(int slot, string version)
+        {
+            var sb = TypePool.root.Get<StringBuilder>();
+            AppendRootPrefix(sb);
+            sb.Append('/').Append(slot).Append('/').Append(version);
+            string value = sb.ToString();
+            TypePool.root.Return(sb);
+            return value;
+        }
+
+        /// <summary>完整键，示例：Save/应用名/0/1.0/name。版本为空时是 Save/应用名/0//name。</summary>
         private string BuildFullKey(int slot, string version, string key)
         {
             var sb = TypePool.root.Get<StringBuilder>();
-            string fullKey = sb.Append(_rootName)
-                .Append("/").Append(slot)
-                .Append("/").Append(version)
-                .Append("/").Append(key)
-                .ToString();
+            AppendRootPrefix(sb);
+            sb.Append('/').Append(slot).Append('/').Append(version).Append('/').Append(key);
+            string fullKey = sb.ToString();
             TypePool.root.Return(sb);
             return fullKey;
         }
 
-        /// <summary>槽位数据的键前缀，示例：Save/0/。末尾带分隔符，避免槽 1 匹配到槽 10。</summary>
+        /// <summary>槽位数据的键前缀，示例：Save/应用名/0/。末尾带分隔符，避免槽 1 匹配到槽 10。</summary>
         private string GetSlotDataPrefix(int slot)
         {
             var sb = TypePool.root.Get<StringBuilder>();
-            string prefix = sb.Append(_rootName)
-                .Append("/").Append(slot)
-                .Append("/")
-                .ToString();
+            AppendRootPrefix(sb);
+            sb.Append('/').Append(slot).Append('/');
+            string prefix = sb.ToString();
             TypePool.root.Return(sb);
             return prefix;
         }
 
-        /// <summary>某个存档槽的键列表，示例：Save/_SaveSlotDataKeys_/0</summary>
+        /// <summary>某个存档槽的键列表，示例：Save/应用名/_SaveSlotDataKeys_/0</summary>
         private string GetSlotDataKeysRegistryKey(int slot)
         {
             var sb = TypePool.root.Get<StringBuilder>();
-            string key = sb.Append(_rootName)
-                .Append("/").Append(_saveSlotDataKeysKey)
-                .Append("/").Append(slot)
-                .ToString();
+            AppendRootPrefix(sb);
+            sb.Append('/').Append(_saveSlotDataKeysKey).Append('/').Append(slot);
+            string key = sb.ToString();
             TypePool.root.Return(sb);
             return key;
         }
 
-        /// <summary>从完整数据键解析槽号。键列表和槽登记本身的键会返回 false。</summary>
+        /// <summary>从完整数据键解析槽号。键格式是根名称/应用名/槽号/...。键列表和槽登记本身的键会返回 false。</summary>
         private bool TryGetSlotFromDataKey(string fullKey, out int slot)
         {
             slot = 0;
             if (string.IsNullOrEmpty(fullKey) || string.IsNullOrEmpty(_rootName))
                 return false;
 
-            string prefix = _rootName + "/";
+            // 应用名紧跟在根名称后面，槽号是再下一段。登记键的这一段不是数字。
+            string prefix = rootPrefix + "/";
             if (!fullKey.StartsWith(prefix, StringComparison.Ordinal))
                 return false;
 

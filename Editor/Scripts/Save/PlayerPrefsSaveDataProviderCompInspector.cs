@@ -17,7 +17,7 @@ namespace Framework.Editor
     {
         static readonly GUIContent NameSpaceLabel = new GUIContent(
             "nameSpace",
-            "命名空间，会附加到键的前面。由根名称、存档槽和版本号拼接而成，示例：Save/0/1.0 或 Save/0/。");
+            "命名空间，会附加到键的前面。由根名称、应用名、存档槽和版本号拼接而成，示例：Save/应用名/0/1.0 或 Save/应用名/0/。");
 
         readonly List<int> _slots = new List<int>();
         readonly List<string> _keys = new List<string>();
@@ -61,7 +61,7 @@ namespace Framework.Editor
         }
 
         /// <summary>
-        /// 槽列表键是 <c>根名称/存档槽列表键</c>，每个槽的数据键列表是 <c>根名称/槽数据键列表键/槽号</c>。
+        /// 槽列表键是 <c>根名称/应用名/存档槽列表键</c>，每个槽的数据键列表是 <c>根名称/应用名/槽数据键列表键/槽号</c>。
         /// 与运行时登记存档槽、槽内键的规则一致，直接读 PlayerPrefs，不经过内存缓存。
         /// </summary>
         void DrawSavedSaves()
@@ -78,14 +78,14 @@ namespace Framework.Editor
                 var provider = targets[i] as PlayerPrefsSaveDataProviderComp;
                 if (!provider)
                     continue;
-                if (!TryReadNaming(provider, out string root, out string slotKeyName, out string dataKeysName))
+                if (!TryReadNaming(provider, out string rootPrefix, out string slotKeyName, out string dataKeysName))
                     continue;
 
-                string registryKey = root + "/" + slotKeyName;
+                string registryKey = rootPrefix + "/" + slotKeyName;
                 if (!_drawnRegistries.Add(registryKey))
                     continue;
 
-                if (!DrawRegistry(provider, root, registryKey, dataKeysName))
+                if (!DrawRegistry(provider, rootPrefix, registryKey, dataKeysName))
                     continue;
 
                 any = true;
@@ -116,27 +116,27 @@ namespace Framework.Editor
             }
         }
 
-        bool DrawRegistry(PlayerPrefsSaveDataProviderComp provider, string root, string registryKey, string dataKeysName)
+        bool DrawRegistry(PlayerPrefsSaveDataProviderComp provider, string rootPrefix, string registryKey, string dataKeysName)
         {
-            CollectSlots(provider, root, registryKey, dataKeysName);
+            CollectSlots(provider, rootPrefix, registryKey, dataKeysName);
             if (_slots.Count == 0)
                 return false;
 
             if (targets.Length > 1)
-                EditorGUILayout.LabelField(string.IsNullOrEmpty(root) ? provider.name : root, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(string.IsNullOrEmpty(rootPrefix) ? provider.name : rootPrefix, EditorStyles.boldLabel);
 
             EditorGUI.indentLevel++;
             for (int i = 0; i < _slots.Count; i++)
-                DrawSlot(provider, root, dataKeysName, _slots[i]);
+                DrawSlot(provider, rootPrefix, dataKeysName, _slots[i]);
             EditorGUI.indentLevel--;
             return true;
         }
 
-        void DrawSlot(PlayerPrefsSaveDataProviderComp provider, string root, string dataKeysName, int slot)
+        void DrawSlot(PlayerPrefsSaveDataProviderComp provider, string rootPrefix, string dataKeysName, int slot)
         {
-            CollectKeys(provider, root, dataKeysName, slot);
+            CollectKeys(provider, rootPrefix, dataKeysName, slot);
 
-            string foldoutId = root + "/" + dataKeysName + "/" + slot;
+            string foldoutId = rootPrefix + "/" + dataKeysName + "/" + slot;
             if (!_slotFoldouts.TryGetValue(foldoutId, out bool open))
                 open = true;
 
@@ -170,7 +170,7 @@ namespace Framework.Editor
             }
         }
 
-        void CollectSlots(PlayerPrefsSaveDataProviderComp provider, string root, string registryKey, string dataKeysName)
+        void CollectSlots(PlayerPrefsSaveDataProviderComp provider, string rootPrefix, string registryKey, string dataKeysName)
         {
             _slots.Clear();
             ReadIntList(registryKey, _slots);
@@ -178,7 +178,7 @@ namespace Framework.Editor
             int current = provider.saveSlot;
             if (!_slots.Contains(current))
             {
-                CollectKeys(provider, root, dataKeysName, current);
+                CollectKeys(provider, rootPrefix, dataKeysName, current);
                 if (_keys.Count > 0)
                     _slots.Add(current);
             }
@@ -192,10 +192,10 @@ namespace Framework.Editor
         }
 
         /// <summary>槽位索引里的完整键，再加上当前槽在键表里已经写入 PlayerPrefs 的键。</summary>
-        void CollectKeys(PlayerPrefsSaveDataProviderComp provider, string root, string dataKeysName, int slot)
+        void CollectKeys(PlayerPrefsSaveDataProviderComp provider, string rootPrefix, string dataKeysName, int slot)
         {
             _keys.Clear();
-            ReadStringList(root + "/" + dataKeysName + "/" + slot, _keys);
+            ReadStringList(rootPrefix + "/" + dataKeysName + "/" + slot, _keys);
 
             if (slot == provider.saveSlot)
                 AppendConfiguredKeys(provider, _keys);
@@ -246,11 +246,11 @@ namespace Framework.Editor
 
         static bool TryReadNaming(
             PlayerPrefsSaveDataProviderComp provider,
-            out string root,
+            out string rootPrefix,
             out string slotKeyName,
             out string dataKeysName)
         {
-            root = provider.rootName ?? string.Empty;
+            rootPrefix = provider.rootPrefix ?? string.Empty;
             var serialized = new SerializedObject(provider);
             SerializedProperty slotKey = serialized.FindProperty("_saveSlotKey");
             SerializedProperty dataKeys = serialized.FindProperty("_saveSlotDataKeysKey");

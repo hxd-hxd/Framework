@@ -175,12 +175,12 @@ namespace Framework
         {
             //transform.SetAsLastSibling();
 
-            Debug.Log($"{name} 置顶");
+            //Debug.Log($"{name} 置顶");
         }
 
         public virtual void OnCovered()
         {
-            Debug.Log($"{name} 被覆盖");
+            //Debug.Log($"{name} 被覆盖");
         }
 
         public virtual void OnNotCovered()
